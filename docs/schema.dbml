@@ -1,0 +1,101 @@
+// Hybrid tables only — ThingsBoard-native entities are NOT duplicated here.
+// Authoritative schema for PostgreSQL metadata layer.
+
+Project smart_industry_iot {
+  database_type: 'PostgreSQL'
+  Note: 'Custom tables complement ThingsBoard. All tb_* fields reference ThingsBoard entity IDs.'
+}
+
+Table hierarchy_level_definitions {
+  id uuid [pk]
+  tb_customer_id uuid [not null, note: 'ThingsBoard Customer (Client) ID']
+  level_order int [not null, note: '1 = first intermediate level below Client']
+  label varchar [not null, note: 'Display name, e.g. Location, Country, Data Center']
+  icon varchar [note: 'Optional icon key for frontend']
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  indexes {
+    (tb_customer_id, level_order) [unique]
+  }
+}
+
+Table relation_type_definitions {
+  id uuid [pk]
+  tb_customer_id uuid [not null, note: 'ThingsBoard Customer (Client) ID']
+  relation_type varchar [not null, note: 'Matches a ThingsBoard native Relation type string, e.g. Feeds, Powers, Monitors. "Contains" is reserved for hierarchy and not listed here.']
+  label varchar [not null, note: 'Display name shown in frontend']
+  icon varchar [note: 'Optional icon key for frontend']
+  created_at timestamptz [default: `now()`]
+
+  indexes {
+    (tb_customer_id, relation_type) [unique]
+  }
+}
+
+Table telemetry_key_catalog {
+  id uuid [pk]
+  tb_entity_id uuid [note: 'Optional scope: device/asset profile or entity']
+  telemetry_key varchar [not null]
+  unit varchar [note: 'e.g. °C, bar, m³/h']
+  suggested_widget varchar [note: 'chart | card | gauge | badge']
+  created_at timestamptz [default: `now()`]
+
+  indexes {
+    (tb_entity_id, telemetry_key) [unique]
+  }
+}
+
+Table dashboard_configs {
+  id uuid [pk]
+  tb_customer_id uuid [not null]
+  tb_entity_id uuid [note: 'Optional hierarchy node scope']
+  name varchar [not null]
+  dashboard_type varchar [not null, note: 'entity | solution | custom']
+  config jsonb [not null, note: 'Layout, widgets, data bindings']
+  is_default boolean [default: false]
+  created_by uuid [note: 'ThingsBoard user ID']
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+}
+
+Table favorites {
+  id uuid [pk]
+  tb_user_id uuid [not null]
+  resource_type varchar [not null, note: 'dashboard | entity | telemetry_view']
+  resource_id uuid [not null]
+  pin_order int
+  created_at timestamptz [default: `now()`]
+
+  indexes {
+    (tb_user_id, resource_type, resource_id) [unique]
+  }
+}
+
+Table onboarding_flows {
+  id uuid [pk]
+  tb_customer_id uuid [not null]
+  name varchar [not null]
+  steps jsonb [not null, note: 'Ordered wizard steps']
+  is_active boolean [default: true]
+  created_at timestamptz [default: `now()`]
+}
+
+Table alarm_recipients {
+  id uuid [pk]
+  tb_rule_node_id uuid [not null, note: 'ThingsBoard Rule Chain node ID']
+  email varchar [not null]
+  created_at timestamptz [default: `now()`]
+
+  indexes {
+    (tb_rule_node_id, email) [unique]
+  }
+}
+
+Table roles {
+  id uuid [pk]
+  name varchar [not null]
+  tb_entity_id uuid [not null, note: 'Generic scope — any TB entity']
+  permissions jsonb [not null, note: 'Governs dashboard visibility (entity/solution/custom) for this role — does not restrict widget types, which are the same for all users']
+  created_at timestamptz [default: `now()`]
+}
