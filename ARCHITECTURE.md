@@ -1,11 +1,11 @@
-# ARCHITECTURE — Smart Industry IoT Platform
+# ARCHITECTURE — IoT Platform
 
 ## System Overview
 
 ```
-Frontend (Next.js) → FastAPI (auth + business logic) → ThingsBoard (entities, telemetry, rule engine)
+Frontend (React) → NestJS (auth + business logic) → ThingsBoard (entities, telemetry, rule engine)
         ↑                        ↓
-        └── WebSocket (live telemetry, proxied via FastAPI)
+        └── WebSocket (live telemetry, proxied via NestJS)
                               ↓
                         PostgreSQL (hybrid metadata only)
 ```
@@ -16,9 +16,9 @@ PostgreSQL owns: hierarchy definitions, relation-type labels, telemetry catalog,
 
 ## Real-Time Channel
 
-WebSocket is reserved **exclusively for live telemetry** — dashboards subscribe to device/asset telemetry updates through it. The connection is proxied through FastAPI (not opened directly against ThingsBoard) so TB credentials/session stay server-side.
+WebSocket carries both **live telemetry** and **alarms**. Dashboards subscribe to device/asset telemetry updates through it, and alarm events are pushed the same way when a user has a session open. The connection is proxied through NestJS (not opened directly against ThingsBoard) so TB credentials/session stay server-side.
 
-Alarms and system notifications are **not** pushed over WebSocket — they are delivered by email (see `alarm_recipients`), regardless of whether the user has a dashboard open.
+Alarms are **also** delivered by email (see `alarm_recipients`) regardless of WebSocket delivery, so a user gets notified even without a dashboard open.
 
 ## Entity Model Summary
 
@@ -29,9 +29,11 @@ Alarms and system notifications are **not** pushed over WebSocket — they are d
 | Sensor / Gateway | ThingsBoard Device | |
 | Hierarchy labels per Client | `hierarchy_level_definitions` | Custom table |
 | Custom entity relations (beyond hierarchy) | ThingsBoard native (Relations) | Any relation type between any two entities; label/icon in `relation_type_definitions` |
-| Telemetry units / viz hints | `telemetry_key_catalog` | Custom table |
+| Telemetry logical types | `telemetry_definitions` | Global, not per-device |
+| Unit conversion | `unit_categories`, `unit_conversions` | Global |
+| Per-user unit preference | `user_unit_preferences` | |
 | Alarm condition | ThingsBoard Rule Chain | Recipients in `alarm_recipients` |
-| Granular permissions | `roles` | Points to generic `tb_entity_id`; governs dashboard visibility per user/role, not widget access |
+| Granular permissions | `roles` + `user_role_assignments` | Points to generic `tb_entity_id`; governs dashboard visibility per user/role, not widget access |
 
 See `docs/schema.dbml` for hybrid table definitions.
 
@@ -45,7 +47,18 @@ The hierarchy tree uses a single reserved relation type ("Contains") for parent/
 
 ## Dashboard Visibility & Permissions
 
-Permissions scope **which dashboards a user/role can see**, not which widgets they can use. `roles.permissions` (jsonb, scoped via generic `tb_entity_id`) determines visibility of entity, solution, and custom dashboards per user/role. The widget catalog (table, chart, map, etc.) is identical for every authenticated user on any dashboard they can already see — there is no per-role widget restriction.
+Permissions scope **which dashboards a user/role can see**, not which widgets they can use. `roles.permissions` (jsonb, scoped via generic `tb_entity_id`) determines default-type visibility (entity/solution/custom) per role. A dashboard can also target a specific role via `dashboard_configs.visible_to_role_id` — set by whoever creates it (`created_by`), who always keeps view/edit access to their own dashboards regardless of role. The widget catalog (table, chart, map, etc.) is identical for every authenticated user on any dashboard they can already see — there is no per-role widget restriction.
+
+Role types (manager, operator, admin, ...) are free-form per Client via `roles.name` — no fixed enum, since permission/visibility needs vary per Client.
+
+## Onboarding Wizards (planned, near-term)
+
+Admin-facing creation flows — not physical device provisioning (that stays out of scope, see VISION.md). Planned wizards:
+- Client creation
+- Asset creation
+- Device creation + linking — creating a device also creates its structure (assets under it via `hierarchy_level_definitions` + "Contains" relations), from a default template rather than from scratch each time.
+
+No new tables required for this — reuses `hierarchy_level_definitions` as the structure template; wizards are frontend/NestJS orchestration over existing ThingsBoard + hybrid tables.
 
 ## Data Classifier
 
@@ -60,6 +73,10 @@ Visualization suggestion per telemetry key combines:
 Initial emulated device profile: an industrial pump/station. Used to seed `telemetry_key_catalog` and exercise the Data Classifier end to end before real sensors are connected.
 
 Keys: `alarmCode`, `energy`, `flowRate`, `latitude`, `longitude`, `mode`, `motorSpeed`, `power`, `pressure`, `state`, `temperature`, `vibration`, `volume`.
+
+## Rate Limiting
+
+Only the login endpoint is throttled (brute-force protection on repeated auth attempts in a short window). No global rate limit — internal/authenticated traffic isn't constrained.
 
 ## Deployment Topology
 
@@ -78,6 +95,6 @@ Architecture Decision Records live in `docs/adr/`. This section indexes them.
 
 | ID | Title | Status | Date |
 | :--- | :--- | :--- | :--- |
-| — | *(none yet)* | — | — |
+| — | [Telemetry definitions, unit catalog, and per-user preferences](docs/adr/2026-07-25-telemetry-units.md) | Accepted | 2026-07-25 |
 
 When adding an ADR: create `docs/adr/NNN-short-title.md` and append a row here.

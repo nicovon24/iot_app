@@ -1,8 +1,8 @@
-# VISION — Smart Industry IoT Platform
+# VISION — IoT Platform
 
 ## Why This Exists
 
-Build a **proof of concept** that proves ThingsBoard can power a product with a **frontend far more capable and flexible** than ThingsBoard's native UI — while practicing a real FastAPI service end to end with former coworkers.
+Build a **proof of concept** that proves ThingsBoard can power a product with a **frontend far more capable and flexible** than ThingsBoard's native UI — while practicing a real NestJS service end to end with former coworkers.
 
 ## Product Goal
 
@@ -13,11 +13,13 @@ Use **ThingsBoard as the IoT data engine**. Expose a solid, scalable API on top.
 - View full history and aggregates (avg, max, min) over any time range
 - Choose how data is visualized
 
+- Manage telemetry definitions and a global unit catalog so users can view data in preferred units (per-category user preferences) while stored values remain in a single base unit.
+
 ## Stages
 
 | Stage | Scope |
 | :--- | :--- |
-| **Stage 1** | FastAPI service — ThingsBoard auth, devices, assets, telemetry, attributes |
+| **Stage 1** | NestJS service — ThingsBoard auth, devices, assets, telemetry, attributes |
 | **Stage 2** | Dynamic frontend — telemetry explorer, aggregation, user/admin-configurable dashboards |
 
 ## Initial Data Source
