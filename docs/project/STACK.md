@@ -109,28 +109,29 @@ npx paul-framework --local
       }
     },
     "markitdown": {
-      "command": "npx",
-      "args": ["-y", "@microsoft/markitdown-mcp"]
-    },
-    "adr-analysis": {
-      "command": "mcp-adr-analysis-server",
-      "env": {
-        "PROJECT_PATH": "/absolute/path/to/your/project",
-        "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}",
-        "AI_MODEL": "anthropic/claude-3-haiku"
-      }
+      "command": "python",
+      "args": ["-m", "markitdown_mcp"]
     },
     "supermemory": {
-      "url": "http://localhost:6767/mcp"
+      "url": "https://mcp.supermemory.ai/mcp"
+    },
+    "github": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "-e", "GITHUB_PERSONAL_ACCESS_TOKEN", "ghcr.io/github/github-mcp-server"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      }
     }
   }
 }
 ```
 
 - **thingsboard** (`thingsboard/mcp`, official image): query devices, assets, telemetry, alarms in natural language
-- **markitdown**: converts PDFs and other formats to clean Markdown before the agent processes them (saves reading tokens)
-- **adr-analysis**: scans the code (Tree-sitter, local, no token cost) and suggests/generates Architecture Decision Records on demand — `EXECUTION_MODE=full` only when actually generating an ADR, not as the default
-- **supermemory**: self-hosted (`npx supermemory local` → runs `supermemory-server` on `localhost:6767`) — keeps memory data on-machine instead of sending project context to a third-party server. `/context` in-session pulls the current profile into the conversation
+- **markitdown**: Python package (`pip install markitdown-mcp`, not npm — no npm package exists despite the name) — converts PDFs and other formats to clean Markdown before the agent processes them (saves reading tokens)
+- **supermemory**: cloud-hosted (`mcp.supermemory.ai`), free tier. Originally scoped as self-hosted (`localhost:6767`) given real client/industry data — revisited: acceptable tradeoff for a personal/solo project, revisit self-hosting if this ever handles real client data in production
+- **github**: official GitHub MCP server, PAT-based auth
+
+**adr-analysis MCP**: dropped — token overhead per turn not worth it for a solo-dev project this size. The `architecture-decision-records` **skill** (session-level, on-demand) covers ADR capture instead — see Skills table above.
 
 **Postgres MCP** (recommended addition, config not yet defined):
 ```json
@@ -140,4 +141,4 @@ npx paul-framework --local
 }
 ```
 
-**Note on token overhead**: each active MCP server adds its tool definitions to every turn. With `thingsboard` + `markitdown` + `adr-analysis` + `supermemory` (and `postgres` pending), worth periodically checking `/context` and disconnecting servers not in active use that session — particularly relevant on the Pro plan, where session budget is tighter than on Max.
+**Note on token overhead**: each active MCP server adds its tool definitions to every turn. With `thingsboard` + `markitdown` + `supermemory` (and `postgres` pending), worth periodically checking `/context` and disconnecting servers not in active use that session — particularly relevant on the Pro plan, where session budget is tighter than on Max.
