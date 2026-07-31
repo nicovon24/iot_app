@@ -14,7 +14,7 @@ Prove ThingsBoard can back a product with a far more capable frontend and API th
 
 **Version 1 — ThingsBoard-backed API + live dashboard shell** (v1.0)
 Status: In progress
-Phases: 2 of 7 complete (+2 inserted phases: 2.1 complete, 2.2 code-complete — both 2.2-01 and 2.2-02 scope implemented, not yet runtime-verified/unified)
+Phases: 2 of 7 complete (+2 inserted phases: 2.1 complete, 2.2 complete and fully runtime-verified). Next: Phase 3 (Live telemetry & alarms — WebSocket gateways).
 
 ## Phases
 
@@ -25,8 +25,8 @@ Phases: 2 of 7 complete (+2 inserted phases: 2.1 complete, 2.2 code-complete —
 | 1 | Backend foundation & ThingsBoard auth | 1 | Complete | 2026-07-30 |
 | 2 | Dynamic entities, attributes & telemetry API | 1 | Complete | 2026-07-30 |
 | 2.1 | Extended entities API — auth guard, timeseries aggregation, attribute writes, create Device/Asset, Customers [INSERTED] | 1 | Complete | 2026-07-30 |
-| 2.2 | TB-native users & customer-hierarchy scoping (sysadmin/admin/reader) [INSERTED] | 2 | Code complete, unverified | - |
-| 3 | Live telemetry & alarms (WebSocket gateways) | TBD | Not started | - |
+| 2.2 | TB-native users & customer-hierarchy scoping (sysadmin/admin/reader) [INSERTED] | 3 | Complete | 2026-07-31 |
+| 3 | Live telemetry & alarms (WebSocket gateways) | TBD | Planning | - |
 | 4 | Client creation wizard & static hierarchy (Prisma/Postgres) | TBD | Not started | - |
 | 5 | Frontend foundation & API/WS clients | TBD | Not started | - |
 | 6 | Entity views — devices, assets, attributes, live telemetry, alarms, map | TBD | Not started | - |
@@ -104,6 +104,7 @@ Phases: 2 of 7 complete (+2 inserted phases: 2.1 complete, 2.2 code-complete —
 **Plans:**
 - [x] 2.2-01: TB-native login + session model + `CustomerScopeGuard` (hierarchy-aware, wired as a second global `APP_GUARD` alongside `SessionAuthGuard`) + `:id`/query validation fixes — code complete, not yet runtime-verified against real ThingsBoard (see `.paul/STATE.md` Blockers/Concerns)
 - [x] 2.2-02: `users` module (create/list/delete Customer Users, sysadmin-only via `RolesGuard`/`@Roles('SYSADMIN')`) — implemented in the same session as 2.2-01 (no separate plan file was written before coding this one); code complete, not yet runtime-verified
+- [x] 2.2-03: Closed all open gaps — hierarchy now uses TB's native `parentCustomerId` (not "Contains" relations, confirmed PE-only feature), list endpoints (`GET /devices`, `/assets`, `/entities`, `/customers`) scoped by customer hierarchy with real pagination/textSearch/sort (TB `PageData` contract), `tenantId`/`customerId`/`assetProfileId`/`ownerId`/`additionalInfo` exposed on entities/devices/assets, and a real guard-ordering bug found + fixed during verification (see `.paul/phases/2.2-tb-native-permissions/2.2-03-SUMMARY.md`) — fully runtime-verified against real ThingsBoard Cloud
 
 ### Phase 3: Live telemetry & alarms (WebSocket gateways)
 
@@ -184,6 +185,28 @@ Phases: 2 of 7 complete (+2 inserted phases: 2.1 complete, 2.2 code-complete —
 - [ ] 07-01: Wizard steps + form state (React Hook Form + Zod)
 - [ ] 07-02: Submit flow wired to `POST /clients` + confirmation/error states
 
+## Version 2 (Not yet planned)
+
+Deferred scope, pulled from PROJECT.md "Planned (Next — Version 2)" and STATE.md Deferred Issues. Not phase-numbered or scheduled — surfaced here so it isn't lost, to be broken into real phases when V1 ships.
+
+| Item | Origin | Effort | Notes |
+|------|--------|--------|-------|
+| Asset creation wizard | PROJECT.md V2 scope | M | Mirrors the V1 Client wizard pattern from Phase 4/7 |
+| Device creation + linking wizard (link Device to Client + Asset, default structure from `hierarchy_level_definitions` template) | PROJECT.md V2 scope | M | V1 Phase 2.1 only creates bare unlinked Devices/Assets — this wizard does the linking |
+| Área/asset-level permission granularity (finer than customer hierarchy) | PROJECT.md V2 scope / Phase 2.2 clarification | M | No design chosen yet — ThingsBoard CE has no Entity Groups to back it; would need either a TB PE upgrade or a parallel Postgres permission layer, a real architectural decision to make when picked up |
+| User-creatable/editable dashboards (`react-grid-layout`), full dashboard config persistence | PROJECT.md V2 scope | L | Needs a Postgres schema for dashboard configs, out of V1's narrow Prisma scope |
+| DELETE endpoints for devices/assets/customers | STATE.md Deferred Issues (Phase 2.1) | S | Add when a V2 wizard needs entity deletion |
+| Jest test harness for `ThingsboardClientService`/cache-hit/auth-guard behavior | STATE.md Deferred Issues (Phase 1-2.1) | S | Deferred per explicit instruction until backend V1 is done — manual runtime verification covers V1 so far |
+| Modify assets/devices "Contains" relations (relocate to another asset/location area) + read Relations API generally | IMPROVEMENTS.md | M | Extends the internal-only relations use from `CustomerScopeGuard` into a general read/write Relations capability |
+| Maps/photos per asset/device/location-area with child-only pins (one level deep) + navigation dashboard w/ status/type filters | IMPROVEMENTS.md | L | Frontend-heavy; needs a place to persist map/photo refs, likely Postgres |
+| Device Profiles / Asset Profiles access (read, eventually manage) | IMPROVEMENTS.md | M | TB alarm rules are defined at profile level — natural pairing with the V1 Alarms module (Phase 3) once profiles are picked up |
+| Entity Groups for asset creation (set groups within owner) | IMPROVEMENTS.md | M | Only available while the current ThingsBoard Professional Edition trial (1 month, up to 5 sensors) is active — depends on that subscription continuing or a deliberate PE upgrade |
+| Tenant Admin: list all tenant users + "login as user" impersonation | IMPROVEMENTS.md | M | Extends Phase 2.2's `users` module; impersonation needs careful session/security design (whose TB token is used, audit trail) |
+| User edit: attributes + customer reassignment; email-based activation w/ double password confirmation as an alternative to the existing activation-link flow | IMPROVEMENTS.md | M | Extends Phase 2.2-02's `users` module (create/list/delete → add update + alternate activation flow) |
+| User profile fields (first/last name, phone, description) + default dashboard / fullscreen preference via `additionalInfo` | IMPROVEMENTS.md | M | Dashboard preference depends on Phase 4/7's dashboard model existing first |
+| Reporting module | IMPROVEMENTS.md | L | Explicitly deferred to the last stages of the project, lowest priority in this table |
+| Audit Logs | IMPROVEMENTS.md | S | Not v1, not yet scheduled for v2 either — revisit when picked up |
+
 ---
 *Roadmap created: 2026-07-30*
-*Last updated: 2026-07-30*
+*Last updated: 2026-07-31*

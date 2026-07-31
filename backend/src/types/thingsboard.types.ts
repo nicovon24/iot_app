@@ -10,7 +10,10 @@ export interface TbDevice {
   name: string;
   type: string;
   label?: string;
+  tenantId?: TbEntityId;
   customerId?: TbEntityId;
+  ownerId?: TbEntityId;
+  additionalInfo?: unknown;
 }
 
 export interface TbAsset {
@@ -18,12 +21,19 @@ export interface TbAsset {
   name: string;
   type: string;
   label?: string;
+  tenantId?: TbEntityId;
   customerId?: TbEntityId;
+  assetProfileId?: TbEntityId;
+  ownerId?: TbEntityId;
+  additionalInfo?: unknown;
 }
 
 export interface TbCustomer {
   id: TbEntityId;
   title: string;
+  tenantId?: TbEntityId;
+  parentCustomerId?: TbEntityId;
+  ownerId?: TbEntityId;
   additionalInfo?: unknown;
 }
 

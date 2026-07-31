@@ -11,27 +11,27 @@ about: "iot-app"
 See: .paul/PROJECT.md (updated 2026-07-30)
 
 **Core value:** Industrial operators can view live and historical telemetry/attributes/alarms for any entity, on a frontend far more flexible than ThingsBoard's native UI, without ThingsBoard credentials ever reaching the browser.
-**Current focus:** Version 1, Phase 2.2 — TB-native users & customer-hierarchy scoping (sysadmin/admin/reader)
+**Current focus:** Version 1, Phase 3 — Live telemetry & alarms (WebSocket gateways) — Plan 03-01 created, awaiting approval
 
 ## Current Position
 
 Milestone: Version 1 (v1.0)
-Phase: 2.2 of 7 (+2 inserted phases: 2.1 complete, 2.2 code-complete) (TB-native users & customer-hierarchy scoping)
-Plan: 2.2-01 and 2.2-02 (both APPLY done, not yet runtime-verified)
-Status: Phase 2.2-01 tasks 0-4 AND the 2.2-02 users module (`RolesGuard`/`@Roles('SYSADMIN')` + `users` CRUD) are implemented and building clean; live-TB verification and the list-endpoint scoping gap are still open (see Blockers/Concerns)
-Last activity: 2026-07-31 — Applied Phase 2.2-01 (TB-native login, CustomerScopeGuard, CR-01/CR-02 fixes) and Phase 2.2-02 (users module: RolesGuard, @Roles decorator, sysadmin-only Customer User CRUD) — all in the same session, no separate plan file was written for 2.2-02 before coding it
+Phase: 3 of 7 (Live telemetry & alarms) — Planning
+Plan: 03-01 created — see `.paul/phases/03-live-telemetry-alarms/03-01-PLAN.md`
+Status: PLAN created (WS gateway for telemetry, using `@nestjs/platform-ws` WsAdapter over Fastify per user decision), ready for APPLY
+Last activity: 2026-07-31 — Closed Phase 2.2 loop via /paul:unify, then created Plan 03-01: Telemetry WebSocket gateway (auth/scope reused from REST via extracted shared util, ThingsboardWsService multiplexed upstream subscription with reconnect/backoff, TelemetryGateway client protocol).
 
 Progress:
-- Milestone: [███░░░░░░░] 36%
-- Phase 2.1: [██████████] 100%
-- Phase 2.2: [█████████░] ~90% (both plans code complete, not runtime-verified, list-endpoint scoping gap open)
+- Milestone: [█████░░░░░] 40%
+- Phase 2.2: [██████████] 100% (2.2-01/2.2-02/2.2-03 all applied, runtime-verified, and unified)
+- Phase 3: [░░░░░░░░░░] 0% (Plan 03-01 created, not yet applied)
 
 ## Loop Position
 
 Current loop state:
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ✓        ✓        ○     [Phase 2.2-01 applied — pending live-TB verification before UNIFY]
+  ✓        ○        ○     [Plan 03-01 created, awaiting approval]
 ```
 
 ## Performance Metrics
@@ -77,7 +77,9 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | Timeseries `interval` bug fixed: `agg` was silently setting `interval = endTs - startTs` (Phase 2 code), collapsing bucketed aggregation into one point | Phase 2.1 | Verified fixed: `agg=AVG&interval=300000` over 1h now returns 12 distinct 5-min-bucket averages, not 1 |
 | `ThingsboardClientService.request()` now propagates TB's real HTTP status/message instead of always throwing 500 | Phase 2.1 (fix) | Needed to diagnose the device-creation 403 ("Maximum allowed devices limit reached!") during verification — a real TB Cloud account limit, not a bug |
 | `RedisService` now attaches an `error` listener + `retryStrategy`/`maxRetriesPerRequest` | Post-2.1 (fix) | ioredis throws unhandled "error event" crashes without a listener on connection failure; now logged via Nest `Logger` and retried with backoff instead |
-| Customer-hierarchy descendants resolved via TB Customer→Customer relations of type "Contains" | Phase 2.2 | TB CE has no native customer-hierarchy field; sub-customer structure must be expressed as relations — **unverified against a real TB instance, see Blockers/Concerns** |
+| Customer-hierarchy descendants resolved via TB's native `parentCustomerId` field (Professional Edition), walked upward from target to caller's customer — **superseded the original "Contains" relation design after 2.2-03 confirmed against real TB that PE has this field natively (`POST /api/owner/CUSTOMER/{ownerId}/{entityType}/{entityId}` sets it)** | Phase 2.2 (2.2-03) | Simpler and matches the real platform; generic "Contains" relations remain in use for asset/device containment (separate feature), not customer hierarchy |
+| Both global guards (`SessionAuthGuard`, `CustomerScopeGuard`) now registered together in `app.module.ts`'s own `providers` array, in explicit order (Session first) | Phase 2.2 (2.2-03, bug fix) | Previously registered as `APP_GUARD` in two different modules (`AuthModule`, `AppModule`); Nest does not guarantee execution order across modules for same-token providers, and in practice `CustomerScopeGuard` ran *before* `SessionAuthGuard`, so `request.session` was always undefined at check time — every `:id`-scoped request silently bypassed hierarchy scoping since Phase 2.2 shipped. Found via runtime debug logging (console.log was silently swallowed by the background-process output capture; `fs.appendFileSync` to a plain file was needed to see real values) during 2.2-03 verification, not caught by any prior code review |
+| `isDescendantCustomer` treats a 404 while walking `parentCustomerId` as "not a descendant" (→ 403), not a server error | Phase 2.2 (2.2-03) | TB's `NULL_UUID` placeholder (`13814000-1dd2-11b2-8080-808080808080`) appears as `customerId` on entities never assigned to a real customer; looking it up 404s, which previously leaked as a raw 500/404 to the caller instead of a clean 403 |
 | `admin`/`reader` role distinction stored in TB user `additionalInfo.appRole`, not a separate table | Phase 2.2 | Keeps the ADMIN/READER split TB-native per the user's explicit instruction, no parallel persistence |
 | Entity-scoped calls (entities/attributes/telemetry) still go through the shared service-account credential (`ThingsboardClientService.request()`); `CustomerScopeGuard` is the only enforcement layer, not TB itself | Phase 2.2 | `loginWithCredentials`/`getUserProfile`/`requestWithToken` were added to resolve the caller's own TB identity at login, but wiring entity-scoped requests to use the caller's own `tbToken` (defense-in-depth via TB's native isolation) was NOT done this session — deferred, see Blockers/Concerns |
 | `CustomerScopeGuard` is registered as a **second** global `APP_GUARD` alongside `SessionAuthGuard` (`app.module.ts`); it no-ops (`return true`) when `request.session` is unset, deferring entirely to `SessionAuthGuard`/`@Public()` | Phase 2.2 | Two global guards now run on every request in sequence — new controllers get both auth and hierarchy-scoping by default, no per-controller wiring needed |
@@ -94,14 +96,16 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | No Jest test harness yet for `ThingsboardClientService`/cache-hit/auth-guard behavior | Phase 1-2.1 | S | When Jest is wired in a later plan (manual runtime verification already done against real TB+Redis for all of Phases 1, 2, 2.1) |
 | No DELETE endpoints for devices/assets/customers | Phase 2.1 | S | Add if V2 wizards need entity deletion |
 | Phase 6 telemetry widget needs an interval picker to use the new `agg`/`interval` params | Phase 2.1 | S | When Phase 6 (frontend entity views) is planned |
+| Implement real TB token refresh (`ThingsboardClientService.refreshToken()` via `POST /api/auth/token` + retry-on-401 in `AuthService` using the already-stored `tbRefreshToken`) before wiring `requestWithToken` to per-user entity-scoped calls | Phase 2.2 (auth discussion) | S | When the frontend (Phase 5+) starts consuming the session end-to-end — TB's user JWT expires well before the 8h app-session TTL, so this must land before per-user `tbToken` calls are wired in, or sessions will silently 401 mid-session |
 
 ### Blockers/Concerns
 
-- **Phase 2.2 code written but NOT runtime-verified against real ThingsBoard** — no TB Tenant Admin + Customer User test accounts with a sub-customer relation were exercised this session (MCP ThingsBoard tools were unavailable/disconnecting during this work). `npx nest build` and `tsc --noEmit` both pass, but none of AC-0 through AC-4 have been confirmed against a live TB instance yet. Do this before considering Phase 2.2 done.
-- **Known gap in `CustomerScopeGuard`:** only enforces scoping on `:id`-scoped routes (`GET /devices/:id`, `GET /entities/:id/attributes`, etc.). List endpoints (`GET /devices`, `GET /assets`, `GET /entities?type=...`, `GET /customers`) are NOT filtered by customer — a `CUSTOMER_USER` can currently list entities/customers across the whole tenant, even though it can't read their detail. Needs a follow-up task (filter list results by the caller's customer + descendants, likely via `/api/customer/{id}/devices` etc. instead of `/api/tenant/devices`) before this phase is truly complete.
-- **Entity-scoped requests still use the shared service-account credential, not the caller's own TB JWT** — `CustomerScopeGuard` is the sole enforcement layer for customer-hierarchy scoping; there is no TB-native defense-in-depth yet (the plan's Task 2 recommended using `requestWithToken` with the caller's own `tbToken` for entity-scoped calls, which was scoped but not implemented this session).
-- **`CustomerScopeGuard`'s hierarchy resolution is an unverified assumption:** it walks `Customer->Customer` relations of type `"Contains"` via TB's relations API to find sub-customers, since ThingsBoard CE has no native customer-hierarchy field. This needs to be confirmed against how the real TB instance actually models parent/child customers (or that relation needs to be created deliberately when sub-customers are set up) — otherwise `isDescendantCustomer` will always return false and sub-customer users will be wrongly scoped to only their exact customer.
-- ThingsBoard Cloud credentials confirmed working (service-account login only, verified prior to Phase 2.2). Redis running via `docker run -d --name iot-redis -p 6379:6379 redis:7` (container name `iot-redis` — recreate with that command if `docker ps -a` shows it missing, `docker start` alone won't work if the container was removed).
+All three Phase 2.2 blockers from prior sessions are now resolved (see Decisions above): relation-type confirmed as native `parentCustomerId` (PE), list endpoints are customer-scoped, and full runtime verification passed AC-1 through AC-6 against real ThingsBoard Cloud.
+
+- **Entity-scoped requests still use the shared service-account credential, not the caller's own TB JWT** — `CustomerScopeGuard` is the sole enforcement layer for customer-hierarchy scoping; there is no TB-native defense-in-depth yet (`requestWithToken` with the caller's own `tbToken` exists but entity-scoped calls don't use it). Still deferred, not part of 2.2-03's scope.
+- **Entity Groups depend on the current TB PE trial (1 month, up to 5 sensors)** — if it lapses or the account moves to a plan without PE, Entity Groups (and possibly `parentCustomerId`/owner API) stop being available; see ROADMAP.md V2 table.
+- **Test data left in real ThingsBoard from 2.2-03 verification** (not mocked): customer "Test-Child" now has `parentCustomerId` = "Test"; device `industrial-pump-002` reassigned to "Test-Child"; user `operator@customer-a.com` had its password set to `PaulTest#2026Verify` via TB's real activation flow. Rotate that password or inform the real user before this account is used for anything beyond testing.
+- ThingsBoard Cloud credentials confirmed working. Redis running via `docker run -d --name iot-redis -p 6379:6379 redis:7` (container name `iot-redis` — recreate with that command if `docker ps -a` shows it missing, `docker start` alone won't work if the container was removed).
 
 ## Boundaries (Active)
 
@@ -109,15 +113,16 @@ PLAN ──▶ APPLY ──▶ UNIFY
 - `backend/src/thingsboard/thingsboard.types.ts` — raw TB shapes, extend rather than duplicate
 - `backend/src/entities/entities.service.ts` — the only place that maps `TbDevice`/`TbAsset`/`TbCustomer` to `EntityRef`; devices/assets/customers controllers must stay thin wrappers over it
 - `backend/src/common/guards/session-auth.guard.ts` — global via `APP_GUARD`; new controllers are protected by default, only opt out with `@Public()` on a specific handler, never module-wide
-- `backend/src/common/guards/customer-scope.guard.ts` — also global via `APP_GUARD` (second guard, registered after `SessionAuthGuard` in `app.module.ts`); only scopes routes with both an `:id` param and a `type` query (entity-scoped routes) — list endpoints are NOT scoped yet, see Blockers/Concerns
+- `backend/src/common/guards/customer-scope.guard.ts` — also global via `APP_GUARD`, registered in `app.module.ts`'s `providers` array **after** `SessionAuthGuard` (order matters, see Decisions) — scopes both `:id`-scoped routes and (via `EntitiesService.list`, not the guard itself) list endpoints
+- **Both `SessionAuthGuard` and `CustomerScopeGuard` must stay registered together in `app.module.ts`'s `providers` array, Session first** — do not move either one back into a separate module's `providers`, that reintroduces the guard-ordering bug fixed in 2.2-03
 - `backend/src/common/guards/roles.guard.ts` + `backend/src/common/decorators/roles.decorator.ts` — opt-in per-controller via `@UseGuards(RolesGuard)` + `@Roles('SYSADMIN')` (not global); only `'SYSADMIN'` is currently recognized
 
 ## Session Continuity
 
 Last session: 2026-07-31
-Stopped at: Phase 2.2-01 applied (all 5 tasks from `.paul/phases/2.2-tb-native-permissions/2.2-01-PLAN.md`): `ParseTbIdPipe` on every `:id` (CR-01), `URLSearchParams` fixes (CR-02), real ThingsBoard login (`auth.service.ts` — no more shared-account fallback), `CustomerScopeGuard` (customer-hierarchy scoping via TB relations), and a new sysadmin-only `users` module. `npx nest build` and `tsc --noEmit` both pass. **Not yet runtime-verified against real ThingsBoard** — no TB Tenant Admin/Customer User test accounts were exercised this session. Two real gaps found during self-qualify and logged in Blockers/Concerns: (1) list endpoints aren't customer-scoped, only `:id` routes are, (2) the customer-hierarchy relation type ("Contains") the guard assumes is unverified against how the real TB instance actually models sub-customers.
-Next action: runtime-verify Phase 2.2-01 against real ThingsBoard (create a Tenant Admin login + a Customer User with a sub-customer relation, confirm AC-0 through AC-4), then decide how to close the list-endpoint scoping gap before running `/paul:unify`.
-Resume context: `npm install` already run at repo root. `backend/.env` has real ThingsBoard Cloud credentials (gitignored). Redis container `iot-redis` recreated 2026-07-31 with `docker run -d --name iot-redis -p 6379:6379 redis:7`; if `docker ps -a --filter name=iot-redis` comes back empty again, recreate with that same command rather than `docker start`. `backend/dist` and `dist/` are gitignored.
+Stopped at: Phase 2.2 loop closed via /paul:unify. 2.2-03-SUMMARY.md already documented AC results/deviations; ROADMAP.md already showed Phase 2.2 Complete. This unify pass reconciled STATE.md's loop position/current-focus to match and confirmed nothing else was pending.
+Next action: start Phase 3 (Live telemetry & alarms — WebSocket gateways) with `/paul:plan` for 03-01 (Telemetry WebSocket gateway).
+Resume context: `npm install` already run at repo root. `backend/.env` has real ThingsBoard Cloud credentials (gitignored). Redis container `iot-redis` recreated 2026-07-31 with `docker run -d --name iot-redis -p 6379:6379 redis:7`; if `docker ps -a --filter name=iot-redis` comes back empty again, recreate with that same command rather than `docker start`. `backend/dist` and `dist/` are gitignored. No dev server left running at end of session (stopped after verification).
 
 ---
 *STATE.md — Updated after every significant action*
