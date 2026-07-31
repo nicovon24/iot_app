@@ -2,6 +2,7 @@
 .env.*
 node_modules/
 dist/
+backend/dist
 .claude/settings.local.json
 .claude/settings.json
 .mcp.json

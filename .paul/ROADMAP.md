@@ -14,7 +14,7 @@ Prove ThingsBoard can back a product with a far more capable frontend and API th
 
 **Version 1 — ThingsBoard-backed API + live dashboard shell** (v1.0)
 Status: In progress
-Phases: 2 of 7 complete (+1 inserted phase 2.1 complete)
+Phases: 2 of 7 complete (+2 inserted phases: 2.1 complete, 2.2 not started)
 
 ## Phases
 
@@ -25,6 +25,7 @@ Phases: 2 of 7 complete (+1 inserted phase 2.1 complete)
 | 1 | Backend foundation & ThingsBoard auth | 1 | Complete | 2026-07-30 |
 | 2 | Dynamic entities, attributes & telemetry API | 1 | Complete | 2026-07-30 |
 | 2.1 | Extended entities API — auth guard, timeseries aggregation, attribute writes, create Device/Asset, Customers [INSERTED] | 1 | Complete | 2026-07-30 |
+| 2.2 | TB-native users & customer-hierarchy scoping (sysadmin/admin/reader) [INSERTED] | TBD | Not started | - |
 | 3 | Live telemetry & alarms (WebSocket gateways) | TBD | Not started | - |
 | 4 | Client creation wizard & static hierarchy (Prisma/Postgres) | TBD | Not started | - |
 | 5 | Frontend foundation & API/WS clients | TBD | Not started | - |
@@ -83,6 +84,26 @@ Phases: 2 of 7 complete (+1 inserted phase 2.1 complete)
 - [x] 02.1-01: Auth guard + Swagger security scheme, timeseries fix, attribute keys/writes, Device/Asset creation, Customers — shipped and runtime-verified against real ThingsBoard Cloud + Redis (see `.paul/phases/02.1-extended-entities-api/02.1-01-SUMMARY.md`)
 
 **Note for Phase 6:** the frontend telemetry widget should expose an interval picker (e.g. "every 5 min") once this ships, to actually use the new `interval`/`agg` params.
+
+### Phase 2.2: TB-native users & customer-hierarchy scoping (sysadmin/admin/reader) [INSERTED]
+
+**Goal:** Real per-user identity and authorization, closing the gap where every authenticated session is equally privileged (found via code review after Phase 2.1). Login authenticates against ThingsBoard itself; access is scoped by the ThingsBoard customer hierarchy, not a single shared service account.
+**Depends on:** Phase 2.1 (extends `auth/` and the global `SessionAuthGuard`)
+**Reason:** User-requested extension mid-milestone; a code review of Phase 2.1 (CR-01/CR-02) found that the shared-account model lets any authenticated session read/write any customer's data, which this phase closes as a real security gap, not a style nit.
+
+**Scope:**
+- **Identity model** (confirmed CE, no Entity Groups/PE):
+  - `sysadmin` = ThingsBoard Tenant Admin of the main tenant — pre-existing account, never created/deleted via the app, sees/manages everything.
+  - `admin`/`reader` = ThingsBoard **Customer Users**, created by the app, each attached to one `customerId`. `admin` can write, `reader` is read-only.
+  - Users live natively in ThingsBoard (no parallel app-owned users table).
+- **Auth**: `auth.service.ts` replaces the shared-account credential check with a real `POST /api/auth/login` against ThingsBoard using the submitted credentials; session (Redis) stores `{ tbUserId, authority, customerId }` resolved from the TB login response.
+- **Scoping — customer hierarchy, not per-asset**: a `sysadmin` (Tenant Admin) sees everything; a `admin`/`reader` sees its own customer **and any descendant sub-customers** (TB's native customer parent/child hierarchy), enforced via `CustomerScopeGuard`. No Postgres/Prisma involvement, no área/asset-level granularity in this phase — that stays deferred (TB CE has no Entity Groups for it, see PROJECT.md Constraints).
+- **Security fixes carried in the same pass** (prerequisite for scoping to mean anything): validate `:id` path params as TB UUIDs before interpolating into any ThingsBoard request path (closes path traversal found in review); use `URLSearchParams` consistently for query params built from user input (closes query-injection found in review).
+- New `users` module: CRUD backed by TB Customer User APIs (create/list/delete `admin`/`reader` scoped to a customer). Only `sysadmin` can create/delete users; the tenant admin account itself can never be deleted via this module.
+
+**Plans:**
+- [ ] 2.2-01: TB-native login + session model + `CustomerScopeGuard` (hierarchy-aware) + `:id`/query validation fixes
+- [ ] 2.2-02: `users` module (create/list/delete Customer Users, sysadmin-only)
 
 ### Phase 3: Live telemetry & alarms (WebSocket gateways)
 

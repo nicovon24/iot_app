@@ -33,6 +33,7 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 - Map view (lat/long) per entity when available
 - Redis cache layer: ThingsBoard JWT + recent telemetry/attribute reads, to reduce load on ThingsBoard and the DB
 - Client creation wizard: creates a Client and assigns its hierarchy in one step — the **only** wizard in V1. Hierarchy is static after creation (not editable later)
+- User/role model backed natively by ThingsBoard: sysadmin (TB Tenant Admin, pre-existing, never created/deleted via the app), admin/reader (TB Customer Users, created by the app, scoped to one customer). Scoping enforced at the customer boundary only — see Constraints
 - Next.js frontend with nav (Devices, Assets, Alarms, Dashboard placeholder), entity detail view (tabs: Attributes / Telemetry / Alarms / Map)
 
 ### Validated (Shipped)
@@ -49,7 +50,7 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 
 - [ ] Asset creation wizard
 - [ ] Device creation + linking wizard (link Device to Client + Asset, default structure from `hierarchy_level_definitions` template)
-- [ ] Roles and granular permissions (per-dashboard visibility, scoped by creator and target role)
+- [ ] Área/asset-level permission granularity (finer than customer hierarchy) — deferred, no design chosen yet since ThingsBoard CE has no Entity Groups to back it (see Constraints)
 - [ ] User-creatable/editable dashboards (`react-grid-layout`), full dashboard config persistence
 
 ### Out of Scope (V1 and V2, per VISION.md)
@@ -78,6 +79,7 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 - Telemetry values are always serialized as strings in API responses (never JS `number`) — see `docs/rules/api.md`
 - Frontend never talks to ThingsBoard directly — always through the NestJS backend (REST + WS)
 - Hierarchy is static once a Client is created — no hierarchy editing after creation in V1
+- ThingsBoard instance is **CE (Community Edition)**, not PE — no native Entity Groups/Roles. V1 scoping follows the **customer hierarchy**: sysadmin (tenant) sees everything; a customer user sees everything under its own customer, including descendant sub-customers. Per-asset/área permission granularity (finer than hierarchy) has no TB-native mechanism and is deferred until a design is chosen
 
 ### Business Constraints
 - Solo-dev project — plan/apply/unify loop (PAUL) sized for one person, no heavy subagent orchestration overhead
@@ -95,6 +97,8 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 | Client-creation wizard is the only V1 wizard; hierarchy fixed at creation | Keeps V1 scope tight — Asset/Device wizards and hierarchy editing deferred to V2 | 2026-07-30 | Active |
 | API mirrors ThingsBoard's dynamic entity/attribute/telemetry model | Any telemetry/attribute key works without backend changes when new sensor types appear | 2026-07-30 | Active |
 | GraphQL discarded in favor of REST + Swagger | See docs/project/STACK.md | 2026-07-25 | Active |
+| Users are TB-native (sysadmin = TB Tenant Admin, admin/reader = TB Customer Users), not an app-owned users table | App is complementary to ThingsBoard identity, not a second source of truth for users | 2026-07-31 | Active |
+| Permission scoping in V1 follows the customer hierarchy (tenant sees all; a customer sees itself + descendant sub-customers) — no finer granularity (TB CE has no Entity Groups) | Avoids inventing a parallel permission system before a real design for área/asset-level scoping is chosen; hierarchy-based scoping is a natural TB CE mechanism (sub-customers) | 2026-07-31 | Active |
 
 ## Success Metrics
 
