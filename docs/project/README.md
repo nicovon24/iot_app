@@ -1,3 +1,3 @@
 # Project
 
-Original project intake docs (made with Claude/AI): product brief, stack rationale, and hierarchy diagram. Historical reference — for current state see root [VISION.md](../../VISION.md), [ARCHITECTURE.md](../../ARCHITECTURE.md), and [CURRENT.md](../../CURRENT.md).
+Original project intake docs (made with Claude/AI): stack rationale and hierarchy diagram. Historical reference only — for current state see [.paul/PROJECT.md](../../.paul/PROJECT.md), [.paul/ARCHITECTURE.md](../../.paul/ARCHITECTURE.md), and [.paul/STATE.md](../../.paul/STATE.md).

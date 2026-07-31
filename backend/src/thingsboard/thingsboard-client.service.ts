@@ -1,7 +1,7 @@
 import { HttpException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '../config/config.service';
 import { RedisService } from './redis.service';
-import { TbLoginResponse } from '../types';
+import { TbLoginResponse, TbUserProfile } from '../types';
 
 const JWT_CACHE_KEY = 'tb:jwt';
 const DEFAULT_TTL_SECONDS = 60 * 15;
@@ -72,6 +72,56 @@ export class ThingsboardClientService {
     const cached = await this.redis.get(JWT_CACHE_KEY);
     if (cached) return cached;
     return this.login();
+  }
+
+  /**
+   * Authenticates the given end-user credentials directly against ThingsBoard.
+   * Distinct from `login()`/`getToken()` (the backend's own service-account session,
+   * never cached here) — used to resolve a real per-user tbUserId/authority/customerId at app login.
+   */
+  async loginWithCredentials(username: string, password: string): Promise<TbLoginResponse> {
+    const response = await fetch(`${this.config.thingsboardUrl}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+
+    if (!response.ok) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    return (await response.json()) as TbLoginResponse;
+  }
+
+  async getUserProfile(userToken: string): Promise<TbUserProfile> {
+    const response = await fetch(`${this.config.thingsboardUrl}/api/auth/user`, {
+      method: 'GET',
+      headers: { 'X-Authorization': `Bearer ${userToken}` },
+    });
+
+    if (!response.ok) {
+      await throwForFailedResponse(response);
+    }
+
+    return parseJsonBody<TbUserProfile>(response);
+  }
+
+  /** Same request contract as `request()`, but authenticated with a caller-supplied user token instead of the cached service-account token — no refresh-on-401 (the caller's session is invalid, not the service account's). */
+  async requestWithToken<T>(userToken: string, method: string, path: string, body?: unknown): Promise<T> {
+    const response = await fetch(`${this.config.thingsboardUrl}${path}`, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Authorization': `Bearer ${userToken}`,
+      },
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+
+    if (!response.ok) {
+      await throwForFailedResponse(response);
+    }
+
+    return parseJsonBody<T>(response);
   }
 
   async request<T>(method: string, path: string, body?: unknown): Promise<T> {

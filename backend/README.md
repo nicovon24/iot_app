@@ -100,4 +100,4 @@ Authenticate via `POST /auth/login`, then pass the returned session token as the
 ## Related Docs
 
 - Root [AGENTS.md](../AGENTS.md)
-- [docs/rules/api.md](../docs/rules/api.md)
+- [.paul/rules/api.md](../.paul/rules/api.md)

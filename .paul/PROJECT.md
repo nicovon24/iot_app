@@ -76,7 +76,7 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 
 ### Technical Constraints
 - ThingsBoard entities/telemetry/attributes/alarms are never duplicated locally — always proxied
-- Telemetry values are always serialized as strings in API responses (never JS `number`) — see `docs/rules/api.md`
+- Telemetry values are always serialized as strings in API responses (never JS `number`) — see `.paul/rules/api.md`
 - Frontend never talks to ThingsBoard directly — always through the NestJS backend (REST + WS)
 - Hierarchy is static once a Client is created — no hierarchy editing after creation in V1
 - ThingsBoard instance is **CE (Community Edition)**, not PE — no native Entity Groups/Roles. V1 scoping follows the **customer hierarchy**: sysadmin (tenant) sees everything; a customer user sees everything under its own customer, including descendant sub-customers. Per-asset/área permission granularity (finer than hierarchy) has no TB-native mechanism and is deferred until a design is chosen

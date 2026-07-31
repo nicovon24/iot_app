@@ -62,6 +62,24 @@ export interface TbLoginResponse {
   refreshToken: string;
 }
 
+export type TbAuthority = 'SYS_ADMIN' | 'TENANT_ADMIN' | 'CUSTOMER_USER';
+
+export interface TbUserProfile {
+  id: TbEntityId;
+  email: string;
+  authority: TbAuthority;
+  tenantId?: TbEntityId;
+  customerId?: TbEntityId;
+  additionalInfo?: { appRole?: 'ADMIN' | 'READER' } & Record<string, unknown>;
+}
+
+export interface TbRelation {
+  from: TbEntityId;
+  to: TbEntityId;
+  type: string;
+  typeGroup: string;
+}
+
 export interface TbPageData<T> {
   data: T[];
   totalPages: number;

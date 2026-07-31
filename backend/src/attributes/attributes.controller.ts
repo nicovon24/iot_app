@@ -2,6 +2,7 @@ import { Body, Controller, Get, HttpCode, Param, ParseEnumPipe, Post, Query } fr
 import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { AttributesPayload, EntityType, TbAttribute, TbAttributeScope } from '../types';
 import { AttributesService } from './attributes.service';
+import { ParseTbIdPipe } from '../common/pipes/tb-id.pipe';
 
 const ENTITY_TYPES: EntityType[] = ['DEVICE', 'ASSET', 'CUSTOMER'];
 const SCOPES: TbAttributeScope[] = ['CLIENT_SCOPE', 'SERVER_SCOPE', 'SHARED_SCOPE'];
@@ -21,7 +22,7 @@ export class AttributesController {
   @ApiQuery({ name: 'scope', enum: SCOPES })
   @ApiQuery({ name: 'keys', required: false, description: 'Comma-separated keys; omit for all keys in scope' })
   async getAttributes(
-    @Param('id') id: string,
+    @Param('id', ParseTbIdPipe) id: string,
     @Query('type', new ParseEnumPipe(ENTITY_TYPES)) type: EntityType,
     @Query('scope', new ParseEnumPipe(SCOPES)) scope: TbAttributeScope,
     @Query('keys') keys?: string,
@@ -43,7 +44,7 @@ export class AttributesController {
   })
   @ApiResponse({ status: 200, description: 'Attributes written' })
   async setAttributes(
-    @Param('id') id: string,
+    @Param('id', ParseTbIdPipe) id: string,
     @Query('type', new ParseEnumPipe(ENTITY_TYPES)) type: EntityType,
     @Query('scope', new ParseEnumPipe(SCOPES)) scope: TbAttributeScope,
     @Body() values: AttributesPayload,

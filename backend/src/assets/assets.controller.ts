@@ -3,6 +3,7 @@ import { ApiOperation, ApiParam, ApiResponse, ApiSecurity, ApiTags } from '@nest
 import { EntitiesService } from '../entities/entities.service';
 import { EntityRef } from '../types';
 import { CreateAssetDto } from './dto/create-asset.dto';
+import { ParseTbIdPipe } from '../common/pipes/tb-id.pipe';
 
 @ApiTags('assets')
 @ApiSecurity('session-token')
@@ -19,7 +20,7 @@ export class AssetsController {
   @Get(':id')
   @ApiOperation({ summary: 'Get an asset by id' })
   @ApiParam({ name: 'id' })
-  async getById(@Param('id') id: string): Promise<EntityRef> {
+  async getById(@Param('id', ParseTbIdPipe) id: string): Promise<EntityRef> {
     return this.entitiesService.getById(id, 'ASSET');
   }
 

@@ -25,7 +25,11 @@ export class AttributesService {
       return JSON.parse(cached) as TbAttribute[];
     }
 
-    const query = keys && keys.length > 0 ? `?keys=${keys.join(',')}` : '';
+    const params = new URLSearchParams();
+    if (keys && keys.length > 0) {
+      params.set('keys', keys.join(','));
+    }
+    const query = params.toString() ? `?${params.toString()}` : '';
     const attributes = await this.tb.request<TbAttribute[]>(
       'GET',
       `/api/plugins/telemetry/${entityType}/${entityId}/values/attributes/${scope}${query}`,

@@ -40,9 +40,10 @@ export class TelemetryService {
       return {};
     }
 
+    const params = new URLSearchParams({ keys: resolvedKeys.join(',') });
     const raw = await this.tb.request<TbTimeseriesLatest>(
       'GET',
-      `/api/plugins/telemetry/${entityType}/${entityId}/values/timeseries?keys=${resolvedKeys.join(',')}`,
+      `/api/plugins/telemetry/${entityType}/${entityId}/values/timeseries?${params.toString()}`,
     );
     const serialized = serialize(raw);
 

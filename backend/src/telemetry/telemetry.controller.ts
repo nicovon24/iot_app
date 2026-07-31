@@ -2,6 +2,7 @@ import { Controller, Get, Param, ParseEnumPipe, Query } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiQuery, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { EntityType, TelemetryLatest, TelemetryValue } from '../types';
 import { TelemetryService } from './telemetry.service';
+import { ParseTbIdPipe } from '../common/pipes/tb-id.pipe';
 
 const ENTITY_TYPES: EntityType[] = ['DEVICE', 'ASSET', 'CUSTOMER'];
 
@@ -16,7 +17,7 @@ export class TelemetryController {
   @ApiParam({ name: 'id' })
   @ApiQuery({ name: 'type', enum: ENTITY_TYPES })
   async getKeys(
-    @Param('id') id: string,
+    @Param('id', ParseTbIdPipe) id: string,
     @Query('type', new ParseEnumPipe(ENTITY_TYPES)) type: EntityType,
   ): Promise<string[]> {
     return this.telemetryService.getKeys(id, type);
@@ -30,7 +31,7 @@ export class TelemetryController {
   @ApiQuery({ name: 'type', enum: ENTITY_TYPES })
   @ApiQuery({ name: 'keys', required: false, description: 'Comma-separated keys; omit for all keys' })
   async getLatest(
-    @Param('id') id: string,
+    @Param('id', ParseTbIdPipe) id: string,
     @Query('type', new ParseEnumPipe(ENTITY_TYPES)) type: EntityType,
     @Query('keys') keys?: string,
   ): Promise<TelemetryLatest> {
@@ -53,7 +54,7 @@ export class TelemetryController {
   @ApiQuery({ name: 'interval', required: false, description: 'Bucket size in ms — required together with "agg"' })
   @ApiQuery({ name: 'limit', required: false, description: 'Max points; omit for ThingsBoard\'s own default (unbounded from this API\'s perspective)' })
   async getTimeseries(
-    @Param('id') id: string,
+    @Param('id', ParseTbIdPipe) id: string,
     @Query('type', new ParseEnumPipe(ENTITY_TYPES)) type: EntityType,
     @Query('keys') keys: string,
     @Query('startTs') startTs: string,

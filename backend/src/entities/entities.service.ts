@@ -47,6 +47,19 @@ export class EntitiesService {
     return toEntityRef(entity, type);
   }
 
+  /**
+   * Resolves the ThingsBoard customerId that owns this entity — for CUSTOMER type the
+   * entity's own id is the customerId. Used by CustomerScopeGuard, not for entity display.
+   */
+  async getOwningCustomerId(id: string, type: EntityType): Promise<string | null> {
+    if (type === 'CUSTOMER') {
+      return id;
+    }
+    const path = { DEVICE: `/api/device/${id}`, ASSET: `/api/asset/${id}`, CUSTOMER: `/api/customer/${id}` }[type];
+    const entity = await this.tb.request<TbDevice | TbAsset>('GET', path);
+    return entity.customerId?.id ?? null;
+  }
+
   async createDevice(name: string, deviceType: string, label?: string): Promise<EntityRef> {
     const created = await this.tb.request<TbDevice>('POST', '/api/device', { name, type: deviceType, label });
     return toEntityRef(created, 'DEVICE');

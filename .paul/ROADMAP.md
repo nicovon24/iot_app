@@ -14,7 +14,7 @@ Prove ThingsBoard can back a product with a far more capable frontend and API th
 
 **Version 1 — ThingsBoard-backed API + live dashboard shell** (v1.0)
 Status: In progress
-Phases: 2 of 7 complete (+2 inserted phases: 2.1 complete, 2.2 not started)
+Phases: 2 of 7 complete (+2 inserted phases: 2.1 complete, 2.2 code-complete — both 2.2-01 and 2.2-02 scope implemented, not yet runtime-verified/unified)
 
 ## Phases
 
@@ -25,7 +25,7 @@ Phases: 2 of 7 complete (+2 inserted phases: 2.1 complete, 2.2 not started)
 | 1 | Backend foundation & ThingsBoard auth | 1 | Complete | 2026-07-30 |
 | 2 | Dynamic entities, attributes & telemetry API | 1 | Complete | 2026-07-30 |
 | 2.1 | Extended entities API — auth guard, timeseries aggregation, attribute writes, create Device/Asset, Customers [INSERTED] | 1 | Complete | 2026-07-30 |
-| 2.2 | TB-native users & customer-hierarchy scoping (sysadmin/admin/reader) [INSERTED] | TBD | Not started | - |
+| 2.2 | TB-native users & customer-hierarchy scoping (sysadmin/admin/reader) [INSERTED] | 2 | Code complete, unverified | - |
 | 3 | Live telemetry & alarms (WebSocket gateways) | TBD | Not started | - |
 | 4 | Client creation wizard & static hierarchy (Prisma/Postgres) | TBD | Not started | - |
 | 5 | Frontend foundation & API/WS clients | TBD | Not started | - |
@@ -60,7 +60,7 @@ Phases: 2 of 7 complete (+2 inserted phases: 2.1 complete, 2.2 not started)
 - `entities/` module: `EntityRef` type unifying Device/Asset, `GET /entities?type=DEVICE|ASSET`, `GET /entities/:id`
 - `devices/`, `assets/` modules: thin listing endpoints on top of `entities/`
 - `attributes/` module: `GET /entities/:id/attributes?scope=CLIENT_SCOPE|SERVER_SCOPE|SHARED_SCOPE` — dynamic, returns whatever keys exist
-- `telemetry/` module (REST part): `GET /entities/:id/telemetry/keys`, `GET /entities/:id/telemetry/latest`, `GET /entities/:id/telemetry/timeseries` — values serialized as strings per `docs/rules/api.md`
+- `telemetry/` module (REST part): `GET /entities/:id/telemetry/keys`, `GET /entities/:id/telemetry/latest`, `GET /entities/:id/telemetry/timeseries` — values serialized as strings per `.paul/rules/api.md`
 - Redis read-through cache for attributes/telemetry latest (short TTL, e.g. a few seconds) to cut TB + DB load
 - Every endpoint documented in Swagger as it's built (DTOs decorated with `@ApiProperty`, responses typed) — Swagger UI is the primary way to test these endpoints, no Bruno/Postman collections
 
@@ -102,8 +102,8 @@ Phases: 2 of 7 complete (+2 inserted phases: 2.1 complete, 2.2 not started)
 - New `users` module: CRUD backed by TB Customer User APIs (create/list/delete `admin`/`reader` scoped to a customer). Only `sysadmin` can create/delete users; the tenant admin account itself can never be deleted via this module.
 
 **Plans:**
-- [ ] 2.2-01: TB-native login + session model + `CustomerScopeGuard` (hierarchy-aware) + `:id`/query validation fixes
-- [ ] 2.2-02: `users` module (create/list/delete Customer Users, sysadmin-only)
+- [x] 2.2-01: TB-native login + session model + `CustomerScopeGuard` (hierarchy-aware, wired as a second global `APP_GUARD` alongside `SessionAuthGuard`) + `:id`/query validation fixes — code complete, not yet runtime-verified against real ThingsBoard (see `.paul/STATE.md` Blockers/Concerns)
+- [x] 2.2-02: `users` module (create/list/delete Customer Users, sysadmin-only via `RolesGuard`/`@Roles('SYSADMIN')`) — implemented in the same session as 2.2-01 (no separate plan file was written before coding this one); code complete, not yet runtime-verified
 
 ### Phase 3: Live telemetry & alarms (WebSocket gateways)
 
@@ -115,7 +115,7 @@ Phases: 2 of 7 complete (+2 inserted phases: 2.1 complete, 2.2 not started)
 - `telemetry/telemetry.gateway.ts`: WS proxy — client subscribes by entity id, gateway subscribes upstream to ThingsBoard and relays updates
 - `alarms/` module: `GET /entities/:id/alarms`, `GET /alarms` (global, filterable by severity/status), `alarms.gateway.ts` WS proxy for live alarm push
 - Reconnect/backoff handling on the upstream TB WS connection
-- Alarms REST endpoints documented in Swagger; WS gateways documented in Swagger's description/tags where supported (Swagger can't "try out" WS — note this limitation directly in the endpoint docs, plus a short `docs/rules/testing.md` note on using `wscat`/a test script for the gateways)
+- Alarms REST endpoints documented in Swagger; WS gateways documented in Swagger's description/tags where supported (Swagger can't "try out" WS — note this limitation directly in the endpoint docs, plus a short `.paul/rules/testing.md` note on using `wscat`/a test script for the gateways)
 
 **Plans:**
 - [ ] 03-01: Telemetry WebSocket gateway (subscribe/unsubscribe per entity)
@@ -125,7 +125,7 @@ Phases: 2 of 7 complete (+2 inserted phases: 2.1 complete, 2.2 not started)
 
 **Goal:** An admin can create a Client and assign its hierarchy levels in one flow; the hierarchy is fixed from that point on. This is the only wizard in V1.
 **Depends on:** Phase 1 (auth), independent of Phases 2-3
-**Research:** Unlikely (internal CRUD + Prisma schema, pattern already sketched in `docs/schema.dbml`)
+**Research:** Unlikely (internal CRUD + Prisma schema, pattern sketched in `.paul/ARCHITECTURE.md`'s Entity Model Summary)
 
 **Scope:**
 - Prisma schema: `hierarchy_level_definitions` + Client reference — nothing else persisted yet
