@@ -11,43 +11,45 @@ about: "iot-app"
 See: .paul/PROJECT.md (updated 2026-07-30)
 
 **Core value:** Industrial operators can view live and historical telemetry/attributes/alarms for any entity, on a frontend far more flexible than ThingsBoard's native UI, without ThingsBoard credentials ever reaching the browser.
-**Current focus:** Version 1, Phase 1 — Backend foundation & ThingsBoard auth
+**Current focus:** Version 1, Phase 3 — Live telemetry & alarms (WebSocket gateways)
 
 ## Current Position
 
 Milestone: Version 1 (v1.0)
-Phase: 1 of 7 (Backend foundation & ThingsBoard auth)
-Plan: 0 of 3 in current phase
-Status: Ready to plan
-Last activity: 2026-07-30 — ROADMAP.md generated for all 7 V1 phases via /paul:plan prep
+Phase: 3 of 7 (+1 inserted phase 2.1 complete) (Live telemetry & alarms — WebSocket gateways)
+Plan: 0 in current phase
+Status: Phase 2.1 complete, ready to plan Phase 3
+Last activity: 2026-07-30 — Phase 2.1 (Extended entities API) planned, applied, and runtime-verified
 
 Progress:
-- Milestone: [░░░░░░░░░░] 0%
-- Phase: [░░░░░░░░░░] 0%
+- Milestone: [███░░░░░░░] 36%
+- Phase 2.1: [██████████] 100%
 
 ## Loop Position
 
 Current loop state:
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ◉        ○        ○     [Planning]
+  ✓        ✓        ✓     [Phase 2.1 complete - ready for next PLAN]
 ```
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0
+- Total plans completed: 3
 - Average duration: -
-- Total execution time: 0 hours
+- Total execution time: -
 
 **By Phase:**
 
 | Phase | Plans | Total Time | Avg/Plan |
 |-------|-------|------------|----------|
-| 01-backend-foundation | 0/3 | - | - |
+| 01-backend-foundation | 1/1 | - | - |
+| 02-dynamic-entities-api | 1/1 | - | - |
+| 02.1-extended-entities-api | 1/1 | - | - |
 
 **Recent Trend:**
-- Last 5 plans: -
+- Last 5 plans: 01-01, 02-01, 02.1-01
 - Trend: -
 
 ## Accumulated Context
@@ -60,32 +62,46 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | Postgres/Prisma scoped to hierarchy + Client only in V1 | Pre-planning | Phase 4 only touches `hierarchy_level_definitions`, no other tables |
 | Client-creation wizard is the only V1 wizard, hierarchy immutable after creation | Pre-planning | Phase 4/7 scope is intentionally narrow — no hierarchy-edit endpoint/UI |
 | Frontend is Next.js App Router | Pre-planning | Phases 5-7 scaffolded as Next.js, not Vite+React |
-| Swagger is the only API testing tool for REST (no Bruno/Postman) | Pre-planning | Every REST endpoint plan in Phases 1-4 now includes "+ Swagger docs" as an explicit deliverable, documented as it's built |
+| Swagger is the only API testing tool for REST (no Bruno/Postman) | Pre-planning | Every REST endpoint plan in Phases 1-4 includes "+ Swagger docs" as an explicit deliverable |
+| V1 auth checks login DTO against the single configured TB account (no per-user TB logins) | Phase 1 | Simplifies auth for V1; multi-user auth becomes a V2 concern with roles/permissions |
+| JWT Redis TTL derived from decoding the token's own `exp` claim | Phase 1 | Avoids caching a token past its real ThingsBoard expiry |
+| `dotenv` added; `main.ts` must `import 'dotenv/config'` first | Phase 1 (fix) | Without it `backend/.env` is silently ignored — config validation fails even with a correct `.env` present |
+| `ThingsboardClientService.request()` is the only chokepoint for TB HTTP calls | Phase 1 | Enforced going into Phase 2 — entities/attributes/telemetry modules must go through it, never construct their own HTTP client |
+| No `telemetry_definitions`/unit-conversion catalog built in V1 REST | Phase 2 | `decimals` field stays `undefined` rather than faked; real catalog is a later concern per ARCHITECTURE.md |
+| Aggregation always forwarded to ThingsBoard's own API, never computed locally | Phase 2 | `telemetry/timeseries?agg=` passes straight through; enforced boundary for Phase 3+ too |
+| Bare Device/Asset creation moved into V1 (Phase 2.1); Client/hierarchy linking of created entities stays V2 | Phase 2.1 | `POST /devices`/`POST /assets` create an unlinked TB entity; wiring it to a Client/Asset is still the V2 wizard's job, not duplicated here |
+| Session auth guard is global via `APP_GUARD`, `@Public()` only on `POST /auth/login` | Phase 2.1 | Every current and future controller is protected by default — verified: `GET /entities` returns 401 with no token, 200 with a valid one |
+| Timeseries `interval` bug fixed: `agg` was silently setting `interval = endTs - startTs` (Phase 2 code), collapsing bucketed aggregation into one point | Phase 2.1 | Verified fixed: `agg=AVG&interval=300000` over 1h now returns 12 distinct 5-min-bucket averages, not 1 |
+| `ThingsboardClientService.request()` now propagates TB's real HTTP status/message instead of always throwing 500 | Phase 2.1 (fix) | Needed to diagnose the device-creation 403 ("Maximum allowed devices limit reached!") during verification — a real TB Cloud account limit, not a bug |
 
 ### Deferred Issues
 
 | Issue | Origin | Effort | Revisit |
 |-------|--------|--------|---------|
-| Asset/Device creation + linking wizards | Roadmap scoping | M | Version 2 |
+| Device/Asset-to-Client/Asset linking wizard | Roadmap scoping | M | Version 2 |
 | Roles/granular permissions | Roadmap scoping | M | Version 2 |
 | User-editable dashboards (react-grid-layout) | Roadmap scoping | L | Version 2 |
+| No Jest test harness yet for `ThingsboardClientService`/cache-hit/auth-guard behavior | Phase 1-2.1 | S | When Jest is wired in a later plan (manual runtime verification already done against real TB+Redis for all of Phases 1, 2, 2.1) |
+| No DELETE endpoints for devices/assets/customers | Phase 2.1 | S | Add if V2 wizards need entity deletion |
+| Phase 6 telemetry widget needs an interval picker to use the new `agg`/`interval` params | Phase 2.1 | S | When Phase 6 (frontend entity views) is planned |
 
 ### Blockers/Concerns
 
-| Blocker | Impact | Resolution Path |
-|---------|--------|------------------|
-| No ThingsBoard instance credentials confirmed yet (cloud vs local Docker) | Phase 1 can't be applied/tested end-to-end | Confirm `THINGSBOARD_URL` + credentials before running `/paul:apply` on Phase 1 |
+- None active. ThingsBoard Cloud credentials confirmed working, Redis running via `docker run -d --name iot-redis -p 6379:6379 redis:7` (container name `iot-redis` — restart with `docker start iot-redis` next session, it won't survive a machine reboot unless Docker Desktop is set to start it).
 
 ## Boundaries (Active)
 
-- None yet — no PLAN.md approved for Phase 1
+- `backend/src/thingsboard/thingsboard-client.service.ts` — do not bypass; all TB HTTP calls go through `request<T>()`
+- `backend/src/thingsboard/thingsboard.types.ts` — raw TB shapes, extend rather than duplicate
+- `backend/src/entities/entities.service.ts` — the only place that maps `TbDevice`/`TbAsset`/`TbCustomer` to `EntityRef`; devices/assets/customers controllers must stay thin wrappers over it
+- `backend/src/common/guards/session-auth.guard.ts` — global via `APP_GUARD`; new controllers are protected by default, only opt out with `@Public()` on a specific handler, never module-wide
 
 ## Session Continuity
 
 Last session: 2026-07-30
-Stopped at: ROADMAP.md and PROJECT.md populated for Version 1 (7 phases); no PLAN.md written yet
-Next action: Run `/paul:plan` to produce PLAN.md for Phase 1 (Backend foundation & ThingsBoard auth)
-Resume context: Backend/frontend folder scaffolding already exists (`backend/src/*`, `frontend/src/*`); `package.json`/`tsconfig.json`/`nest-cli.json`/`.env.example` already written for backend — Phase 1 plan should build on top of these, not recreate them.
+Stopped at: Phase 2.1 fully shipped and runtime-verified against real ThingsBoard Cloud + Redis. All 5 ACs confirmed: auth guard (401→200), timeseries bucketed aggregation (12 points over 1h at 5-min interval), attribute keys filter + write + cache invalidation, asset creation (201, real TB id), customers list (empty but working). Device creation hit a real TB Cloud device-limit 403 — not a bug, and now surfaced clearly instead of a generic 500 thanks to the error-propagation fix.
+Next action: `/paul:plan` for Phase 3 (Live telemetry & alarms — WebSocket gateways)
+Resume context: `npm install` already run at repo root. `backend/.env` has real ThingsBoard Cloud credentials (gitignored). Redis container `iot-redis` needs `docker start iot-redis` if it's not already running (currently running). Test asset created during Phase 2.1 verification was deleted directly via ThingsBoard's own API afterward — the account is clean.
 
 ---
 *STATE.md — Updated after every significant action*

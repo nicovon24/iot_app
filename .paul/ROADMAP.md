@@ -13,8 +13,8 @@ Prove ThingsBoard can back a product with a far more capable frontend and API th
 ## Current Milestone
 
 **Version 1 — ThingsBoard-backed API + live dashboard shell** (v1.0)
-Status: Not started
-Phases: 0 of 7 complete
+Status: In progress
+Phases: 2 of 7 complete (+1 inserted phase 2.1 complete)
 
 ## Phases
 
@@ -22,8 +22,9 @@ Phases: 0 of 7 complete
 
 | Phase | Name | Plans | Status | Completed |
 |-------|------|-------|--------|-----------|
-| 1 | Backend foundation & ThingsBoard auth | TBD | Not started | - |
-| 2 | Dynamic entities, attributes & telemetry API | TBD | Not started | - |
+| 1 | Backend foundation & ThingsBoard auth | 1 | Complete | 2026-07-30 |
+| 2 | Dynamic entities, attributes & telemetry API | 1 | Complete | 2026-07-30 |
+| 2.1 | Extended entities API — auth guard, timeseries aggregation, attribute writes, create Device/Asset, Customers [INSERTED] | 1 | Complete | 2026-07-30 |
 | 3 | Live telemetry & alarms (WebSocket gateways) | TBD | Not started | - |
 | 4 | Client creation wizard & static hierarchy (Prisma/Postgres) | TBD | Not started | - |
 | 5 | Frontend foundation & API/WS clients | TBD | Not started | - |
@@ -46,9 +47,7 @@ Phases: 0 of 7 complete
 - Swagger wired up from the first endpoint
 
 **Plans:**
-- [ ] 01-01: NestJS + Fastify + Redis + config scaffold
-- [ ] 01-02: ThingsBoard client service (login/refresh) + JWT cache in Redis
-- [ ] 01-03: Auth module (login/logout endpoints) + Swagger baseline
+- [x] 01-01: NestJS + Fastify + Redis + config scaffold + ThingsBoard client service (login/refresh, JWT cache in Redis) + Auth module (login/logout) + Swagger baseline — shipped as a single plan (see `.paul/phases/01-backend-foundation/01-01-SUMMARY.md`); AC-2/AC-3 need a live TB + Redis instance to runtime-verify, not done this session
 
 ### Phase 2: Dynamic entities, attributes & telemetry API
 
@@ -65,9 +64,25 @@ Phases: 0 of 7 complete
 - Every endpoint documented in Swagger as it's built (DTOs decorated with `@ApiProperty`, responses typed) — Swagger UI is the primary way to test these endpoints, no Bruno/Postman collections
 
 **Plans:**
-- [ ] 02-01: Entities module (Device/Asset unification, listing, get-by-id) + Swagger docs
-- [ ] 02-02: Attributes module (dynamic scope-based read) + Redis cache + Swagger docs
-- [ ] 02-03: Telemetry REST module (keys/latest/timeseries) + Redis cache + string-serialization contract + Swagger docs
+- [x] 02-01: Entities/Devices/Assets/Attributes/Telemetry REST — shipped as a single plan (see `.paul/phases/02-dynamic-entities-api/02-01-SUMMARY.md`); runtime-verified against real ThingsBoard Cloud + Redis on 2026-07-30
+
+### Phase 2.1: Extended entities API — auth guard, timeseries aggregation, attribute writes, create Device/Asset, Customers [INSERTED]
+
+**Goal:** Close a real gap found while extending Phase 2 (no endpoint actually enforced the session `/auth/login` issues) and extend the read-only Phase 2 API with real interval-bucketed timeseries aggregation, attribute key filtering + writes, Device/Asset creation, and Customer as a third entity type.
+**Depends on:** Phase 2 (extends its entities/attributes/telemetry modules directly)
+**Reason:** User-requested extension mid-milestone, discovered together with a security gap (missing auth enforcement) that should not wait for a later integer phase.
+
+**Scope:**
+- Global `SessionAuthGuard` (via `APP_GUARD`) protecting every endpoint except `POST /auth/login`; Swagger `DocumentBuilder` gets an `addApiKey` security scheme so its "Authorize" button covers every documented endpoint
+- `telemetry/timeseries`: fixes the Phase 2 bug where `agg` silently set `interval` to the full range (one bucket instead of many); exposes `limit` (omit = ThingsBoard's own default, no backend-invented cap) and `interval` (ms) for real bucketed aggregation (e.g. avg temperature every 5 minutes)
+- `attributes`: GET gains a `keys` filter; new `POST /entities/:id/attributes` writes attributes dynamically (no fixed schema), invalidates the relevant Redis cache entries
+- `devices`, `assets`: new `POST` endpoints to create a Device/Asset in ThingsBoard (no Client/hierarchy linking — that's Phase 4/V2)
+- `entities`: `EntityType` widened to include `CUSTOMER`; new `customers` module (`GET /customers`, `GET /customers/:id`) mirroring `devices`/`assets`
+
+**Plans:**
+- [x] 02.1-01: Auth guard + Swagger security scheme, timeseries fix, attribute keys/writes, Device/Asset creation, Customers — shipped and runtime-verified against real ThingsBoard Cloud + Redis (see `.paul/phases/02.1-extended-entities-api/02.1-01-SUMMARY.md`)
+
+**Note for Phase 6:** the frontend telemetry widget should expose an interval picker (e.g. "every 5 min") once this ships, to actually use the new `interval`/`agg` params.
 
 ### Phase 3: Live telemetry & alarms (WebSocket gateways)
 

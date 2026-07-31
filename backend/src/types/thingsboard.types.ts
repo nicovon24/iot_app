@@ -1,4 +1,4 @@
-export type TbEntityType = 'DEVICE' | 'ASSET';
+export type TbEntityType = 'DEVICE' | 'ASSET' | 'CUSTOMER';
 
 export interface TbEntityId {
   id: string;
@@ -19,6 +19,12 @@ export interface TbAsset {
   type: string;
   label?: string;
   customerId?: TbEntityId;
+}
+
+export interface TbCustomer {
+  id: TbEntityId;
+  title: string;
+  additionalInfo?: unknown;
 }
 
 export type TbAttributeScope = 'CLIENT_SCOPE' | 'SERVER_SCOPE' | 'SHARED_SCOPE';
@@ -54,4 +60,11 @@ export interface TbAlarm {
 export interface TbLoginResponse {
   token: string;
   refreshToken: string;
+}
+
+export interface TbPageData<T> {
+  data: T[];
+  totalPages: number;
+  totalElements: number;
+  hasNext: boolean;
 }
