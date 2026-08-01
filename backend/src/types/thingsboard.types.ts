@@ -1,4 +1,4 @@
-export type TbEntityType = 'DEVICE' | 'ASSET' | 'CUSTOMER';
+export type TbEntityType = 'DEVICE' | 'ASSET' | 'CUSTOMER' | 'TENANT';
 
 export interface TbEntityId {
   id: string;

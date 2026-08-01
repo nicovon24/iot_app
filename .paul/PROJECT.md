@@ -40,6 +40,10 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 
 - [x] Project docs scaffold (VISION, ARCHITECTURE, STACK, schema.dbml, rules, agents) — pre-V1
 - [x] Backend/frontend folder scaffolding (NestJS module layout, Next.js App Router layout) — 2026-07-30
+- [x] Dynamic entities/attributes/telemetry REST API + TB-native auth, users, customer-hierarchy scoping — 2026-07-31
+- [x] Live telemetry via WebSocket (`/ws/telemetry`), ThingsBoard credentials never reaching the browser — 2026-07-31 (Phase 3, 03-01)
+- [x] Alarms REST (per-entity + customer-scoped global, filterable by severity/status) + live alarm push over WebSocket (`/ws/alarms`, polling-based) — 2026-07-31 (Phase 3, 03-02) — verified against a real ThingsBoard alarm created/cleared during testing
+- [x] EntityRef reference fields (tenantId/customerId/assetProfileId/ownerId) enriched to `{id,name,label}`, batched + Redis-cached — 2026-07-31 (Phase 2.3)
 
 ### Active (In Progress)
 
@@ -99,6 +103,9 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 | GraphQL discarded in favor of REST + Swagger | See docs/project/STACK.md | 2026-07-25 | Active |
 | Users are TB-native (sysadmin = TB Tenant Admin, admin/reader = TB Customer Users), not an app-owned users table | App is complementary to ThingsBoard identity, not a second source of truth for users | 2026-07-31 | Active |
 | Permission scoping in V1 follows the customer hierarchy (tenant sees all; a customer sees itself + descendant sub-customers) — no finer granularity (TB CE has no Entity Groups) | Avoids inventing a parallel permission system before a real design for área/asset-level scoping is chosen; hierarchy-based scoping is a natural TB CE mechanism (sub-customers) | 2026-07-31 | Active |
+| WebSocket gateways run on `@nestjs/platform-ws`'s `WsAdapter` over the existing Fastify HTTP server | Keeps standard Nest gateway/DI conventions instead of hand-rolling a Fastify WS route; one adapter serves both telemetry and alarm gateways | 2026-07-31 | Active |
+| Customer-hierarchy scoping logic is a single shared function (`isEntityInScope`) used by both the REST `CustomerScopeGuard` and every WS gateway | Prevents REST and WS from drifting into two different authorization rules over time | 2026-07-31 | Active |
+| Alarm live push uses ~7s polling+diff instead of ThingsBoard's native `alarmDataCmds` WS protocol | That protocol is materially more complex than telemetry's `tsSubCmds` and wasn't confirmed working within Phase 3's budget; revisit if Phase 6 needs lower latency | 2026-07-31 | Active |
 
 ## Success Metrics
 
@@ -127,4 +134,4 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 
 ---
 *PROJECT.md — Updated when requirements or context change*
-*Last updated: 2026-07-30*
+*Last updated: 2026-07-31 after Phase 3*

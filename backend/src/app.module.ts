@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
+import { AlarmsModule } from './alarms/alarms.module';
 import { AssetsModule } from './assets/assets.module';
 import { AttributesModule } from './attributes/attributes.module';
 import { AuthModule } from './auth/auth.module';
@@ -25,6 +26,7 @@ import { UsersModule } from './users/users.module';
     AttributesModule,
     TelemetryModule,
     UsersModule,
+    AlarmsModule,
   ],
   providers: [
     // Order matters: both are APP_GUARD in the SAME module's providers array, which Nest

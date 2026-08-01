@@ -1,26 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ThingsboardClientService } from '../thingsboard/thingsboard-client.service';
+import { RedisService } from '../thingsboard/redis.service';
 import { AppSession } from '../auth/auth.service';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
-import { EntityRef, EntityType, TbAsset, TbCustomer, TbDevice, TbPageData } from '../types';
+import { EntityRef, EntityRefLink, EntityType, TbAsset, TbCustomer, TbDevice, TbPageData } from '../types';
 
-function toEntityRef(entity: TbDevice | TbAsset | TbCustomer, type: EntityType): EntityRef {
-  const name = 'title' in entity ? entity.title : entity.name;
-  const label = 'label' in entity ? entity.label : undefined;
-  return {
-    id: entity.id.id,
-    type,
-    name,
-    label,
-    tenantId: entity.tenantId?.id,
-    customerId: 'customerId' in entity ? entity.customerId?.id : undefined,
-    assetProfileId: 'assetProfileId' in entity ? entity.assetProfileId?.id : undefined,
-    ownerId: entity.ownerId?.id,
-    additionalInfo: entity.additionalInfo,
-  };
-}
+type RefKind = 'tenant' | 'customer' | 'assetProfile';
 
-function buildPageParams(pagination?: PaginationQueryDto): string {
+/** Reference names/labels change rarely — a much longer TTL than the ~3s telemetry cache. */
+const REF_CACHE_TTL_SECONDS = 300;
+
+export function buildPageParams(pagination?: PaginationQueryDto): string {
   const params = new URLSearchParams();
   params.set('page', String(pagination?.page ?? 0));
   params.set('pageSize', String(pagination?.pageSize ?? 1000));
@@ -30,7 +20,7 @@ function buildPageParams(pagination?: PaginationQueryDto): string {
   return params.toString();
 }
 
-function applyClientSidePagination<T>(items: T[], pagination?: PaginationQueryDto): TbPageData<T> {
+export function applyClientSidePagination<T>(items: T[], pagination?: PaginationQueryDto): TbPageData<T> {
   const pageSize = pagination?.pageSize;
   const page = pagination?.page ?? 0;
   if (!pageSize) {
@@ -44,7 +34,10 @@ function applyClientSidePagination<T>(items: T[], pagination?: PaginationQueryDt
 
 @Injectable()
 export class EntitiesService {
-  constructor(private readonly tb: ThingsboardClientService) {}
+  constructor(
+    private readonly tb: ThingsboardClientService,
+    private readonly redis: RedisService,
+  ) {}
 
   private isScoped(session?: AppSession | null): session is AppSession {
     return !!session && session.authority !== 'TENANT_ADMIN' && session.authority !== 'SYS_ADMIN';
@@ -74,6 +67,120 @@ export class EntitiesService {
     return [...result];
   }
 
+  /**
+   * Batched + Redis-cached resolution of tenant/customer/assetProfile reference names,
+   * deduped by unique id across a whole entity list — never one lookup per entity (that
+   * would reintroduce N+1). Individual failures degrade to a missing map entry (toEntityRef
+   * then renders `{id}` with no name/label) rather than failing the whole batch.
+   */
+  private async resolveRefs(refs: { id: string; kind: RefKind }[]): Promise<Map<string, EntityRefLink>> {
+    const result = new Map<string, EntityRefLink>();
+    const byKind = new Map<RefKind, Set<string>>();
+    for (const { id, kind } of refs) {
+      if (!byKind.has(kind)) byKind.set(kind, new Set());
+      byKind.get(kind)!.add(id);
+    }
+
+    for (const [kind, ids] of byKind) {
+      const uncached: string[] = [];
+      for (const id of ids) {
+        const cached = await this.redis.get(`refname:${kind}:${id}`);
+        if (cached) {
+          result.set(`${kind}:${id}`, JSON.parse(cached) as EntityRefLink);
+        } else {
+          uncached.push(id);
+        }
+      }
+      if (uncached.length === 0) continue;
+
+      if (kind === 'customer') {
+        // One call resolves every uncached customer id at once — TB has no per-customer-name
+        // batch endpoint, but a single full-page fetch is far cheaper than N individual GETs.
+        try {
+          const page = await this.tb.request<TbPageData<TbCustomer>>('GET', '/api/customers?pageSize=1000&page=0');
+          for (const id of uncached) {
+            const customer = page.data.find((c) => c.id.id === id);
+            if (customer) {
+              const link: EntityRefLink = { id, name: customer.title };
+              result.set(`customer:${id}`, link);
+              await this.redis.set(`refname:customer:${id}`, JSON.stringify(link), REF_CACHE_TTL_SECONDS);
+            }
+          }
+        } catch {
+          // Leave unresolved ids out of the map — toEntityRef degrades to {id} only.
+        }
+        continue;
+      }
+
+      // tenant / assetProfile: no batch endpoint, resolve individually (in this project's
+      // single-tenant model there's realistically only ever one unique tenantId).
+      const path = kind === 'tenant' ? '/api/tenant' : '/api/assetProfile';
+      await Promise.all(
+        uncached.map(async (id) => {
+          try {
+            const entity = await this.tb.request<{ title?: string; name?: string }>('GET', `${path}/${id}`);
+            const link: EntityRefLink = { id, name: entity.title ?? entity.name };
+            result.set(`${kind}:${id}`, link);
+            await this.redis.set(`refname:${kind}:${id}`, JSON.stringify(link), REF_CACHE_TTL_SECONDS);
+          } catch {
+            // Stale/deleted reference — degrade to {id} only, don't fail the whole batch.
+          }
+        }),
+      );
+    }
+
+    return result;
+  }
+
+  private toEntityRefs(
+    entities: (TbDevice | TbAsset | TbCustomer)[],
+    type: EntityType,
+    refMap: Map<string, EntityRefLink>,
+  ): EntityRef[] {
+    return entities.map((entity) => {
+      const name = 'title' in entity ? entity.title : entity.name;
+      const label = 'label' in entity ? entity.label : undefined;
+      const tenantId = entity.tenantId?.id;
+      const customerId = 'customerId' in entity ? entity.customerId?.id : undefined;
+      const assetProfileId = 'assetProfileId' in entity ? entity.assetProfileId?.id : undefined;
+      const ownerId = entity.ownerId?.id;
+      const ownerKind: RefKind | undefined =
+        entity.ownerId?.entityType === 'TENANT' ? 'tenant' : entity.ownerId?.entityType === 'CUSTOMER' ? 'customer' : undefined;
+
+      return {
+        id: entity.id.id,
+        type,
+        name,
+        label,
+        tenantId: tenantId ? refMap.get(`tenant:${tenantId}`) ?? { id: tenantId } : undefined,
+        customerId: customerId ? refMap.get(`customer:${customerId}`) ?? { id: customerId } : undefined,
+        assetProfileId: assetProfileId ? refMap.get(`assetProfile:${assetProfileId}`) ?? { id: assetProfileId } : undefined,
+        ownerId: ownerId ? (ownerKind ? refMap.get(`${ownerKind}:${ownerId}`) : undefined) ?? { id: ownerId } : undefined,
+        additionalInfo: entity.additionalInfo,
+      };
+    });
+  }
+
+  /** Collects every unique {id,kind} reference needed to enrich this batch of raw entities. */
+  private collectRefs(entities: (TbDevice | TbAsset | TbCustomer)[]): { id: string; kind: RefKind }[] {
+    const refs: { id: string; kind: RefKind }[] = [];
+    for (const entity of entities) {
+      if (entity.tenantId?.id) refs.push({ id: entity.tenantId.id, kind: 'tenant' });
+      if ('customerId' in entity && entity.customerId?.id) refs.push({ id: entity.customerId.id, kind: 'customer' });
+      if ('assetProfileId' in entity && entity.assetProfileId?.id) refs.push({ id: entity.assetProfileId.id, kind: 'assetProfile' });
+      if (entity.ownerId?.id) {
+        if (entity.ownerId.entityType === 'TENANT') refs.push({ id: entity.ownerId.id, kind: 'tenant' });
+        else if (entity.ownerId.entityType === 'CUSTOMER') refs.push({ id: entity.ownerId.id, kind: 'customer' });
+      }
+    }
+    return refs;
+  }
+
+  private async mapWithRefs(entities: (TbDevice | TbAsset | TbCustomer)[], type: EntityType): Promise<EntityRef[]> {
+    const refMap = await this.resolveRefs(this.collectRefs(entities));
+    return this.toEntityRefs(entities, type, refMap);
+  }
+
   async list(
     type: EntityType,
     session?: AppSession | null,
@@ -92,7 +199,8 @@ export class EntitiesService {
     if (type === 'CUSTOMER') {
       const page = await this.tb.request<TbPageData<TbCustomer>>('GET', '/api/customers?pageSize=1000&page=0');
       const filtered = page.data.filter((c) => scopedCustomerIds.includes(c.id.id));
-      return applyClientSidePagination(filtered.map((c) => toEntityRef(c, 'CUSTOMER')), pagination);
+      const mapped = await this.mapWithRefs(filtered, 'CUSTOMER');
+      return applyClientSidePagination(mapped, pagination);
     }
 
     const path = type === 'DEVICE' ? 'devices' : 'assets';
@@ -105,10 +213,8 @@ export class EntitiesService {
     const textFiltered = pagination?.textSearch
       ? merged.filter((e) => e.name.toLowerCase().includes(pagination.textSearch!.toLowerCase()))
       : merged;
-    return applyClientSidePagination(
-      textFiltered.map((e) => toEntityRef(e, type)),
-      pagination,
-    );
+    const mapped = await this.mapWithRefs(textFiltered, type);
+    return applyClientSidePagination(mapped, pagination);
   }
 
   private async listUnscoped(type: EntityType, pagination?: PaginationQueryDto): Promise<TbPageData<EntityRef>> {
@@ -116,16 +222,16 @@ export class EntitiesService {
 
     if (type === 'DEVICE') {
       const page = await this.tb.request<TbPageData<TbDevice>>('GET', `/api/tenant/devices?${query}`);
-      return { ...page, data: page.data.map((d) => toEntityRef(d, 'DEVICE')) };
+      return { ...page, data: await this.mapWithRefs(page.data, 'DEVICE') };
     }
 
     if (type === 'ASSET') {
       const page = await this.tb.request<TbPageData<TbAsset>>('GET', `/api/tenant/assets?${query}`);
-      return { ...page, data: page.data.map((a) => toEntityRef(a, 'ASSET')) };
+      return { ...page, data: await this.mapWithRefs(page.data, 'ASSET') };
     }
 
     const page = await this.tb.request<TbPageData<TbCustomer>>('GET', `/api/customers?${query}`);
-    return { ...page, data: page.data.map((c) => toEntityRef(c, 'CUSTOMER')) };
+    return { ...page, data: await this.mapWithRefs(page.data, 'CUSTOMER') };
   }
 
   async getById(id: string, type: EntityType): Promise<EntityRef> {
@@ -134,7 +240,8 @@ export class EntitiesService {
     if (!entity) {
       throw new NotFoundException(`${type} ${id} not found`);
     }
-    return toEntityRef(entity, type);
+    const [mapped] = await this.mapWithRefs([entity], type);
+    return mapped;
   }
 
   /**
@@ -152,11 +259,13 @@ export class EntitiesService {
 
   async createDevice(name: string, deviceType: string, label?: string): Promise<EntityRef> {
     const created = await this.tb.request<TbDevice>('POST', '/api/device', { name, type: deviceType, label });
-    return toEntityRef(created, 'DEVICE');
+    const [mapped] = await this.mapWithRefs([created], 'DEVICE');
+    return mapped;
   }
 
   async createAsset(name: string, assetType: string, label?: string): Promise<EntityRef> {
     const created = await this.tb.request<TbAsset>('POST', '/api/asset', { name, type: assetType, label });
-    return toEntityRef(created, 'ASSET');
+    const [mapped] = await this.mapWithRefs([created], 'ASSET');
+    return mapped;
   }
 }

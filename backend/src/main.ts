@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
+import { WsAdapter } from '@nestjs/platform-ws';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
@@ -8,6 +9,11 @@ import { ConfigService } from './config/config.service';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
+
+  // Lets @WebSocketGateway() decorators (TelemetryGateway, Phase 3) run over the same
+  // HTTP server via the `ws` library, instead of Fastify's own websocket plugin — keeps
+  // Nest's standard gateway/DI conventions rather than hand-rolling a Fastify route.
+  app.useWebSocketAdapter(new WsAdapter(app));
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 

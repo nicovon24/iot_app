@@ -14,7 +14,7 @@ Prove ThingsBoard can back a product with a far more capable frontend and API th
 
 **Version 1 — ThingsBoard-backed API + live dashboard shell** (v1.0)
 Status: In progress
-Phases: 2 of 7 complete (+2 inserted phases: 2.1 complete, 2.2 complete and fully runtime-verified). Next: Phase 3 (Live telemetry & alarms — WebSocket gateways).
+Phases: 3 of 7 complete (+3 inserted phases: 2.1, 2.2, 2.3 — all complete). Next: Phase 4 (Client creation wizard & static hierarchy, Prisma/Postgres).
 
 ## Phases
 
@@ -26,7 +26,8 @@ Phases: 2 of 7 complete (+2 inserted phases: 2.1 complete, 2.2 complete and full
 | 2 | Dynamic entities, attributes & telemetry API | 1 | Complete | 2026-07-30 |
 | 2.1 | Extended entities API — auth guard, timeseries aggregation, attribute writes, create Device/Asset, Customers [INSERTED] | 1 | Complete | 2026-07-30 |
 | 2.2 | TB-native users & customer-hierarchy scoping (sysadmin/admin/reader) [INSERTED] | 3 | Complete | 2026-07-31 |
-| 3 | Live telemetry & alarms (WebSocket gateways) | TBD | Planning | - |
+| 2.3 | EntityRef reference-field enrichment (tenant/customer/assetProfile/owner as {id,name,label}) [INSERTED] | 1 | Complete | 2026-07-31 |
+| 3 | Live telemetry & alarms (WebSocket gateways) | 2 | Complete | 2026-07-31 |
 | 4 | Client creation wizard & static hierarchy (Prisma/Postgres) | TBD | Not started | - |
 | 5 | Frontend foundation & API/WS clients | TBD | Not started | - |
 | 6 | Entity views — devices, assets, attributes, live telemetry, alarms, map | TBD | Not started | - |
@@ -105,6 +106,20 @@ Phases: 2 of 7 complete (+2 inserted phases: 2.1 complete, 2.2 complete and full
 - [x] 2.2-01: TB-native login + session model + `CustomerScopeGuard` (hierarchy-aware, wired as a second global `APP_GUARD` alongside `SessionAuthGuard`) + `:id`/query validation fixes — code complete, not yet runtime-verified against real ThingsBoard (see `.paul/STATE.md` Blockers/Concerns)
 - [x] 2.2-02: `users` module (create/list/delete Customer Users, sysadmin-only via `RolesGuard`/`@Roles('SYSADMIN')`) — implemented in the same session as 2.2-01 (no separate plan file was written before coding this one); code complete, not yet runtime-verified
 - [x] 2.2-03: Closed all open gaps — hierarchy now uses TB's native `parentCustomerId` (not "Contains" relations, confirmed PE-only feature), list endpoints (`GET /devices`, `/assets`, `/entities`, `/customers`) scoped by customer hierarchy with real pagination/textSearch/sort (TB `PageData` contract), `tenantId`/`customerId`/`assetProfileId`/`ownerId`/`additionalInfo` exposed on entities/devices/assets, and a real guard-ordering bug found + fixed during verification (see `.paul/phases/2.2-tb-native-permissions/2.2-03-SUMMARY.md`) — fully runtime-verified against real ThingsBoard Cloud
+
+### Phase 2.3: EntityRef reference-field enrichment (tenant/customer/assetProfile/owner as {id,name,label}) [INSERTED]
+
+**Goal:** `EntityRef`'s `tenantId`/`customerId`/`assetProfileId`/`ownerId` stop being bare TB id strings and become `{id, name, label}` objects, batched and Redis-cached, so a frontend can display reference names without a second round-trip per entity.
+**Depends on:** Phase 2.2 (extends `EntitiesService`'s existing mapping/scoping)
+**Reason:** User-requested improvement, captured in `.paul/IMPROVEMENTS.md`, picked up ahead of Phase 5's frontend needing this shape.
+
+**Scope:**
+- `EntityRefLink` type (`{id, name?, label?}`)
+- Batched, deduped reference resolution across an entire list response (not per-entity N+1), Redis-cached with a longer TTL than the existing ~3s telemetry cache
+- No `refs` array — 4 separate enriched fields, per explicit user decision (see `IMPROVEMENTS.md`)
+
+**Plans:**
+- [ ] 2.3-01: `EntityRefLink` type + batched/cached resolution in `EntitiesService` — planned, awaiting user authorization to apply (see `.paul/phases/2.3-entity-ref-enrichment/2.3-01-PLAN.md`)
 
 ### Phase 3: Live telemetry & alarms (WebSocket gateways)
 

@@ -11,27 +11,33 @@ about: "iot-app"
 See: .paul/PROJECT.md (updated 2026-07-30)
 
 **Core value:** Industrial operators can view live and historical telemetry/attributes/alarms for any entity, on a frontend far more flexible than ThingsBoard's native UI, without ThingsBoard credentials ever reaching the browser.
-**Current focus:** Version 1, Phase 3 — Live telemetry & alarms (WebSocket gateways) — Plan 03-01 created, awaiting approval
+**Current focus:** Both Phase 3 and Phase 2.3 CLOSED and transitioned. Next: Phase 4 (Client creation wizard & static hierarchy, Prisma/Postgres).
 
 ## Current Position
 
 Milestone: Version 1 (v1.0)
-Phase: 3 of 7 (Live telemetry & alarms) — Planning
-Plan: 03-01 created — see `.paul/phases/03-live-telemetry-alarms/03-01-PLAN.md`
-Status: PLAN created (WS gateway for telemetry, using `@nestjs/platform-ws` WsAdapter over Fastify per user decision), ready for APPLY
-Last activity: 2026-07-31 — Closed Phase 2.2 loop via /paul:unify, then created Plan 03-01: Telemetry WebSocket gateway (auth/scope reused from REST via extracted shared util, ThingsboardWsService multiplexed upstream subscription with reconnect/backoff, TelemetryGateway client protocol).
+Phase: 2.3 of 7 COMPLETE (EntityRef reference-field enrichment) — Phase 3 also complete. Next: Phase 4.
+Status: Both loops fully closed (PLAN→APPLY→UNIFY), both SUMMARYs written, PROJECT.md/ROADMAP.md evolved for both.
+Last activity: 2026-07-31 — Applied and unified Plan 2.3-01: `EntityRefLink` type, batched+deduped+Redis-cached (300s TTL) resolution of tenant/customer/assetProfile/owner refs in `EntitiesService`. Confirmed `GET /api/tenant/{id}` and `GET /api/assetProfile/{id}` empirically against real ThingsBoard Cloud (both previously unused in this codebase). All 4 ACs verified live; zero deviations. Git commit deferred per project rule — will ask separately.
 
 Progress:
-- Milestone: [█████░░░░░] 40%
+- Milestone: [██████░░░░] 65%
 - Phase 2.2: [██████████] 100% (2.2-01/2.2-02/2.2-03 all applied, runtime-verified, and unified)
-- Phase 3: [░░░░░░░░░░] 0% (Plan 03-01 created, not yet applied)
+- Phase 2.3: [██████████] 100% (2.3-01 applied, unified, phase transitioned)
+- Phase 3: [██████████] 100% (03-01, 03-02 applied, unified, phase transitioned)
 
 ## Loop Position
 
-Current loop state:
+Current loop state (Phase 3 — CLOSED):
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ✓        ○        ○     [Plan 03-01 created, awaiting approval]
+  ✓        ✓        ✓     [Phase 3 complete — PROJECT.md/ROADMAP.md evolved, transition done]
+```
+
+Current loop state (Phase 2.3 — CLOSED):
+```
+PLAN ──▶ APPLY ──▶ UNIFY
+  ✓        ✓        ✓     [Phase 2.3 complete — PROJECT.md/ROADMAP.md evolved, transition done]
 ```
 
 ## Performance Metrics
