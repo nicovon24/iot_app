@@ -7,12 +7,16 @@ import { ParseTbIdPipe } from '../common/pipes/tb-id.pipe';
 import { CurrentSession } from '../common/decorators/current-session.decorator';
 import { AppSession } from '../auth/auth.service';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { AssetsService } from './assets.service';
 
 @ApiTags('assets')
 @ApiSecurity('session-token')
 @Controller('assets')
 export class AssetsController {
-  constructor(private readonly entitiesService: EntitiesService) {}
+  constructor(
+    private readonly entitiesService: EntitiesService,
+    private readonly assetsService: AssetsService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: "List assets, scoped to caller's customer hierarchy" })
@@ -31,9 +35,16 @@ export class AssetsController {
   }
 
   @Post()
-  @ApiOperation({ summary: 'Create an asset in ThingsBoard (bare — no Client/hierarchy linking)' })
-  @ApiResponse({ status: 201, description: 'Asset created' })
+  @ApiOperation({
+    summary: 'Create an asset, linked to a Customer hierarchy level',
+    description:
+      'Creates a new Asset in ThingsBoard and attaches it to the given Customer/level via a real "Contains" relation. ' +
+      'customerId + levelIndex must match an existing hierarchy level; parentId is either the Customer (level 0) or an existing Asset one level above.',
+  })
+  @ApiResponse({ status: 201, description: 'Asset created and linked' })
+  @ApiResponse({ status: 400, description: 'Invalid levelIndex or parent/level mismatch' })
+  @ApiResponse({ status: 404, description: 'parentId is not a tracked hierarchy member' })
   async create(@Body() dto: CreateAssetDto): Promise<EntityRef> {
-    return this.entitiesService.createAsset(dto.name, dto.type, dto.label);
+    return this.assetsService.create(dto);
   }
 }

@@ -39,6 +39,7 @@ export class AttributesService {
     return attributes;
   }
 
+  // Upsert: creates missing keys, overwrites existing ones; keys not included are untouched.
   async setAttributes(
     entityId: string,
     entityType: EntityType,

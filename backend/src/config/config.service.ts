@@ -29,6 +29,10 @@ export class ConfigService {
     return this.config.REDIS_URL;
   }
 
+  get databaseUrl(): string {
+    return this.config.DATABASE_URL;
+  }
+
   get port(): number {
     return this.config.PORT;
   }

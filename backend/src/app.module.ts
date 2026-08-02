@@ -10,6 +10,7 @@ import { SessionAuthGuard } from './common/guards/session-auth.guard';
 import { CustomersModule } from './customers/customers.module';
 import { DevicesModule } from './devices/devices.module';
 import { EntitiesModule } from './entities/entities.module';
+import { PrismaModule } from './prisma/prisma.module';
 import { TelemetryModule } from './telemetry/telemetry.module';
 import { ThingsboardModule } from './thingsboard/thingsboard.module';
 import { UsersModule } from './users/users.module';
@@ -17,6 +18,7 @@ import { UsersModule } from './users/users.module';
 @Module({
   imports: [
     ConfigModule,
+    PrismaModule,
     ThingsboardModule,
     AuthModule,
     EntitiesModule,

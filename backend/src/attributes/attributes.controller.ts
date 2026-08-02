@@ -33,7 +33,8 @@ export class AttributesController {
   @Post()
   @HttpCode(200)
   @ApiOperation({
-    summary: 'Write attributes dynamically (free-form key/value map). Invalidates the read cache for this entity/scope.',
+    summary: 'Create/update attributes (upsert)',
+    description: 'Writes a free-form key/value map: creates keys that don\'t exist, overwrites keys that do. Other existing keys are left untouched.',
   })
   @ApiParam({ name: 'id' })
   @ApiQuery({ name: 'type', enum: ENTITY_TYPES })

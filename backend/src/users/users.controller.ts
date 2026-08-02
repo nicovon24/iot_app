@@ -16,7 +16,10 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create a ThingsBoard Customer User (ADMIN/READER), sysadmin-only' })
+  @ApiOperation({
+    summary: 'Create a Customer User',
+    description: 'Creates a new ADMIN or READER user in ThingsBoard, scoped to one customer.',
+  })
   @ApiResponse({ status: 201 })
   async create(@Body() dto: CreateUserDto): Promise<EntityRef> {
     return this.usersService.create(dto.email, dto.password, dto.role, dto.customerId);

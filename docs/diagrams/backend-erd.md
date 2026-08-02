@@ -28,6 +28,6 @@ erDiagram
   }
 ```
 
-Scope planned per STATE.md: a `hierarchy_level_definitions` table plus a `Client` reference, to model a static hierarchy (tenant/client/location/area) editable by the administrator — separate from the ThingsBoard customer-based scoping that already works today (see `backend-modules.md` and `backend-use-cases.md`). There's no final field design yet; this diagram is indicative, not a confirmed implementation.
+Scope planned per STATE.md: a `client_hierarchy_levels` table plus a `Client` reference, to model a static hierarchy (tenant/client/location/area) editable by the administrator — separate from the ThingsBoard customer-based scoping that already works today (see `backend-modules.md` and `backend-use-cases.md`). There's no final field design yet; this diagram is indicative, not a confirmed implementation.
 
 Once `schema.prisma` is implemented, this document should be regenerated from the actual code.

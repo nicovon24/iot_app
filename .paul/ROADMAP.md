@@ -14,7 +14,7 @@ Prove ThingsBoard can back a product with a far more capable frontend and API th
 
 **Version 1 — ThingsBoard-backed API + live dashboard shell** (v1.0)
 Status: In progress
-Phases: 3 of 7 complete (+3 inserted phases: 2.1, 2.2, 2.3 — all complete). Next: Phase 4 (Client creation wizard & static hierarchy, Prisma/Postgres).
+Phases: 4 of 7 complete (+4 inserted phases: 2.1, 2.2, 2.3, 4.3 — all complete). Backend V1 (Phases 1-4.3) done. Next: Phase 5 (Frontend foundation & API/WS clients).
 
 ## Phases
 
@@ -28,7 +28,8 @@ Phases: 3 of 7 complete (+3 inserted phases: 2.1, 2.2, 2.3 — all complete). Ne
 | 2.2 | TB-native users & customer-hierarchy scoping (sysadmin/admin/reader) [INSERTED] | 3 | Complete | 2026-07-31 |
 | 2.3 | EntityRef reference-field enrichment (tenant/customer/assetProfile/owner as {id,name,label}) [INSERTED] | 1 | Complete | 2026-07-31 |
 | 3 | Live telemetry & alarms (WebSocket gateways) | 2 | Complete | 2026-07-31 |
-| 4 | Client creation wizard & static hierarchy (Prisma/Postgres) | TBD | Not started | - |
+| 4 | Client creation wizard & static hierarchy (Prisma/Postgres) | 2 | Complete | 2026-08-01 |
+| 4.3 | Asset hierarchy linking — parentCustomerId, Asset↔Customer/hierarchy Contains relation, remove POST /devices [INSERTED] | 3 | Complete | 2026-08-02 |
 | 5 | Frontend foundation & API/WS clients | TBD | Not started | - |
 | 6 | Entity views — devices, assets, attributes, live telemetry, alarms, map | TBD | Not started | - |
 | 7 | Client creation wizard UI | TBD | Not started | - |
@@ -119,7 +120,7 @@ Phases: 3 of 7 complete (+3 inserted phases: 2.1, 2.2, 2.3 — all complete). Ne
 - No `refs` array — 4 separate enriched fields, per explicit user decision (see `IMPROVEMENTS.md`)
 
 **Plans:**
-- [ ] 2.3-01: `EntityRefLink` type + batched/cached resolution in `EntitiesService` — planned, awaiting user authorization to apply (see `.paul/phases/2.3-entity-ref-enrichment/2.3-01-PLAN.md`)
+- [x] 2.3-01: `EntityRefLink` type + batched/cached resolution in `EntitiesService` — applied and unified, all 4 ACs verified live against real ThingsBoard Cloud (see `.paul/phases/2.3-entity-ref-enrichment/2.3-01-SUMMARY.md`)
 
 ### Phase 3: Live telemetry & alarms (WebSocket gateways)
 
@@ -134,8 +135,8 @@ Phases: 3 of 7 complete (+3 inserted phases: 2.1, 2.2, 2.3 — all complete). Ne
 - Alarms REST endpoints documented in Swagger; WS gateways documented in Swagger's description/tags where supported (Swagger can't "try out" WS — note this limitation directly in the endpoint docs, plus a short `.paul/rules/testing.md` note on using `wscat`/a test script for the gateways)
 
 **Plans:**
-- [ ] 03-01: Telemetry WebSocket gateway (subscribe/unsubscribe per entity)
-- [ ] 03-02: Alarms REST endpoints (Swagger docs) + Alarms WebSocket gateway
+- [x] 03-01: Telemetry WebSocket gateway (subscribe/unsubscribe per entity) — applied and unified, verified live against real ThingsBoard Cloud (see `.paul/phases/03-live-telemetry-alarms/03-01-SUMMARY.md`)
+- [x] 03-02: Alarms REST endpoints (Swagger docs) + Alarms WebSocket gateway — applied and unified, verified live against real ThingsBoard Cloud (see `.paul/phases/03-live-telemetry-alarms/03-02-SUMMARY.md`)
 
 ### Phase 4: Client creation wizard & static hierarchy (Prisma/Postgres)
 
@@ -143,15 +144,32 @@ Phases: 3 of 7 complete (+3 inserted phases: 2.1, 2.2, 2.3 — all complete). Ne
 **Depends on:** Phase 1 (auth), independent of Phases 2-3
 **Research:** Unlikely (internal CRUD + Prisma schema, pattern sketched in `.paul/ARCHITECTURE.md`'s Entity Model Summary)
 
-**Scope:**
-- Prisma schema: `hierarchy_level_definitions` + Client reference — nothing else persisted yet
-- `POST /clients` (creates Client + its hierarchy levels atomically), `GET /clients/:id/hierarchy`
+**Scope (revised 2026-08-01 — see STATE.md Decisions "Client merged into Customer"):**
+- "Client" is NOT a separate app-owned entity — it IS ThingsBoard's native Customer. Prisma schema: `CustomerHierarchyLevels` keyed by a real TB `customerId` — no local `Client` table, no duplication of Customer data
+- `POST /customers` extended (sysadmin-only) to create a real TB Customer + its ordered hierarchy levels atomically; `GET /customers/:id/hierarchy` reads it back ordered by `levelIndex`
+- Default suggested hierarchy for the Phase 7 wizard: **Site → Area → Asset → Sensor** (free-text per Customer, not a fixed enum)
 - Validation: hierarchy is required at creation, rejected if empty; no update endpoint for hierarchy (immutable by design)
 - Both endpoints documented in Swagger, including the "immutable after creation" behavior in the description
 
 **Plans:**
-- [ ] 04-01: Prisma setup + `hierarchy_level_definitions` schema + migration
-- [ ] 04-02: Client creation endpoint (Client + hierarchy, atomic) + get-hierarchy endpoint + Swagger docs
+- [x] 04-01: Prisma setup + Postgres wiring (`PrismaModule`/`PrismaService`, port-conflict fix, Prisma v6 pin) — applied and unified against a real local Postgres instance (see `.paul/phases/04-client-wizard-hierarchy/04-01-SUMMARY.md` — schema section superseded, infra section still accurate)
+- [x] 04-02: Original standalone `POST /clients`/`GET /clients/:id/hierarchy` — applied, then **merged same-day into `customers/`** per user direction: `POST /customers` (sysadmin-only, atomic Customer+hierarchy creation, real TB Customer, hierarchy keyed by real `customerId`) + `GET /customers/:id/hierarchy`. Verified live end-to-end against real ThingsBoard Cloud (created "Acme Corp" Customer with Site/Area/Asset/Sensor levels, confirmed via `GET /customers/:id`). See `.paul/phases/04-client-wizard-hierarchy/04-02-SUMMARY.md`'s superseded-note
+
+### Phase 4.3: Asset hierarchy linking — parentCustomerId, Asset↔Customer/hierarchy Contains relation, remove POST /devices [INSERTED]
+
+**Goal:** Start building the real nested Customer→Asset tree (previously fully deferred to V2): a Customer can be created as a sub-customer directly, and every Asset created via this API must declare which Customer/hierarchy-level it belongs to and be linked via a real ThingsBoard "Contains" relation. Device creation is removed entirely rather than extended the same way.
+**Depends on:** Phase 4 (extends `customers/`/`assets/` and the `CustomerHierarchyLevels` Prisma model)
+**Reason:** User-requested extension mid-milestone, discussed and scoped interactively before planning (see STATE.md Decisions for the full discussion trail).
+
+**Scope:**
+- `POST /customers` gains an optional `parentCustomerId` to create nested sub-customers directly
+- `POST /assets` requires `customerId` + `levelIndex` + `parentId` (Customer or existing Asset); validates the level against the Customer's real `CustomerHierarchyLevels`, validates parent/level consistency via a new `AssetHierarchyAssignment` Prisma model, and creates a real TB "Contains" relation (first real use of ThingsBoard's Relations API in this codebase)
+- `POST /devices` removed entirely — Devices become read-only via this API (`GET /devices`, `GET /devices/:id` only) until a real Device linking design exists (V2)
+
+**Plans:**
+- [x] 4.3-01: `parentCustomerId` on Customer creation
+- [x] 4.3-02: Remove `POST /devices`
+- [x] 4.3-03: Asset creation hierarchy linking (`AssetHierarchyAssignment` model + validation + real TB Contains relation)
 
 ### Phase 5: Frontend foundation & API/WS clients
 
@@ -207,7 +225,7 @@ Deferred scope, pulled from PROJECT.md "Planned (Next — Version 2)" and STATE.
 | Item | Origin | Effort | Notes |
 |------|--------|--------|-------|
 | Asset creation wizard | PROJECT.md V2 scope | M | Mirrors the V1 Client wizard pattern from Phase 4/7 |
-| Device creation + linking wizard (link Device to Client + Asset, default structure from `hierarchy_level_definitions` template) | PROJECT.md V2 scope | M | V1 Phase 2.1 only creates bare unlinked Devices/Assets — this wizard does the linking |
+| Device creation + linking wizard (link Device to Client + Asset, default structure from `client_hierarchy_levels` template) | PROJECT.md V2 scope | M | V1 Phase 2.1 only creates bare unlinked Devices/Assets — this wizard does the linking |
 | Área/asset-level permission granularity (finer than customer hierarchy) | PROJECT.md V2 scope / Phase 2.2 clarification | M | No design chosen yet — ThingsBoard CE has no Entity Groups to back it; would need either a TB PE upgrade or a parallel Postgres permission layer, a real architectural decision to make when picked up |
 | User-creatable/editable dashboards (`react-grid-layout`), full dashboard config persistence | PROJECT.md V2 scope | L | Needs a Postgres schema for dashboard configs, out of V1's narrow Prisma scope |
 | DELETE endpoints for devices/assets/customers | STATE.md Deferred Issues (Phase 2.1) | S | Add when a V2 wizard needs entity deletion |
@@ -224,4 +242,4 @@ Deferred scope, pulled from PROJECT.md "Planned (Next — Version 2)" and STATE.
 
 ---
 *Roadmap created: 2026-07-30*
-*Last updated: 2026-07-31*
+*Last updated: 2026-08-01*

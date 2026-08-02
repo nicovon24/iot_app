@@ -126,4 +126,4 @@ graph TD
 - **WebSockets** (Phase 3, "Not started"): `telemetry.gateway.ts` and `alarms.gateway.ts` don't exist; `@nestjs/websockets` is a declared dependency but unused.
 - **Alarms module**: doesn't exist (`alarms/` hasn't been created).
 - **Prisma/PostgreSQL** (Phase 4, "Not started"): no `schema.prisma`, no `@prisma/client`, no `PrismaService` in the repo.
-- **Static tenant/client/location/area hierarchy** via `hierarchy_level_definitions`: planned only, not implemented.
+- **Static tenant/client/location/area hierarchy** via `client_hierarchy_levels`: planned only, not implemented.

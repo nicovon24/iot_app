@@ -35,7 +35,7 @@ Alarms are planned to **also** be delivered by email (`alarm_recipients`, V2) re
 | Tenant, Client (Customer), User | ThingsBoard native (sysadmin = Tenant Admin, admin/reader = Customer Users, `additionalInfo.appRole`) | Built (Phase 2.2) |
 | Location / Area / intermediate | ThingsBoard Asset — `hierarchyLevelId` attribute + "Contains" relation | Planned (Phase 4/7) |
 | Sensor / Gateway | ThingsBoard Device | Built (Phase 2) |
-| Hierarchy labels per Client | `hierarchy_level_definitions` (Postgres) | Planned (Phase 4) — only Postgres table in V1 scope |
+| Hierarchy labels per Client | `client_hierarchy_levels` (Postgres) | Planned (Phase 4) — only Postgres table in V1 scope |
 | Custom entity relations (beyond hierarchy) | ThingsBoard native (Relations) | V2 — label/icon in `relation_type_definitions` |
 | Telemetry logical types | `telemetry_definitions` (global) | V2 — see `docs/adr/2026-07-25-telemetry-units.md` |
 | Unit conversion | `unit_categories`, `unit_conversions` (global) | V2 |
@@ -50,7 +50,7 @@ Alarms are planned to **also** be delivered by email (`alarm_recipients`, V2) re
 The hierarchy tree uses a single reserved relation type ("Contains") for parent/child links. Users also need relationships that aren't parent/child — e.g. a sensor that "Feeds" a tank, a pump that "Powers" a line, a gateway that "Monitors" an area.
 
 - Fully native: any relation type between any two ThingsBoard entities uses TB's own Relation API — no new relation storage.
-- Hybrid: per-Client display labels/icons for these custom relation types would live in `relation_type_definitions` (same pattern as `hierarchy_level_definitions`), so the frontend shows friendly names instead of raw TB relation-type strings.
+- Hybrid: per-Client display labels/icons for these custom relation types would live in `relation_type_definitions` (same pattern as `client_hierarchy_levels`), so the frontend shows friendly names instead of raw TB relation-type strings.
 - "Contains" stays reserved for the hierarchy tree/breadcrumb view; every other relation type would feed a separate, generic relations view.
 
 ## Dashboard Visibility & Permissions (V2)
@@ -61,9 +61,9 @@ Not built in V1. Original intent, kept for when V2 dashboards are planned: permi
 
 V1 has exactly one wizard: **Client creation + static hierarchy assignment** (Phase 4/7) — see `PROJECT.md`. Everything below is V2-deferred:
 - Asset creation
-- Device creation + linking — creating a device also creates its structure (assets under it via `hierarchy_level_definitions` + "Contains" relations), from a default template rather than from scratch each time.
+- Device creation + linking — creating a device also creates its structure (assets under it via `client_hierarchy_levels` + "Contains" relations), from a default template rather than from scratch each time.
 
-No new tables required beyond `hierarchy_level_definitions` when these ship — reuses it as the structure template.
+No new tables required beyond `client_hierarchy_levels` when these ship — reuses it as the structure template.
 
 ## Data Classifier (V2)
 

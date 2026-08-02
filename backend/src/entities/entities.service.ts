@@ -257,15 +257,47 @@ export class EntitiesService {
     return entity.customerId?.id ?? null;
   }
 
-  async createDevice(name: string, deviceType: string, label?: string): Promise<EntityRef> {
-    const created = await this.tb.request<TbDevice>('POST', '/api/device', { name, type: deviceType, label });
-    const [mapped] = await this.mapWithRefs([created], 'DEVICE');
-    return mapped;
-  }
-
   async createAsset(name: string, assetType: string, label?: string): Promise<EntityRef> {
     const created = await this.tb.request<TbAsset>('POST', '/api/asset', { name, type: assetType, label });
     const [mapped] = await this.mapWithRefs([created], 'ASSET');
     return mapped;
+  }
+
+  async createCustomer(title: string, parentCustomerId?: string): Promise<EntityRef> {
+    const created = await this.tb.request<TbCustomer>('POST', '/api/customer', {
+      title,
+      ...(parentCustomerId ? { parentCustomerId: { id: parentCustomerId, entityType: 'CUSTOMER' } } : {}),
+    });
+    const [mapped] = await this.mapWithRefs([created], 'CUSTOMER');
+    return mapped;
+  }
+
+  async assignAssetToCustomer(customerId: string, assetId: string): Promise<void> {
+    // This TB Cloud instance is Professional Edition — the CE-only `/api/customer/{id}/asset/{id}`
+    // endpoint 404s ("No static resource"); PE uses the generic owner-reassignment API instead.
+    await this.tb.request('POST', `/api/owner/CUSTOMER/${customerId}/ASSET/${assetId}`);
+  }
+
+  async deleteCustomer(id: string): Promise<void> {
+    await this.tb.request('DELETE', `/api/customer/${id}`);
+  }
+
+  async deleteAsset(id: string): Promise<void> {
+    await this.tb.request('DELETE', `/api/asset/${id}`);
+  }
+
+  /** Creates a real ThingsBoard relation (first real use of the Relations API in this codebase). */
+  async createRelation(
+    fromId: string,
+    fromType: 'CUSTOMER' | 'ASSET',
+    toId: string,
+    toType: 'ASSET',
+  ): Promise<void> {
+    await this.tb.request('POST', '/api/relation', {
+      from: { id: fromId, entityType: fromType },
+      to: { id: toId, entityType: toType },
+      type: 'Contains',
+      typeGroup: 'COMMON',
+    });
   }
 }

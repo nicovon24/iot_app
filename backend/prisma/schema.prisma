@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Hierarchy levels for a ThingsBoard Customer. `customerId` is a TB customer id
+// (not a local FK) — the Customer entity itself lives natively in ThingsBoard,
+// never duplicated here. See CustomersService for creation flow.
+model CustomerHierarchyLevels {
+  id         String @id @default(uuid())
+  customerId String
+  levelIndex Int
+  name       String
+
+  @@unique([customerId, levelIndex])
+}
+
+// Tracks which hierarchy level a real ThingsBoard Asset occupies. ThingsBoard has no
+// native concept of "hierarchy level" for an Asset — this is the only place it's recorded.
+// One row per Asset (assetId is unique): an Asset belongs to exactly one hierarchy position.
+model AssetHierarchyAssignment {
+  id         String @id @default(uuid())
+  customerId String
+  assetId    String @unique
+  levelIndex Int
+
+  @@index([customerId])
+}

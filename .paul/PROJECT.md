@@ -21,7 +21,7 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 | Type | Application |
 | Version | v1 (in progress) |
 | Status | Prototype |
-| Last Updated | 2026-07-30 |
+| Last Updated | 2026-08-01 |
 
 ## Requirements
 
@@ -32,7 +32,7 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 - Attributes view (CLIENT/SERVER/SHARED scope) per entity
 - Map view (lat/long) per entity when available
 - Redis cache layer: ThingsBoard JWT + recent telemetry/attribute reads, to reduce load on ThingsBoard and the DB
-- Client creation wizard: creates a Client and assigns its hierarchy in one step — the **only** wizard in V1. Hierarchy is static after creation (not editable later)
+- Client creation wizard: "Client" IS ThingsBoard's native Customer — creates a real TB Customer and assigns its hierarchy (default suggestion: Site → Area → Asset → Sensor) in one step, the **only** wizard in V1. Hierarchy is static after creation (not editable later)
 - User/role model backed natively by ThingsBoard: sysadmin (TB Tenant Admin, pre-existing, never created/deleted via the app), admin/reader (TB Customer Users, created by the app, scoped to one customer). Scoping enforced at the customer boundary only — see Constraints
 - Next.js frontend with nav (Devices, Assets, Alarms, Dashboard placeholder), entity detail view (tabs: Attributes / Telemetry / Alarms / Map)
 
@@ -44,16 +44,16 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 - [x] Live telemetry via WebSocket (`/ws/telemetry`), ThingsBoard credentials never reaching the browser — 2026-07-31 (Phase 3, 03-01)
 - [x] Alarms REST (per-entity + customer-scoped global, filterable by severity/status) + live alarm push over WebSocket (`/ws/alarms`, polling-based) — 2026-07-31 (Phase 3, 03-02) — verified against a real ThingsBoard alarm created/cleared during testing
 - [x] EntityRef reference fields (tenantId/customerId/assetProfileId/ownerId) enriched to `{id,name,label}`, batched + Redis-cached — 2026-07-31 (Phase 2.3)
+- [x] Client creation wizard backend: `POST /customers` (sysadmin-only, atomically creates a real ThingsBoard Customer + its hierarchy levels in Postgres, keyed by the real `customerId`) + `GET /customers/:id/hierarchy` — 2026-08-01 (Phase 4) — Postgres/Prisma wired in for the first time in this project; verified live end-to-end against real ThingsBoard Cloud (see STATE.md Decisions "Client merged into Customer")
 
 ### Active (In Progress)
 
-- [ ] Backend V1 — see ROADMAP.md phases 1-4
 - [ ] Frontend V1 — see ROADMAP.md phases 5-7
 
 ### Planned (Next — Version 2)
 
 - [ ] Asset creation wizard
-- [ ] Device creation + linking wizard (link Device to Client + Asset, default structure from `hierarchy_level_definitions` template)
+- [ ] Device creation + linking wizard (link Device to Customer + Asset, default structure from `CustomerHierarchyLevels` template)
 - [ ] Área/asset-level permission granularity (finer than customer hierarchy) — deferred, no design chosen yet since ThingsBoard CE has no Entity Groups to back it (see Constraints)
 - [ ] User-creatable/editable dashboards (`react-grid-layout`), full dashboard config persistence
 
@@ -74,7 +74,7 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 
 **Business Context:** Personal/solo project, practicing a real NestJS + Next.js service end-to-end with former coworkers, using ThingsBoard as the IoT engine instead of building one from scratch.
 
-**Technical Context:** ThingsBoard is the single source of truth for entities/telemetry/attributes/alarms — never duplicated in Postgres. Postgres is reserved for metadata ThingsBoard doesn't model: hierarchy level definitions (V1) and later dashboard configs, roles, catalogs (V2).
+**Technical Context:** ThingsBoard is the single source of truth for entities/telemetry/attributes/alarms — never duplicated in Postgres. "Client" is not an app-owned entity; it IS ThingsBoard's native Customer. Postgres is reserved for metadata ThingsBoard doesn't model at all: hierarchy level definitions keyed by real `customerId` (V1) and later dashboard configs, roles, catalogs (V2).
 
 ## Constraints
 
@@ -82,7 +82,7 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 - ThingsBoard entities/telemetry/attributes/alarms are never duplicated locally — always proxied
 - Telemetry values are always serialized as strings in API responses (never JS `number`) — see `.paul/rules/api.md`
 - Frontend never talks to ThingsBoard directly — always through the NestJS backend (REST + WS)
-- Hierarchy is static once a Client is created — no hierarchy editing after creation in V1
+- Hierarchy is static once a Customer ("Client") is created — no hierarchy editing after creation in V1
 - ThingsBoard instance is **CE (Community Edition)**, not PE — no native Entity Groups/Roles. V1 scoping follows the **customer hierarchy**: sysadmin (tenant) sees everything; a customer user sees everything under its own customer, including descendant sub-customers. Per-asset/área permission granularity (finer than hierarchy) has no TB-native mechanism and is deferred until a design is chosen
 
 ### Business Constraints
@@ -97,8 +97,9 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 |----------|-----------|------|--------|
 | Frontend is Next.js (App Router), not plain Vite+React | User preference; also enables future BFF route handlers if needed | 2026-07-30 | Active |
 | Redis included from V1 (not deferred) | Cuts repeated calls to ThingsBoard and DB for JWT + recent telemetry/attribute reads | 2026-07-30 | Active |
-| Postgres/Prisma scoped narrowly in V1 to hierarchy + Client only | Only persistence actually needed for the Client-creation wizard; avoids building unused tables early | 2026-07-30 | Active |
+| Postgres/Prisma scoped narrowly in V1 to hierarchy-level metadata only — no local Client/Customer table | Only persistence actually needed for the wizard; Customer itself always lives in TB, never duplicated | 2026-07-30 | Active |
 | Client-creation wizard is the only V1 wizard; hierarchy fixed at creation | Keeps V1 scope tight — Asset/Device wizards and hierarchy editing deferred to V2 | 2026-07-30 | Active |
+| "Client" IS ThingsBoard's native Customer — not a separate app-owned entity | User clarified mid-Phase-4 that a parallel `Client` concept alongside TB's `Customer` was redundant and confusing; `CustomerHierarchyLevels` is keyed by the real TB `customerId` instead of a local id | 2026-08-01 | Active |
 | API mirrors ThingsBoard's dynamic entity/attribute/telemetry model | Any telemetry/attribute key works without backend changes when new sensor types appear | 2026-07-30 | Active |
 | GraphQL discarded in favor of REST + Swagger | See docs/project/STACK.md | 2026-07-25 | Active |
 | Users are TB-native (sysadmin = TB Tenant Admin, admin/reader = TB Customer Users), not an app-owned users table | App is complementary to ThingsBoard identity, not a second source of truth for users | 2026-07-31 | Active |
@@ -106,6 +107,10 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 | WebSocket gateways run on `@nestjs/platform-ws`'s `WsAdapter` over the existing Fastify HTTP server | Keeps standard Nest gateway/DI conventions instead of hand-rolling a Fastify WS route; one adapter serves both telemetry and alarm gateways | 2026-07-31 | Active |
 | Customer-hierarchy scoping logic is a single shared function (`isEntityInScope`) used by both the REST `CustomerScopeGuard` and every WS gateway | Prevents REST and WS from drifting into two different authorization rules over time | 2026-07-31 | Active |
 | Alarm live push uses ~7s polling+diff instead of ThingsBoard's native `alarmDataCmds` WS protocol | That protocol is materially more complex than telemetry's `tsSubCmds` and wasn't confirmed working within Phase 3's budget; revisit if Phase 6 needs lower latency | 2026-07-31 | Active |
+| Local Postgres runs on host port 15432, not the 5432 default | Three native Windows PostgreSQL services were already bound to 5432/5433/5434 on the dev machine, silently intercepting Docker's forwarded connections | 2026-08-01 | Active |
+| Prisma pinned to v6, not the current v7 | Prisma 7 requires driver adapters/`prisma.config.ts` instead of a plain `url` in the datasource block — a bigger architectural change than Phase 4 scoped | 2026-08-01 | Active |
+| `POST /customers` creates the real TB Customer first, then hierarchy rows in Postgres; on Postgres failure the TB Customer is deleted (compensating action, not a true cross-store transaction) | TB has no transaction spanning both stores; this avoids leaving an orphaned Customer with no hierarchy | 2026-08-01 | Active |
+| Default suggested hierarchy levels: Site → Area → Asset → Sensor | User-chosen naming for the Phase 7 wizard's default suggestion; still free-text per Customer, not enforced by the backend | 2026-08-01 | Active |
 
 ## Success Metrics
 
@@ -113,7 +118,7 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 |--------|--------|---------|--------|
 | Live telemetry latency (TB → frontend) | < 2s | Not measured | At risk |
 | Entities API works for any Device/Asset without code changes per type | Yes | Not built | At risk |
-| Client-creation wizard produces a usable hierarchy end-to-end | Yes | Not built | At risk |
+| Client-creation wizard produces a usable hierarchy end-to-end | Yes | Backend complete (Phase 4); frontend pending (Phase 7) | On track |
 
 ## Tech Stack / Tools
 
@@ -121,7 +126,7 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 |-------|------------|-------|
 | Backend | NestJS + Fastify adapter | REST + Swagger, WS gateways for telemetry/alarms |
 | Cache | Redis | ThingsBoard JWT cache + telemetry/attribute read cache (V1) |
-| Database | PostgreSQL via Prisma | Hierarchy definitions + Client record only in V1 |
+| Database | PostgreSQL via Prisma (v6) | Hierarchy-level metadata only (keyed by real TB `customerId`), no local Customer/Client table; local instance on port 15432 |
 | IoT Engine | ThingsBoard (Cloud dev / Docker local) | Devices, Assets, Telemetry, Attributes, Alarms, Rule Chains |
 | Frontend | Next.js (App Router) + TypeScript | Zustand (UI state), TanStack Query (server state), Recharts, react-leaflet (map) |
 | Package Manager | npm workspaces (root `package.json`) | `backend`, `frontend` |
@@ -134,4 +139,4 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 
 ---
 *PROJECT.md — Updated when requirements or context change*
-*Last updated: 2026-07-31 after Phase 3*
+*Last updated: 2026-08-01 after Phase 4*
