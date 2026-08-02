@@ -15,6 +15,11 @@ async function bootstrap() {
   // Nest's standard gateway/DI conventions rather than hand-rolling a Fastify route.
   app.useWebSocketAdapter(new WsAdapter(app));
 
+  app.enableCors({
+    origin: process.env.FRONTEND_URL ?? 'http://localhost:3000',
+    credentials: true,
+  });
+
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
   const config = app.get(ConfigService);

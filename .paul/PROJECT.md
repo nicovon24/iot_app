@@ -21,7 +21,7 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 | Type | Application |
 | Version | v1 (in progress) |
 | Status | Prototype |
-| Last Updated | 2026-08-01 |
+| Last Updated | 2026-08-02 |
 
 ## Requirements
 
@@ -45,10 +45,13 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 - [x] Alarms REST (per-entity + customer-scoped global, filterable by severity/status) + live alarm push over WebSocket (`/ws/alarms`, polling-based) — 2026-07-31 (Phase 3, 03-02) — verified against a real ThingsBoard alarm created/cleared during testing
 - [x] EntityRef reference fields (tenantId/customerId/assetProfileId/ownerId) enriched to `{id,name,label}`, batched + Redis-cached — 2026-07-31 (Phase 2.3)
 - [x] Client creation wizard backend: `POST /customers` (sysadmin-only, atomically creates a real ThingsBoard Customer + its hierarchy levels in Postgres, keyed by the real `customerId`) + `GET /customers/:id/hierarchy` — 2026-08-01 (Phase 4) — Postgres/Prisma wired in for the first time in this project; verified live end-to-end against real ThingsBoard Cloud (see STATE.md Decisions "Client merged into Customer")
+- [x] Real Asset↔Customer hierarchy linking (`parentCustomerId` on Customer creation, `AssetHierarchyAssignment` + real TB "Contains" relation on Asset creation), `POST /devices` removed entirely — 2026-08-02 (Phase 4.3)
+- [x] Next.js frontend foundation: App Router scaffold with Tailwind v4 + HeroUI v2 (dark-navy/electric-blue theme, fully CSS-variable-driven for future white-labeling), icon-only sidebar nav, typed REST/WS API clients + TanStack Query, and a real login flow (sessionStorage-persisted session, client-side route gate, logout) — 2026-08-02 (Phase 5) — verified live end-to-end against the real running backend
 
 ### Active (In Progress)
 
-- [ ] Frontend V1 — see ROADMAP.md phases 5-7
+- [ ] Frontend entity views (Dashboard/Devices/Assets widgets and pages) — see ROADMAP.md Phase 6
+- [ ] Client creation wizard UI — see ROADMAP.md Phase 7
 
 ### Planned (Next — Version 2)
 
@@ -68,7 +71,7 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 **Primary:** Industrial operators and administrators
 - Monitor sensors/assets in real time (flow, pressure, temperature, vibration, position, etc.)
 - Need history/aggregates and flexible dashboards eventually (V2)
-- UI in Spanish; not necessarily technical
+- UI in English (**revised 2026-08-02** — superseded the original "UI in Spanish" requirement per explicit user direction); not necessarily technical
 
 ## Context
 
@@ -111,6 +114,7 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 | Prisma pinned to v6, not the current v7 | Prisma 7 requires driver adapters/`prisma.config.ts` instead of a plain `url` in the datasource block — a bigger architectural change than Phase 4 scoped | 2026-08-01 | Active |
 | `POST /customers` creates the real TB Customer first, then hierarchy rows in Postgres; on Postgres failure the TB Customer is deleted (compensating action, not a true cross-store transaction) | TB has no transaction spanning both stores; this avoids leaving an orphaned Customer with no hierarchy | 2026-08-01 | Active |
 | Default suggested hierarchy levels: Site → Area → Asset → Sensor | User-chosen naming for the Phase 7 wizard's default suggestion; still free-text per Customer, not enforced by the backend | 2026-08-01 | Active |
+| **UI language switched to English, superseding the original "UI in Spanish" requirement** | Explicit user direction during Phase 5 frontend work | 2026-08-02 | Active |
 
 ## Success Metrics
 
@@ -139,4 +143,4 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 
 ---
 *PROJECT.md — Updated when requirements or context change*
-*Last updated: 2026-08-01 after Phase 4*
+*Last updated: 2026-08-02 after Phase 5*

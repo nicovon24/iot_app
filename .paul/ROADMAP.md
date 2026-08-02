@@ -14,7 +14,7 @@ Prove ThingsBoard can back a product with a far more capable frontend and API th
 
 **Version 1 — ThingsBoard-backed API + live dashboard shell** (v1.0)
 Status: In progress
-Phases: 4 of 7 complete (+4 inserted phases: 2.1, 2.2, 2.3, 4.3 — all complete). Backend V1 (Phases 1-4.3) done. Next: Phase 5 (Frontend foundation & API/WS clients).
+Phases: 5 of 7 complete (+4 inserted phases: 2.1, 2.2, 2.3, 4.3 — all complete). Backend V1 (Phases 1-4.3) and Phase 5 (Frontend foundation & API/WS clients) done. Next: Phase 6 (Entity views — devices, assets, attributes, live telemetry, alarms, map).
 
 ## Phases
 
@@ -30,8 +30,8 @@ Phases: 4 of 7 complete (+4 inserted phases: 2.1, 2.2, 2.3, 4.3 — all complete
 | 3 | Live telemetry & alarms (WebSocket gateways) | 2 | Complete | 2026-07-31 |
 | 4 | Client creation wizard & static hierarchy (Prisma/Postgres) | 2 | Complete | 2026-08-01 |
 | 4.3 | Asset hierarchy linking — parentCustomerId, Asset↔Customer/hierarchy Contains relation, remove POST /devices [INSERTED] | 3 | Complete | 2026-08-02 |
-| 5 | Frontend foundation & API/WS clients | TBD | Not started | - |
-| 6 | Entity views — devices, assets, attributes, live telemetry, alarms, map | TBD | Not started | - |
+| 5 | Frontend foundation & API/WS clients | 3 | Complete | 2026-08-02 |
+| 6 | Entity views — devices, assets, attributes, live telemetry, alarms, map | TBD | Planning | - |
 | 7 | Client creation wizard UI | TBD | Not started | - |
 
 ## Phase Details
@@ -184,9 +184,9 @@ Phases: 4 of 7 complete (+4 inserted phases: 2.1, 2.2, 2.3, 4.3 — all complete
 - Login screen wired to `POST /auth/login`
 
 **Plans:**
-- [ ] 05-01: Next.js scaffold + layout + nav
-- [ ] 05-02: API/WS clients + shared types + TanStack Query setup
-- [ ] 05-03: Login screen + session handling
+- [x] 05-01: Next.js scaffold + layout + nav — Tailwind v4 + HeroUI v2, dark-navy/electric-blue theme, full 7-item data-driven sidebar (see `.paul/phases/05-frontend-foundation/05-01-SUMMARY.md`)
+- [x] 05-02: API/WS clients + shared types + TanStack Query setup — verified live against the real backend; found+fixed 2 real WS type-shape mismatches (see `.paul/phases/05-frontend-foundation/05-02-SUMMARY.md`)
+- [x] 05-03: Login screen + session handling — real login wired to POST /auth/login, sessionStorage persistence, client-side AuthGate, logout, all verified live (see `.paul/phases/05-frontend-foundation/05-03-SUMMARY.md`)
 
 ### Phase 6: Entity views — devices, assets, attributes, live telemetry, alarms, map
 

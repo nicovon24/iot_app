@@ -8,6 +8,7 @@
     "start:dev": "nest start --watch"
   },
   "dependencies": {
+    "@fastify/cors": "^11.3.0",
     "@fastify/swagger": "^8.14.0",
     "@fastify/swagger-ui": "^3.0.0",
     "@fastify/websocket": "^10.0.1",
