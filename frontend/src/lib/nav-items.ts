@@ -3,8 +3,10 @@ import {
   Cpu,
   Boxes,
   Bell,
+  Map,
   Building2,
   UserCog,
+  Palette,
   Settings,
   type LucideIcon,
 } from 'lucide-react';
@@ -21,7 +23,9 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Devices', href: '/devices', icon: Cpu },
   { label: 'Assets', href: '/assets', icon: Boxes },
   { label: 'Alarms', href: '/alarms', icon: Bell },
+  { label: 'Maps', href: '/map', icon: Map },
   { label: 'Clients', href: '/clients', icon: Building2, comingSoon: true },
   { label: 'Users', href: '/users', icon: UserCog, comingSoon: true },
+  { label: 'White Label', href: '/white-label', icon: Palette, comingSoon: true },
   { label: 'Settings', href: '/settings', icon: Settings, comingSoon: true },
 ];

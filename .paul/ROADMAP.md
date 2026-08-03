@@ -4,7 +4,7 @@ type: Roadmap
 about: "iot-app"
 ---
 
-# Roadmap: IoT Platform (iot_app)
+# Roadmap: IoTArg (iot_app)
 
 ## Overview
 
@@ -14,7 +14,7 @@ Prove ThingsBoard can back a product with a far more capable frontend and API th
 
 **Version 1 — ThingsBoard-backed API + live dashboard shell** (v1.0)
 Status: In progress
-Phases: 5 of 7 complete (+4 inserted phases: 2.1, 2.2, 2.3, 4.3 — all complete). Backend V1 (Phases 1-4.3) and Phase 5 (Frontend foundation & API/WS clients) done. Next: Phase 6 (Entity views — devices, assets, attributes, live telemetry, alarms, map).
+Phases: 6 of 7 complete (+5 inserted phases: 2.1, 2.2, 2.3, 4.3, 6.4 — all complete; 6.5 discussing). Backend V1 (Phases 1-4.3) and Phases 5-6 (+6.4) (Frontend foundation, Entity views, Fleet map view) done. Next: Phase 6.5 (Main Dashboard) — required before Phase 7.
 
 ## Phases
 
@@ -31,7 +31,9 @@ Phases: 5 of 7 complete (+4 inserted phases: 2.1, 2.2, 2.3, 4.3 — all complete
 | 4 | Client creation wizard & static hierarchy (Prisma/Postgres) | 2 | Complete | 2026-08-01 |
 | 4.3 | Asset hierarchy linking — parentCustomerId, Asset↔Customer/hierarchy Contains relation, remove POST /devices [INSERTED] | 3 | Complete | 2026-08-02 |
 | 5 | Frontend foundation & API/WS clients | 3 | Complete | 2026-08-02 |
-| 6 | Entity views — devices, assets, attributes, live telemetry, alarms, map | TBD | Planning | - |
+| 6 | Entity views — devices, assets, attributes, live telemetry, alarms, map | 3 | Complete | 2026-08-02 |
+| 6.4 | Fleet map view — custom markers, clustering, nav entry [INSERTED] | 1 | Complete | 2026-08-02 |
+| 6.5 | Main Dashboard — fleet summary, counts, map, tables, alarms [INSERTED] | 1 | Planning | - |
 | 7 | Client creation wizard UI | TBD | Not started | - |
 
 ## Phase Details
@@ -200,9 +202,42 @@ Phases: 5 of 7 complete (+4 inserted phases: 2.1, 2.2, 2.3, 4.3 — all complete
 - Pages: `devices/`, `assets/`, `entities/[id]` (tabs: Attributes / Telemetry / Alarms / Map — Map tab only if lat/long present), `alarms/` (global list)
 
 **Plans:**
-- [ ] 06-01: Devices/Assets list pages + entity picker
-- [ ] 06-02: Entity detail page — Attributes + Telemetry tabs (live)
-- [ ] 06-03: Entity detail page — Alarms + Map tabs (live) + global Alarms page
+- [x] 06-01: Devices/Assets list pages + entity picker — real ThingsBoard-backed data, plus an unplanned but substantial UI pass (dark/light mode, sidebar redesign, custom Tooltip, semantic text tokens) done live per user feedback (see `.paul/phases/06-entity-views/06-01-SUMMARY.md`)
+- [x] 06-02: Entity detail page — Attributes + Telemetry tabs (live) — `/entities/[id]?type=` with real scope-grouped attributes and a live-updating telemetry tile + historical chart (see `.paul/phases/06-entity-views/06-02-SUMMARY.md`)
+- [x] 06-03: Entity detail page — Alarms + Map tabs (live) + global Alarms page — real per-entity alarm list with live WS push, a conditional react-leaflet Map tab, and a filterable global `/alarms` page, all verified against real ThingsBoard Cloud data (see `.paul/phases/06-entity-views/06-03-SUMMARY.md`)
+
+### Phase 6.4: Fleet map view — custom markers, clustering, nav entry [INSERTED]
+
+**Goal:** A modernized alarm-colored marker for the existing per-entity Map tab, a new "Maps" nav entry showing every real Device with lat/long on one map, and marker clustering for dense areas (à la ThingsBoard) — see `.paul/phases/6.4-fleet-map-view/CONTEXT.md` for full discussion.
+**Depends on:** Phase 6 (extends `MapWidget.tsx`, `react-leaflet`, `useTelemetryKeys`/`useTelemetryLatest`, `useEntityAlarms`)
+**Reason:** User-requested extension after using the Phase 6 Map tab, discussed interactively before planning.
+
+**Scope (confirmed 2026-08-02):**
+- Fleet map covers Devices only (not Assets) for now
+- Custom marker colored by alarm state (green = no active alarm, red/amber = active alarm), shared between the fleet map and the existing per-entity Map tab
+- Pin click opens a popup (name, ALL telemetry keys + values with a scroll container, last report time, "Details" button → `/entities/[id]?type=DEVICE`) — no direct-navigate-on-click
+- Clustering via `react-leaflet-cluster`
+- No backend changes — client-side composition of existing hooks (N+1 fetch acceptable at current 4-device scale)
+
+**Plans:**
+- [x] 6.4-01: Shared alarm-colored `EntityMapMarker` (refactors the per-entity Map tab) + fleet map with clustering + new "Maps" nav entry — applied and unified, verified live against real ThingsBoard Cloud data; also shipped a white/color map tile toggle and a barely-visible popup scrollbar per live user feedback (see `.paul/phases/6.4-fleet-map-view/6.4-01-SUMMARY.md`)
+
+### Phase 6.5: Main Dashboard — fleet summary, counts, map, tables, alarms [INSERTED]
+
+**Goal:** The Dashboard nav item (currently `ComingSoon`) becomes a real summary view — Devices/Assets/active-alarms counts, the fleet map, a Devices table, and an active-alarms table, all reusing Phase 6/6.4 components, plus a visual seam for future dashboards. Must ship before Phase 7 — see `.paul/phases/6.5-main-dashboard/CONTEXT.md` for full discussion.
+**Depends on:** Phase 6, Phase 6.4 (reuses `FleetMapWidget`, `EntityListWidget`, `AlarmsListWidget`, `useEntities`, `useGlobalAlarms`)
+**Reason:** User-requested, explicitly required before Phase 7 — the Dashboard is the sidebar's first item and currently a placeholder.
+
+**Scope (confirmed 2026-08-02):**
+- Counts: Devices total, Assets total, active alarms (ACTIVE_UNACK+ACTIVE_ACK) — no Customers count
+- Devices table only (not Assets), reusing `EntityListWidget` as-is
+- Active-alarms table only (not full history), reusing `AlarmsListWidget` fed a client-filtered array
+- Fleet map reused as-is from Phase 6.4 (`FleetMapWidget`)
+- A visual-only seam (selector/tab showing "Main Dashboard") anticipating future dashboards — no real multi-dashboard logic, no persistence, no backend changes
+- User-creatable/shareable custom dashboards (a separate, larger ask raised in the same conversation) are explicitly deferred to Version 2/3 — this phase is the single fixed main dashboard only, not a dashboard-builder system
+
+**Plans:**
+- [ ] 6.5-01: Pending /paul:plan
 
 ### Phase 7: Client creation wizard UI
 
@@ -227,7 +262,7 @@ Deferred scope, pulled from PROJECT.md "Planned (Next — Version 2)" and STATE.
 | Asset creation wizard | PROJECT.md V2 scope | M | Mirrors the V1 Client wizard pattern from Phase 4/7 |
 | Device creation + linking wizard (link Device to Client + Asset, default structure from `client_hierarchy_levels` template) | PROJECT.md V2 scope | M | V1 Phase 2.1 only creates bare unlinked Devices/Assets — this wizard does the linking |
 | Área/asset-level permission granularity (finer than customer hierarchy) | PROJECT.md V2 scope / Phase 2.2 clarification | M | No design chosen yet — ThingsBoard CE has no Entity Groups to back it; would need either a TB PE upgrade or a parallel Postgres permission layer, a real architectural decision to make when picked up |
-| User-creatable/editable dashboards (`react-grid-layout`), full dashboard config persistence | PROJECT.md V2 scope | L | Needs a Postgres schema for dashboard configs, out of V1's narrow Prisma scope |
+| User-creatable/editable dashboards (`react-grid-layout`), full dashboard config persistence, **sharable by admin/sysadmin users with other users** (explicit user requirement, 2026-08-02) | PROJECT.md V2 scope | L | Needs a Postgres schema for dashboard configs + a sharing/permission model, out of V1's narrow Prisma scope; the V1 Main Dashboard (Phase 6.5) is a single fixed dashboard, not this system |
 | DELETE endpoints for devices/assets/customers | STATE.md Deferred Issues (Phase 2.1) | S | Add when a V2 wizard needs entity deletion |
 | Jest test harness for `ThingsboardClientService`/cache-hit/auth-guard behavior | STATE.md Deferred Issues (Phase 1-2.1) | S | Deferred per explicit instruction until backend V1 is done — manual runtime verification covers V1 so far |
 | Modify assets/devices "Contains" relations (relocate to another asset/location area) + read Relations API generally | IMPROVEMENTS.md | M | Extends the internal-only relations use from `CustomerScopeGuard` into a general read/write Relations capability |
@@ -242,4 +277,4 @@ Deferred scope, pulled from PROJECT.md "Planned (Next — Version 2)" and STATE.
 
 ---
 *Roadmap created: 2026-07-30*
-*Last updated: 2026-08-01*
+*Last updated: 2026-08-02 (after Phase 6.4)*

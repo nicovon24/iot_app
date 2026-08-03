@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "IoT Platform",
-  description: "IoT platform powered by ThingsBoard",
+  title: "IoTArg",
+  description: "IoTArg — industrial IoT platform powered by ThingsBoard",
 };
 
 export default function RootLayout({
@@ -30,6 +30,11 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="h-full flex flex-col overflow-hidden">
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('iot_theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})();`,
+          }}
+        />
         <Providers>
           <AppLayout>{children}</AppLayout>
         </Providers>

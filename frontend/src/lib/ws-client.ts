@@ -29,11 +29,11 @@ export function createWsClient(channel: WsChannel) {
   const socket = new WebSocket(`${WS_BASE_URL}/ws/${channel}?token=${token ?? ''}`);
 
   function subscribe(target: SubscribeTarget, onMessage: (frame: WsFrame) => void): () => void {
-    const send = () => socket.send(JSON.stringify({ event: 'subscribe', data: target }));
+    const sendSubscribe = () => socket.send(JSON.stringify({ event: 'subscribe', data: target }));
     if (socket.readyState === WebSocket.OPEN) {
-      send();
+      sendSubscribe();
     } else {
-      socket.addEventListener('open', send, { once: true });
+      socket.addEventListener('open', sendSubscribe, { once: true });
     }
 
     const handleMessage = (evt: MessageEvent) => {
@@ -43,7 +43,16 @@ export function createWsClient(channel: WsChannel) {
     socket.addEventListener('message', handleMessage);
 
     return () => {
-      socket.send(JSON.stringify({ event: 'unsubscribe', data: target }));
+      // The socket may still be CONNECTING when cleanup runs (e.g. React
+      // effect double-invoke in dev, or an immediate unmount) — send() throws
+      // InvalidStateError outside the OPEN state, so only unsubscribe if the
+      // connection actually completed; otherwise just drop the pending
+      // subscribe listener so it never fires for an unmounted target.
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ event: 'unsubscribe', data: target }));
+      } else {
+        socket.removeEventListener('open', sendSubscribe);
+      }
       socket.removeEventListener('message', handleMessage);
     };
   }

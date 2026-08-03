@@ -1,4 +1,4 @@
-# AGENTS.md — IoT Platform
+# AGENTS.md — IoTArg
 
 ## What This Is
 

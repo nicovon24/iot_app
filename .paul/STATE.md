@@ -11,33 +11,36 @@ about: "iot-app"
 See: .paul/PROJECT.md (updated 2026-07-30)
 
 **Core value:** Industrial operators can view live and historical telemetry/attributes/alarms for any entity, on a frontend far more flexible than ThingsBoard's native UI, without ThingsBoard credentials ever reaching the browser.
-**Current focus:** Phase 5 COMPLETE. Phase 6 — Entity views. Plan 06-01 (Devices/Assets list pages + useEntities hook + EntityListWidget) PLAN created, awaiting APPLY.
+**Current focus:** Phase 6.5 (Main Dashboard) — plan created, awaiting APPLY approval. Must ship before Phase 7.
 
 ## Current Position
 
 Milestone: Version 1 (v1.0)
-Phase: 6 of 7 — In progress (0/3 plans, 06-01 planned). Phases 1-5 (+2.1/2.2/2.3/4.3) all complete.
-Status: Plan 06-01 (`.paul/phases/06-entity-views/06-01-PLAN.md`) created — real Devices/Assets pages, `useEntities` hook, `EntityListWidget` table component. Not yet applied.
+Phase: 6.5 of 7 (+decimal insertions) — Planning. Phases 1-6.4 (+2.1/2.2/2.3/4.3/6.4) all complete.
+Plan: 6.5-01 created, awaiting approval
+Status: Phase 6.4 (Fleet map view) complete. Did a manual code review of the session's frontend work (2 minor non-blocking findings, see Decisions/Session Continuity). User then requested a Main Dashboard (counts, fleet map, Devices table, active-alarms table) required before Phase 7, plus raised custom/shareable dashboards as a separate, larger ask explicitly deferred to V2/V3. Discussed and planned as Phase 6.5: `.paul/phases/6.5-main-dashboard/6.5-01-PLAN.md` ready for `/paul:apply`.
 
 ### 4.3-03 — bug found and fixed during verification
 `EntitiesService.assignAssetToCustomer` was calling the CE-only `POST /api/customer/{customerId}/asset/{assetId}` endpoint, which 404s ("No static resource") on this ThingsBoard Cloud Professional Edition instance. Fixed to `POST /api/owner/CUSTOMER/{customerId}/ASSET/{assetId}` (the PE owner-reassignment API — same family already used for `parentCustomerId`, see existing Decisions entry). The failed first attempt (before the fix) correctly triggered the compensating `deleteAsset()` rollback, incidentally providing a real AC-5 verification. Re-ran the full sequence after the fix: all 5 ACs pass. See `.paul/phases/4.3-asset-hierarchy-linking/4.3-03-SUMMARY.md` for full detail.
 
-Last activity: 2026-08-02 — Recreated `iot-redis` and `iot-postgres` Docker containers (both had stopped/been removed since last session), applied pending Prisma migrations to the fresh Postgres, killed stray node processes and restarted the dev server clean, then ran the deferred live verification for 4.3-03 (found+fixed the PE endpoint bug above), wrote all 3 phase SUMMARY.md files, and closed the phase via `/paul:unify`.
+Last activity: 2026-08-02 — Applied 06-03-PLAN.md (Alarms tab live push, conditional Map tab, global filterable Alarms page), verified all 4 ACs live against real ThingsBoard Cloud data (real Device `industrial-pump-005`, its real "High Temperature Alarm", and real lat/long telemetry), wrote 06-03-SUMMARY.md, retroactively wrote the missing 06-02-SUMMARY.md (06-02 had been applied in an earlier session but never unified), then ran `/paul:unify` → phase transition: PROJECT.md/ROADMAP.md/STATE.md all updated to reflect Phase 6 complete. Note also (prior session): recreated `iot-redis`/`iot-postgres` Docker containers, applied pending Prisma migrations, ran deferred live verification for 4.3-03 (found+fixed the PE endpoint bug — see entry above), wrote all 3 Phase 4.3 SUMMARY.md files, closed that phase.
 
 Progress:
-- Milestone: [█████████░] 85%
+- Milestone: [██████████] 95%
 - Phase 2.2: [██████████] 100% (2.2-01/2.2-02/2.2-03 all applied, runtime-verified, and unified)
 - Phase 2.3: [██████████] 100% (2.3-01 applied, unified, phase transitioned)
 - Phase 3: [██████████] 100% (03-01, 03-02 applied, unified, phase transitioned)
 - Phase 4: [██████████] 100% (04-01, 04-02 applied, unified, phase transitioned)
 - Phase 4.3: [██████████] 100% (4.3-01, 4.3-02, 4.3-03 all applied, verified live, and unified)
+- Phase 6: [██████████] 100% (06-01, 06-02, 06-03 all applied, verified live, and unified)
+- Phase 6.4: [██████████] 100% (6.4-01 applied, verified, and unified)
 
 ## Loop Position
 
-Current loop state (Phase 6, Plan 06-01):
+Current loop state (Phase 6.5, Plan 6.5-01 created, awaiting approval):
 ```
 PLAN ──▶ APPLY ──▶ UNIFY
-  ✓        ○        ○     [Plan 06-01 created, awaiting APPLY]
+  ✓        ○        ○     [Plan 6.5-01 created. Next: review and approve, then /paul:apply .paul/phases/6.5-main-dashboard/6.5-01-PLAN.md]
 ```
 
 ## Performance Metrics
@@ -116,6 +119,16 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | `session.ts` now backs the in-memory token with `sessionStorage` (survives refresh, cleared on tab close); `lib/auth.ts` has `login()`/`logout()` calling the real `POST /auth/login`/`POST /auth/logout` | Phase 5 (05-03) | Every future page can rely on `getSessionToken()` staying populated across refreshes without extra wiring |
 | `AppLayout` special-cases `pathname === '/login'` to bypass both `AuthGate` and the Sidebar/header shell entirely | Phase 5 (05-03, bug fix) | Without this, `/login` would be nested inside its own `AuthGate` (which redirects to `/login` when no token exists) — found and fixed during Task 3 before completion |
 | `AuthGate` is a client-side-only redirect (no `middleware.ts`) — the session token lives in `sessionStorage`, inaccessible to Next.js middleware | Phase 5 (05-03) | Real enforcement is still the backend's `SessionAuthGuard` on every API call; the frontend gate is UX only, not a security boundary |
+| Telemetry hooks (`useEntityTelemetry.ts`) export `useTelemetryKeys`/`useTelemetryLatest`/`useTelemetryHistory` as separate named functions, not a single `useEntityTelemetry()` object with nested methods | Phase 6 (06-02) | Simpler call sites for the same data source; 06-03's alarm hooks (`useEntityAlarms`/`useGlobalAlarms`) follow the same separate-export convention |
+| `EntityListWidget` gained an optional `onRowClick` prop (not required) | Phase 6 (06-02) | Devices/Assets rows now navigate to `/entities/[id]?type=`; Phase 7's future Clients list can reuse the widget without navigation |
+| `useLiveAlarms` unwraps the WS `WsFrame` to a plain `Alarm` before calling back (`onAlarm(alarm)`), unlike `useLiveTelemetry` which passes the raw frame | Phase 6 (06-03) | Alarm WS frames only ever carry one event shape (`event: 'alarm'`); no need to make every caller filter `frame.event` itself |
+| Map tab uses HeroUI `Tabs`' `isDisabled` (not conditional omission) when an entity lacks `latitude`/`longitude` telemetry keys | Phase 6 (06-03) | Lets the user see the Map capability exists but isn't available for this entity, per explicit plan requirement |
+| Global Alarms page (`/alarms`) relies on TanStack Query refetch on filter change, not a WS subscription | Phase 6 (06-03) | `/ws/alarms` is entity-scoped by backend design (Phase 3); no tenant-wide alarm push protocol exists or is needed here |
+| `EntityMapMarker` is a single shared component (alarm-colored `L.divIcon` + full-telemetry popup) used by both the per-entity Map tab (`MapWidget`) and the new fleet map (`FleetMapWidget`) — no divergent marker implementations | Phase 6.4 (6.4-01) | Any future map-related change (icon style, popup fields) is made once, not twice |
+| Map tile style defaults to a white/light CartoDB Positron basemap, with a shared `MapStyleToggle` button (White/Color) on both maps — local `useState`, not persisted | Phase 6.4 (6.4-01, live user feedback) | `frontend/src/lib/map-tiles.ts` holds both tile configs; any future map reuses this instead of hardcoding a tile URL |
+| Fleet map's per-Device data fetching happens inside a small per-item component (`FleetMarker`), not a loop calling hooks in the parent | Phase 6.4 (6.4-01) | Required by React's Rules of Hooks; the accepted N+1 client-side fetch pattern (fine at 4 real Devices) lives inside `FleetMapWidget.tsx`, flagged as tech debt if the fleet grows |
+| Manual code review of Phase 6/6.4 frontend work (no blocking issues) found 2 minor items: `FleetMarker` fetches telemetry/alarms for every Device before knowing if it has location (wasted requests at scale, fine at 4 Devices); map pins can briefly render green before alarm data loads (self-corrects, cosmetic) | Post-6.4 (user-requested review) | Both logged as low-priority, not fixed — revisit if the fleet grows or if the flash becomes noticeable |
+| Custom/shareable dashboards (admin/sysadmin create + share with other users) explicitly deferred to V2/V3 — the V1 Main Dashboard (Phase 6.5) is a single fixed dashboard only | User request, same conversation as Phase 6.5 scoping | ROADMAP.md's Version 2 table updated with the sharing requirement; Phase 6.5 must not be confused with this larger system |
 
 ### Deferred Issues
 
@@ -145,6 +158,7 @@ All three Phase 2.2 blockers from prior sessions are now resolved (see Decisions
 - **Both `iot-redis` and `iot-postgres` Docker containers were gone at the start of the 2026-08-02 session** (redis had stopped, postgres had been removed entirely) — recreated fresh and re-applied Prisma migrations; see Session Continuity for the exact recreate commands.
 - Test Customer "Acme43" was deleted and recreated with a full Site→Area→Asset→Sensor hierarchy during 4.3-03 verification (quota-constrained — only "Test" and "Acme43" exist). It now owns two real test Assets ("Plant North", "North Wing") linked via real TB Contains relations, tracked in `AssetHierarchyAssignment`.
 - **CRITICAL — TB Cloud Professional Edition trial has expired**: confirmed 2026-08-02 via `GET /api/tenant/{tenantId}` showing `addonData.maxAssets: 0` and `addonData.maxCustomers: 0`. All Customers and Assets that existed on the tenant (including "Test", "Acme43", "Plant North", "North Wing") are now gone — wiped by TB itself on the plan downgrade, not by app code. Devices are unaffected (4 still present). **No Customer or Asset can be created or read until the TB plan is renewed/upgraded** — this blocks any further live verification of Phase 4/4.3 functionality and blocks Phase 7 (client wizard) testing. Postgres `CustomerHierarchyLevels`/`AssetHierarchyAssignment` rows for the deleted TB entities are now orphaned (stale local records pointing at TB ids that no longer exist) — clean these up once a fresh trial/plan is active, don't treat them as valid until then.
+  - **Note (2026-08-02, later same day, during Phase 6 verification):** `GET /devices` real Devices now show `customerId: "Test"` again — a "Test" Customer exists on the tenant. Not independently re-verified whether Asset creation/PE features are back (Phase 6 only exercised Devices, which were never affected by the trial expiry). Re-check `addonData.maxAssets`/`maxCustomers` before relying on this for Phase 7 (client wizard) testing — don't assume the trial issue is resolved from this alone.
 
 ## Boundaries (Active)
 
@@ -161,8 +175,8 @@ All three Phase 2.2 blockers from prior sessions are now resolved (see Decisions
 ## Session Continuity
 
 Last session: 2026-08-02
-Stopped at: Phase 4.3 closed and pushed (commit `6e834c1`). Phase 5 fully complete — all 3 plans (05-01 scaffold/theme, 05-02 API/WS clients, 05-03 login/session) applied, verified live against the real backend, and unified. A real login flow now works end-to-end with real ThingsBoard-backed credentials.
-Next action: Run the Phase 5 transition (evolve PROJECT.md, ROADMAP.md phase status) if not already done, then `/paul:plan` for Phase 6 (widgets + real Dashboard/Devices/Assets pages) per user's explicit request to keep going through that phase. Still-open from before: the AC-3-equivalent non-sysadmin re-verification gap (`operator@customer-a.com` 401s on TB login), and the TB Cloud PE trial expiry blocking any live Customer/Asset testing (see Blockers/Concerns) until renewed/upgraded — will block Phase 6 from showing real Customer/Asset data (Devices should still work, TB Device quota wasn't affected).
+Stopped at: Phase 6.4 (Fleet map view) complete and unified (see `.paul/phases/6.4-fleet-map-view/6.4-01-SUMMARY.md`). User then asked for a brief manual code review (done inline, 2 minor non-blocking findings — see Decisions) and raised the Main Dashboard requirement, bundled with a larger custom/shareable-dashboards ask that was explicitly scoped OUT to V2/V3 after discussion. Ran `/paul:discuss 6.5` → `.paul/phases/6.5-main-dashboard/CONTEXT.md` (counts: Devices/Assets/active-alarms only; Devices-only table; active-alarms-only table; visual-only future-dashboards seam) → `/paul:plan 6.5` → `.paul/phases/6.5-main-dashboard/6.5-01-PLAN.md` (2 tasks: `CountTileWidget` + counts/seam, then FleetMapWidget + Devices table + active-alarms table, all reused as-is from Phase 6/6.4). Plan not yet approved/applied. None of this session's code changes are committed to git yet (per project CLAUDE.md, never commit without explicit ask).
+Next action: review `.paul/phases/6.5-main-dashboard/6.5-01-PLAN.md`, then `/paul:apply` it when approved — must complete before Phase 7. Phase 7 (Client creation wizard UI) remains not started, queued after 6.5. Reuse established conventions: `text-heading/body/muted/faint/danger` tokens, `components/Tooltip.tsx` (not HeroUI's), the widget loading/error/empty pattern from `EntityListWidget`/`AttributesTableWidget`/`AlarmsListWidget`, and `EntityMapMarker`/`MapStyleToggle`/`lib/map-tiles.ts` for any future map. Still-open from before: the AC-3-equivalent non-sysadmin re-verification gap (`operator@customer-a.com` 401s on TB login) — not yet re-tested; may matter for Phase 7's sysadmin-only wizard endpoints.
 Resume context: `npm install` already run at repo root (workspace hoisting confirmed working for `frontend` — always run `npm install` from repo root, never `cd frontend && npm install`, or it creates a conflicting nested `node_modules`). **Important:** a root `rm -rf node_modules && npm install` (done mid-session to fix a Tailwind/HeroUI version conflict) wipes the generated Prisma client without regenerating it — if the backend fails to start with "`@prisma/client did not initialize yet`", run `npx prisma generate` inside `backend/` before restarting. `backend/.env` has real ThingsBoard Cloud credentials (gitignored) + `DATABASE_URL` on port 15432. Both `iot-redis` and `iot-postgres` Docker containers are up (recreate with `docker run -d --name iot-redis -p 6379:6379 redis:7-alpine` and `docker run -d --name iot-postgres -p 15432:5432 -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=iot_app postgres:16-alpine` if either is missing, then `npx prisma migrate deploy`). Prisma pinned to v6. Both backend (`npm run start:dev` in `backend/`, port 3001) and frontend (`npm run dev --workspace=frontend`, port 3000) dev servers are running in the background from this session.
 
 ---

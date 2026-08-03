@@ -4,7 +4,7 @@ type: Project
 about: "iot-app"
 ---
 
-# IoT Platform (iot_app)
+# IoTArg (iot_app)
 
 ## What This Is
 
@@ -21,7 +21,7 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 | Type | Application |
 | Version | v1 (in progress) |
 | Status | Prototype |
-| Last Updated | 2026-08-02 |
+| Last Updated | 2026-08-02 (after Phase 6.4) |
 
 ## Requirements
 
@@ -30,7 +30,7 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 - Dynamic entities API mirroring ThingsBoard's own model — look up any entity (Device/Asset) by id/type, and any attribute/telemetry key by name, without hardcoding key sets per device type
 - Live telemetry and live alarms via WebSocket, proxied through the backend (ThingsBoard credentials stay server-side)
 - Attributes view (CLIENT/SERVER/SHARED scope) per entity
-- Map view (lat/long) per entity when available
+- Map view (lat/long) per entity when available, plus a fleet-wide map showing every Device with location on one clustered view
 - Redis cache layer: ThingsBoard JWT + recent telemetry/attribute reads, to reduce load on ThingsBoard and the DB
 - Client creation wizard: "Client" IS ThingsBoard's native Customer — creates a real TB Customer and assigns its hierarchy (default suggestion: Site → Area → Asset → Sensor) in one step, the **only** wizard in V1. Hierarchy is static after creation (not editable later)
 - User/role model backed natively by ThingsBoard: sysadmin (TB Tenant Admin, pre-existing, never created/deleted via the app), admin/reader (TB Customer Users, created by the app, scoped to one customer). Scoping enforced at the customer boundary only — see Constraints
@@ -47,10 +47,11 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 - [x] Client creation wizard backend: `POST /customers` (sysadmin-only, atomically creates a real ThingsBoard Customer + its hierarchy levels in Postgres, keyed by the real `customerId`) + `GET /customers/:id/hierarchy` — 2026-08-01 (Phase 4) — Postgres/Prisma wired in for the first time in this project; verified live end-to-end against real ThingsBoard Cloud (see STATE.md Decisions "Client merged into Customer")
 - [x] Real Asset↔Customer hierarchy linking (`parentCustomerId` on Customer creation, `AssetHierarchyAssignment` + real TB "Contains" relation on Asset creation), `POST /devices` removed entirely — 2026-08-02 (Phase 4.3)
 - [x] Next.js frontend foundation: App Router scaffold with Tailwind v4 + HeroUI v2 (dark-navy/electric-blue theme, fully CSS-variable-driven for future white-labeling), icon-only sidebar nav, typed REST/WS API clients + TanStack Query, and a real login flow (sessionStorage-persisted session, client-side route gate, logout) — 2026-08-02 (Phase 5) — verified live end-to-end against the real running backend
+- [x] Frontend entity views: real Devices/Assets list pages with row navigation, entity detail page (`/entities/[id]`) with live Attributes/Telemetry/Alarms tabs and a conditional Map tab (react-leaflet, shown only when an entity reports lat/long telemetry), and a real filterable global Alarms page — 2026-08-02 (Phase 6) — verified live end-to-end against the real running backend and real ThingsBoard Cloud data; also shipped app-wide dark/light mode, redesigned sidebar, and semantic text-color tokens (unplanned, user-requested during 06-01)
+- [x] Fleet map view: alarm-colored map marker (shared between the per-entity Map tab and a new fleet-wide map) with a full-telemetry popup, a new "Maps" nav entry showing every real Device with location on one clustered map (`react-leaflet-cluster`), and a white/color map tile toggle — 2026-08-02 (Phase 6.4) — user-requested extension after using Phase 6's Map tab, verified live against real ThingsBoard Cloud data
 
 ### Active (In Progress)
 
-- [ ] Frontend entity views (Dashboard/Devices/Assets widgets and pages) — see ROADMAP.md Phase 6
 - [ ] Client creation wizard UI — see ROADMAP.md Phase 7
 
 ### Planned (Next — Version 2)
@@ -115,6 +116,10 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 | `POST /customers` creates the real TB Customer first, then hierarchy rows in Postgres; on Postgres failure the TB Customer is deleted (compensating action, not a true cross-store transaction) | TB has no transaction spanning both stores; this avoids leaving an orphaned Customer with no hierarchy | 2026-08-01 | Active |
 | Default suggested hierarchy levels: Site → Area → Asset → Sensor | User-chosen naming for the Phase 7 wizard's default suggestion; still free-text per Customer, not enforced by the backend | 2026-08-01 | Active |
 | **UI language switched to English, superseding the original "UI in Spanish" requirement** | Explicit user direction during Phase 5 frontend work | 2026-08-02 | Active |
+| Global Alarms page relies on TanStack Query refetch-on-filter-change, not a tenant-wide WS subscription | `/ws/alarms` is entity-scoped by design (Phase 3); a tenant-wide alarm push protocol wasn't built and isn't needed for a filterable list | 2026-08-02 | Active |
+| Map tab uses HeroUI `Tabs`' `isDisabled` instead of omitting the tab for entities without lat/long | Lets the user see the capability exists but isn't available for this entity, rather than hiding it entirely | 2026-08-02 | Active |
+| Map marker/popup is one shared component (`EntityMapMarker`) used by both the per-entity Map tab and the fleet map, colored by alarm state (not severity-level granularity) | Avoids two divergent map implementations; matches the scope explicitly confirmed with the user before planning Phase 6.4 | 2026-08-02 | Active |
+| Map tiles default to a white/light basemap (CartoDB Positron), with a toggle to switch to color OSM tiles | Explicit user request after seeing Phase 6's color map — white is the default "at rest" look | 2026-08-02 | Active |
 
 ## Success Metrics
 
@@ -143,4 +148,4 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 
 ---
 *PROJECT.md — Updated when requirements or context change*
-*Last updated: 2026-08-02 after Phase 5*
+*Last updated: 2026-08-02 after Phase 6.4*

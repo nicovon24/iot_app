@@ -1,4 +1,4 @@
-# VISION — IoT Platform
+# VISION — IoTArg
 
 ## Why This Exists
 

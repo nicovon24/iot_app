@@ -18,12 +18,39 @@
   --color-border: #e2e8f0;
   --color-muted: #64748b;
 
+  /* Text tokens — every text-* color in the app resolves here instead of a
+   * literal Tailwind gray (text-slate-900 etc), so dark mode can lighten
+   * text, not just backgrounds. */
+  --color-heading: #0f172a;
+  --color-body: #334155;
+  --color-faint: #94a3b8;
+  --color-danger: #dc2626;
+
   /* Top header banner gradient — matches the accent color; tenants can override both stops. */
   --gradient-header-from: #0284c7;
   --gradient-header-to: #0ea5e9;
 
   --background: var(--color-surface);
   --foreground: #1e293b;
+}
+
+/*
+ * Dark mode override — toggled by adding/removing `dark` on <html> (see
+ * frontend/src/hooks/useTheme.ts). Only the surface/content tokens flip;
+ * the sidebar/header gradient stays constant in both modes by design
+ * (see .paul/STATE.md Decisions).
+ */
+:root.dark {
+  --color-surface: #0b1220;
+  --color-surface-card: #131c2e;
+  --color-border: #223047;
+  --color-muted: #94a3b8;
+  --color-heading: #f1f5f9;
+  --color-body: #cbd5e1;
+  --color-faint: #64748b;
+  --color-danger: #f87171;
+  --background: var(--color-surface);
+  --foreground: #e2e8f0;
 }
 
 @theme inline {
@@ -36,6 +63,10 @@
   --color-surface-card: var(--color-surface-card);
   --color-border: var(--color-border);
   --color-muted: var(--color-muted);
+  --color-heading: var(--color-heading);
+  --color-body: var(--color-body);
+  --color-faint: var(--color-faint);
+  --color-danger: var(--color-danger);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -46,4 +77,30 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/*
+ * Barely-visible scrollbar for the map popup's telemetry list — invisible at
+ * rest, a faint thumb only appears on hover so the popup doesn't look "busy"
+ * with a full-contrast scrollbar for a small, scannable list.
+ */
+.map-popup-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+.map-popup-scroll:hover {
+  scrollbar-color: rgba(100, 116, 139, 0.35) transparent;
+}
+.map-popup-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.map-popup-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.map-popup-scroll::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 4px;
+}
+.map-popup-scroll:hover::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.35);
 }

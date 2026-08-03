@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import {
   Activity,
   Brain,
@@ -55,19 +56,17 @@ export default function LoginPage() {
       <div className="flex w-full flex-col justify-center px-8 py-12 sm:px-16 lg:w-1/2 lg:px-24">
         <div className="mx-auto w-full max-w-sm">
           <div className="mb-10 flex flex-col items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-400 text-white">
-              <Zap className="h-6 w-6" fill="currentColor" />
-            </div>
-            <p className="text-center text-base font-medium text-slate-700">
+            <Image src="/logo.png" alt="IoTArg logo" width={64} height={64} className="h-16 w-16 object-contain" priority />
+            <p className="text-center text-base font-medium text-body">
               IoT Device Management
             </p>
           </div>
 
-          <h1 className="mb-8 text-3xl font-semibold text-slate-900">Log in</h1>
+          <h1 className="mb-8 text-3xl font-semibold text-heading">Log in</h1>
 
           <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="username" className="text-sm font-medium text-slate-700">
+              <label htmlFor="username" className="text-sm font-medium text-body">
                 Username
               </label>
               <input
@@ -78,12 +77,12 @@ export default function LoginPage() {
                 onChange={(e) => setUsername(e.target.value)}
                 required
                 autoFocus
-                className="w-full rounded-md border border-slate-300 px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                className="w-full rounded-md border border-border bg-surface-card px-3 py-2.5 text-sm text-heading placeholder:text-faint focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
               />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="password" className="text-sm font-medium text-slate-700">
+              <label htmlFor="password" className="text-sm font-medium text-body">
                 Password
               </label>
               <div className="relative">
@@ -94,12 +93,12 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full rounded-md border border-slate-300 px-3 py-2.5 pr-10 text-sm text-slate-900 placeholder:text-slate-400 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                  className="w-full rounded-md border border-border bg-surface-card px-3 py-2.5 pr-10 text-sm text-heading placeholder:text-faint focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-600"
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-faint hover:text-body"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -107,21 +106,21 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <a href="#" className="-mt-3 text-sm font-medium text-slate-700 underline">
+            <a href="#" className="-mt-3 text-sm font-medium text-body underline">
               Forgot your password?
             </a>
 
-            <label className="flex items-center gap-2 text-sm text-slate-500">
+            <label className="flex items-center gap-2 text-sm text-muted">
               <input
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-300 accent-accent focus:ring-accent"
+                className="h-4 w-4 rounded border-border accent-accent focus:ring-accent"
               />
               Remember me
             </label>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && <p className="text-sm text-danger">{error}</p>}
 
             <button
               type="submit"
@@ -132,9 +131,9 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className="mt-8 text-center text-sm text-slate-500">
+          <p className="mt-8 text-center text-sm text-muted">
             Don&apos;t have an account?{' '}
-            <a href="#" className="font-medium text-slate-700 underline">
+            <a href="#" className="font-medium text-body underline">
               Sign up
             </a>
           </p>

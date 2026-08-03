@@ -4,7 +4,7 @@ type: Architecture
 about: "iot-app"
 ---
 
-# ARCHITECTURE — IoT Platform
+# ARCHITECTURE — IoTArg
 
 > V1 scope/decisions live in `PROJECT.md`. This file covers system design end-to-end, including V2-deferred pieces (hybrid Postgres schema, granular roles) kept here as forward-looking intent, not current V1 behavior.
 
