@@ -15,6 +15,8 @@ export interface EntityRef {
   customerId?: EntityRefLink;
   assetProfileId?: EntityRefLink;
   ownerId?: EntityRefLink;
+  /** CUSTOMER only — the parent Customer this one was created under, if any (sub-customer tree). */
+  parentCustomerId?: EntityRefLink;
   additionalInfo?: unknown;
 }
 

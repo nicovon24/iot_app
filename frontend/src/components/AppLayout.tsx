@@ -15,7 +15,7 @@ const SIDEBAR_VISIBLE_STORAGE_KEY = 'iot_sidebar_visible';
 // These pages render their own full-height/full-width card widgets (tables, map),
 // so they get an edge-to-edge main area instead of the centered max-w-6xl card
 // used by simpler settings-style pages.
-const FULL_BLEED_PATHS = ['/dashboard', '/devices', '/alarms', '/assets', '/map'];
+const FULL_BLEED_PATHS = ['/dashboard', '/devices', '/alarms', '/assets', '/map', '/admin'];
 
 // Full width but with natural page scroll, unlike FULL_BLEED_PATHS which own their
 // height/scroll internally (fixed-height list widgets).

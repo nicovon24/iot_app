@@ -10,9 +10,10 @@ export interface UseEntitiesParams {
   sortOrder?: 'ASC' | 'DESC';
 }
 
-const ENTITY_LIST_PATH: Record<'DEVICE' | 'ASSET', string> = {
+const ENTITY_LIST_PATH: Record<'DEVICE' | 'ASSET' | 'CUSTOMER', string> = {
   DEVICE: 'devices',
   ASSET: 'assets',
+  CUSTOMER: 'customers',
 };
 
 function buildQueryString(params?: UseEntitiesParams): string {
@@ -27,7 +28,7 @@ function buildQueryString(params?: UseEntitiesParams): string {
   return qs ? `?${qs}` : '';
 }
 
-export function useEntities(type: Extract<EntityType, 'DEVICE' | 'ASSET'>, params?: UseEntitiesParams) {
+export function useEntities(type: Extract<EntityType, 'DEVICE' | 'ASSET' | 'CUSTOMER'>, params?: UseEntitiesParams) {
   return useQuery({
     queryKey: ['entities', type, params],
     queryFn: () => apiClient.get<PageData<EntityRef>>(`/${ENTITY_LIST_PATH[type]}${buildQueryString(params)}`),

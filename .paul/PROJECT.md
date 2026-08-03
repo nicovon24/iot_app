@@ -19,9 +19,9 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 | Attribute | Value |
 |-----------|-------|
 | Type | Application |
-| Version | v1 (in progress) |
+| Version | v1.0 (complete) |
 | Status | Prototype |
-| Last Updated | 2026-08-02 (after Phase 6.4) |
+| Last Updated | 2026-08-03 (after Phase 7 — V1 milestone complete) |
 
 ## Requirements
 
@@ -49,10 +49,12 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 - [x] Next.js frontend foundation: App Router scaffold with Tailwind v4 + HeroUI v2 (dark-navy/electric-blue theme, fully CSS-variable-driven for future white-labeling), icon-only sidebar nav, typed REST/WS API clients + TanStack Query, and a real login flow (sessionStorage-persisted session, client-side route gate, logout) — 2026-08-02 (Phase 5) — verified live end-to-end against the real running backend
 - [x] Frontend entity views: real Devices/Assets list pages with row navigation, entity detail page (`/entities/[id]`) with live Attributes/Telemetry/Alarms tabs and a conditional Map tab (react-leaflet, shown only when an entity reports lat/long telemetry), and a real filterable global Alarms page — 2026-08-02 (Phase 6) — verified live end-to-end against the real running backend and real ThingsBoard Cloud data; also shipped app-wide dark/light mode, redesigned sidebar, and semantic text-color tokens (unplanned, user-requested during 06-01)
 - [x] Fleet map view: alarm-colored map marker (shared between the per-entity Map tab and a new fleet-wide map) with a full-telemetry popup, a new "Maps" nav entry showing every real Device with location on one clustered map (`react-leaflet-cluster`), and a white/color map tile toggle — 2026-08-02 (Phase 6.4) — user-requested extension after using Phase 6's Map tab, verified live against real ThingsBoard Cloud data
+- [x] Main Dashboard: real fleet counts (Devices/Assets/active alarms), the clustered fleet map, a Devices table, and an active-alarms table, all composed from Phase 6/6.4 pieces with zero new backend calls, plus a non-functional visual seam anticipating future dashboards — 2026-08-03 (Phase 6.5) — verified live against real ThingsBoard Cloud data
+- [x] Client creation wizard UI: `/clients` list + a 3-step wizard (info → hierarchy → review) creating a real Customer + hierarchy via `POST /customers`; plus an "Add Asset" flow on `/assets` (Client → hierarchy level → parent picker) creating real linked Assets via `POST /assets` — 2026-08-03 (Phase 7) — user-requested scope expansion beyond the wizard alone; Device creation/linking explicitly confirmed out of scope (no backend support, deferred to V2); both flows verified live against real ThingsBoard Cloud data, zero backend changes
 
 ### Active (In Progress)
 
-- [ ] Client creation wizard UI — see ROADMAP.md Phase 7
+None — Version 1 milestone is complete. See "Planned (Next — Version 2)" below.
 
 ### Planned (Next — Version 2)
 

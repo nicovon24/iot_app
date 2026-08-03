@@ -1,8 +1,10 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { EntitiesService } from '../entities/entities.service';
 import { EntityRef, TbPageData } from '../types';
 import { CreateAssetDto } from './dto/create-asset.dto';
+import { UpdateAssetDto } from './dto/update-asset.dto';
+import { LinkDeviceDto } from './dto/link-device.dto';
 import { ParseTbIdPipe } from '../common/pipes/tb-id.pipe';
 import { CurrentSession } from '../common/decorators/current-session.decorator';
 import { AppSession } from '../auth/auth.service';
@@ -46,5 +48,52 @@ export class AssetsController {
   @ApiResponse({ status: 404, description: 'parentId is not a tracked hierarchy member' })
   async create(@Body() dto: CreateAssetDto): Promise<EntityRef> {
     return this.assetsService.create(dto);
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  @ApiOperation({
+    summary: 'Delete an Asset',
+    description: 'Blocked if the Asset still has child Assets or linked Devices — remove those first.',
+  })
+  @ApiResponse({ status: 204 })
+  @ApiResponse({ status: 400, description: 'Asset still has children (Assets or Devices)' })
+  async delete(@Param('id', ParseTbIdPipe) id: string): Promise<void> {
+    await this.assetsService.delete(id);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update an Asset\'s name/type/label' })
+  @ApiParam({ name: 'id' })
+  async update(@Param('id', ParseTbIdPipe) id: string, @Body() dto: UpdateAssetDto): Promise<EntityRef> {
+    return this.assetsService.update(id, dto);
+  }
+
+  @Get(':id/children')
+  @ApiOperation({ summary: 'Direct children of this Asset via real TB Contains relations, split by type' })
+  @ApiParam({ name: 'id' })
+  async getChildren(@Param('id', ParseTbIdPipe) id: string): Promise<{ assets: EntityRef[]; devices: EntityRef[] }> {
+    return this.entitiesService.getRelationChildren(id, 'ASSET');
+  }
+
+  @Post(':id/devices')
+  @ApiOperation({ summary: 'Link an existing Device to this Asset via a real TB Contains relation' })
+  @ApiParam({ name: 'id' })
+  @ApiResponse({ status: 201 })
+  @HttpCode(201)
+  async linkDevice(@Param('id', ParseTbIdPipe) id: string, @Body() dto: LinkDeviceDto): Promise<void> {
+    await this.assetsService.linkDevice(id, dto.deviceId);
+  }
+
+  @Delete(':id/devices/:deviceId')
+  @HttpCode(204)
+  @ApiOperation({ summary: 'Unlink a Device from this Asset (removes the Contains relation, does not delete the Device)' })
+  @ApiParam({ name: 'id' })
+  @ApiParam({ name: 'deviceId' })
+  async unlinkDevice(
+    @Param('id', ParseTbIdPipe) id: string,
+    @Param('deviceId', ParseTbIdPipe) deviceId: string,
+  ): Promise<void> {
+    await this.assetsService.unlinkDevice(id, deviceId);
   }
 }

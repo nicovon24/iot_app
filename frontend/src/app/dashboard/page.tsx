@@ -20,6 +20,10 @@ export default function DashboardPage() {
 
   return (
     <div className="flex h-full w-full flex-col gap-4">
+      <div className="flex shrink-0 items-center justify-between">
+        <h1 className="text-lg font-semibold text-heading">Dashboard</h1>
+      </div>
+
       <div className="grid shrink-0 grid-cols-1 gap-4 sm:grid-cols-3">
         <CountTileWidget label="Devices" value={devicesQuery.data?.totalElements ?? 0} isLoading={devicesQuery.isLoading} />
         <CountTileWidget label="Assets" value={assetsQuery.data?.totalElements ?? 0} isLoading={assetsQuery.isLoading} />

@@ -1,48 +1,48 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useEntities } from '@/hooks/useEntities';
-import { useDeleteAsset } from '@/hooks/useCreateAsset';
+import { useCustomers, useDeleteCustomer } from '@/hooks/useCustomers';
 import { EntityListWidget } from '@/widgets/EntityListWidget';
 import { ConfirmDialog } from '@/widgets/ConfirmDialog';
 import type { EntityRef } from '@/types';
 
-export default function AssetsPage() {
-  const router = useRouter();
+export default function ClientsPage() {
   const [pendingDelete, setPendingDelete] = useState<EntityRef | null>(null);
-  const { data, isLoading, isError, error } = useEntities('ASSET');
-  const deleteAsset = useDeleteAsset();
+  const { data, isLoading, isError, error } = useCustomers();
+  const deleteCustomer = useDeleteCustomer();
 
   const closeDeleteDialog = () => {
     setPendingDelete(null);
-    deleteAsset.reset();
+    deleteCustomer.reset();
   };
 
   return (
     <div className="flex h-full w-full flex-col gap-4">
+      <div className="flex shrink-0 items-center justify-between">
+        <h1 className="text-lg font-semibold text-heading">Clients</h1>
+      </div>
+
       <div className="min-h-0 flex-1">
         <EntityListWidget
           data={data}
           isLoading={isLoading}
           isError={isError}
           error={error}
-          emptyLabel="No assets found"
-          onRowClick={(entity) => router.push(`/entities/${entity.id}?type=${entity.type}`)}
+          emptyLabel="No clients found"
           onDelete={(entity) => setPendingDelete(entity)}
         />
       </div>
 
       <ConfirmDialog
         isOpen={!!pendingDelete}
-        title={`Delete ${pendingDelete?.name ?? 'this Asset'}?`}
-        description="This permanently removes the Asset from ThingsBoard. Child Assets (if any) will lose their parent link."
-        isPending={deleteAsset.isPending}
-        error={deleteAsset.error}
+        title={`Delete ${pendingDelete?.name ?? 'this Client'}?`}
+        description="This permanently removes the Client and its hierarchy from ThingsBoard. Blocked if any Asset still belongs to it."
+        isPending={deleteCustomer.isPending}
+        error={deleteCustomer.error}
         onClose={closeDeleteDialog}
         onConfirm={() => {
           if (!pendingDelete) return;
-          deleteAsset.mutate(pendingDelete.id, { onSuccess: closeDeleteDialog });
+          deleteCustomer.mutate(pendingDelete.id, { onSuccess: closeDeleteDialog });
         }}
       />
     </div>

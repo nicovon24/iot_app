@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@heroui/react';
-import { Play } from 'lucide-react';
+import { Play, Trash2 } from 'lucide-react';
 import { Tooltip } from '@/components/Tooltip';
 import type { EntityRef, PageData } from '@/types';
 
@@ -20,6 +20,7 @@ export interface EntityListWidgetProps {
   error?: unknown;
   emptyLabel: string;
   onRowClick?: (entity: EntityRef) => void;
+  onDelete?: (entity: EntityRef) => void;
   /** Optional card title rendered above the table, inside the same white card. */
   title?: string;
 }
@@ -38,6 +39,7 @@ export function EntityListWidget({
   error,
   emptyLabel,
   onRowClick,
+  onDelete,
   title,
 }: EntityListWidgetProps) {
   let content: React.ReactNode;
@@ -80,18 +82,32 @@ export function EntityListWidget({
                 <TableCell>{entity.type}</TableCell>
                 <TableCell>{entity.customerId?.name ?? '—'}</TableCell>
                 <TableCell>
-                  {onRowClick && (
-                    <div className="flex justify-center">
-                      <Tooltip label="Details">
-                        <button
-                          type="button"
-                          aria-label="Details"
-                          onClick={() => onRowClick(entity)}
-                          className="cursor-pointer flex h-5 w-5 items-center justify-center rounded-full bg-navy-950 text-white shadow-sm transition-all duration-150 hover:scale-110 hover:shadow-md active:scale-95"
-                        >
-                          <Play size={10} fill="currentColor" strokeWidth={0} className="ml-px" />
-                        </button>
-                      </Tooltip>
+                  {(onRowClick || onDelete) && (
+                    <div className="flex justify-center gap-2">
+                      {onRowClick && (
+                        <Tooltip label="Details">
+                          <button
+                            type="button"
+                            aria-label="Details"
+                            onClick={() => onRowClick(entity)}
+                            className="cursor-pointer flex h-5 w-5 items-center justify-center rounded-full bg-navy-950 text-white shadow-sm transition-all duration-150 hover:scale-110 hover:shadow-md active:scale-95"
+                          >
+                            <Play size={10} fill="currentColor" strokeWidth={0} className="ml-px" />
+                          </button>
+                        </Tooltip>
+                      )}
+                      {onDelete && (
+                        <Tooltip label="Delete">
+                          <button
+                            type="button"
+                            aria-label="Delete"
+                            onClick={() => onDelete(entity)}
+                            className="cursor-pointer flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-white shadow-sm transition-all duration-150 hover:scale-110 hover:shadow-md active:scale-95"
+                          >
+                            <Trash2 size={10} />
+                          </button>
+                        </Tooltip>
+                      )}
                     </div>
                   )}
                 </TableCell>
