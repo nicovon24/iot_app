@@ -36,14 +36,13 @@
 
 /*
  * Dark mode override — toggled by adding/removing `dark` on <html> (see
- * frontend/src/hooks/useTheme.ts). Only the surface/content tokens flip;
- * the sidebar/header gradient stays constant in both modes by design
- * (see .paul/STATE.md Decisions).
+ * frontend/src/hooks/useTheme.ts). Page/sidebar surfaces go near-black
+ * (#0a0a0a); the accent (celeste) stays the same in both modes by design.
  */
 :root.dark {
-  --color-surface: #0b1220;
-  --color-surface-card: #131c2e;
-  --color-border: #223047;
+  --color-surface: #0a0a0a;
+  --color-surface-card: #141414;
+  --color-border: #262626;
   --color-muted: #94a3b8;
   --color-heading: #f1f5f9;
   --color-body: #cbd5e1;
@@ -51,6 +50,9 @@
   --color-danger: #f87171;
   --background: var(--color-surface);
   --foreground: #e2e8f0;
+
+  --gradient-header-from: #0a0a0a;
+  --gradient-header-to: #0a0a0a;
 }
 
 @theme inline {
@@ -69,14 +71,14 @@
   --color-danger: var(--color-danger);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-nunito-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-nunito-sans), Arial, Helvetica, sans-serif;
 }
 
 /*

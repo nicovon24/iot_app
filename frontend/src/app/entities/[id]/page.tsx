@@ -24,7 +24,7 @@ const TABS_CLASSNAMES = {
   tabList: 'gap-6 border-b border-border bg-transparent p-0',
   cursor: 'bg-accent',
   tab: 'h-auto px-1 py-3',
-  tabContent: 'text-muted font-medium group-data-[selected=true]:text-heading',
+  tabContent: 'text-muted font-medium group-data-[selected=true]:text-accent group-data-[selected=true]:font-semibold',
   panel: 'pt-4',
 };
 

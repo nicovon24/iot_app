@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronDown, LogOut, Moon, PanelLeftClose, PanelLeftOpen, Sun, type LucideProps } from 'lucide-react';
+import { ChevronDown, LogOut, Moon, PanelLeftClose, PanelLeftOpen, Sun, X, type LucideProps } from 'lucide-react';
 import { NAV_ITEMS } from '@/lib/nav-items';
 import { logout } from '@/lib/auth';
 import { Tooltip } from './Tooltip';
@@ -15,18 +15,28 @@ const SIDEBAR_STORAGE_KEY = 'iot_sidebar_expanded';
 
 const DASHBOARD_OPTIONS = [{ label: 'Main Dashboard', href: '/dashboard', comingSoon: false }];
 
-export function Sidebar({ visible = true }: { visible?: boolean }) {
+export function Sidebar({
+  visible = true,
+  mobile = false,
+  onClose,
+}: {
+  visible?: boolean;
+  mobile?: boolean;
+  onClose?: () => void;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const { isDark, toggle: toggleTheme } = useTheme();
   const [expanded, setExpanded] = useState(true);
   const [dashboardMenuOpen, setDashboardMenuOpen] = useState(false);
   const dashboardMenuRef = useRef<HTMLDivElement>(null);
+  const isExpanded = mobile ? true : expanded;
 
   useEffect(() => {
+    if (mobile) return;
     const stored = window.localStorage.getItem(SIDEBAR_STORAGE_KEY);
     if (stored) setExpanded(stored === 'true');
-  }, []);
+  }, [mobile]);
 
   useEffect(() => {
     if (!dashboardMenuOpen) return;
@@ -54,14 +64,33 @@ export function Sidebar({ visible = true }: { visible?: boolean }) {
 
   return (
     <motion.aside
-      animate={{ width: visible ? (expanded ? 208 : 72) : 0 }}
-      transition={{ duration: 0.2, ease: 'easeInOut' }}
-      className="flex h-full shrink-0 flex-col overflow-hidden py-6"
+      animate={
+        mobile
+          ? { x: visible ? 0 : '-100%' }
+          : { width: visible ? (expanded ? 208 : 72) : 0 }
+      }
+      initial={mobile ? { x: '-100%' } : false}
+      transition={{ duration: 0.25, ease: 'easeInOut' }}
+      className={
+        mobile
+          ? 'fixed inset-y-0 left-0 z-50 flex h-full w-full flex-col overflow-hidden py-6'
+          : 'flex h-full shrink-0 flex-col overflow-hidden py-6'
+      }
       style={{ background: 'linear-gradient(180deg, var(--gradient-header-from), var(--gradient-header-to))' }}
     >
-      <div className={`mb-6 flex items-center gap-2.5 ${expanded ? 'px-4' : 'justify-center'}`}>
+      <div className={`mb-6 flex items-center gap-2.5 ${isExpanded ? 'px-4' : 'justify-center'}`}>
         <Image src="/logo.png" alt="IoTArg logo" width={36} height={36} className="h-9 w-9 shrink-0 object-contain" priority />
-        {expanded && <span className="truncate text-sm font-semibold text-white">IoTArg</span>}
+        {isExpanded && <span className="truncate text-sm font-semibold text-white">IoTArg</span>}
+        {mobile && (
+          <button
+            type="button"
+            aria-label="Close menu"
+            onClick={onClose}
+            className="ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+          >
+            <X size={20} strokeWidth={1.75} />
+          </button>
+        )}
       </div>
 
       <nav className="flex flex-1 flex-col gap-1 px-3">
@@ -82,14 +111,14 @@ export function Sidebar({ visible = true }: { visible?: boolean }) {
             >
               {isActive && !item.comingSoon && (
                 <motion.div
-                  layoutId="sidebar-active-pill"
+                  layoutId={mobile ? 'sidebar-active-pill-mobile' : 'sidebar-active-pill'}
                   className="absolute inset-0 rounded-xl bg-white"
                   transition={{ duration: 0.2 }}
                 />
               )}
               <Icon size={20} strokeWidth={1.75} className="relative z-10 shrink-0" />
-              {expanded && <span className="relative z-10 flex-1 truncate text-sm font-medium">{item.label}</span>}
-              {expanded && isDashboard && DASHBOARD_OPTIONS.length > 1 && (
+              {isExpanded && <span className="relative z-10 flex-1 truncate text-sm font-medium">{item.label}</span>}
+              {isExpanded && isDashboard && DASHBOARD_OPTIONS.length > 1 && (
                 <ChevronDown
                   size={14}
                   strokeWidth={2}
@@ -110,13 +139,14 @@ export function Sidebar({ visible = true }: { visible?: boolean }) {
                   onClick={() => {
                     if (DASHBOARD_OPTIONS.length === 1) {
                       router.push(DASHBOARD_OPTIONS[0].href);
+                      onClose?.();
                       return;
                     }
                     setDashboardMenuOpen((prev) => !prev);
                   }}
                   className="w-full text-left"
                 >
-                  {expanded ? row : <Tooltip label="Dashboards">{row}</Tooltip>}
+                  {isExpanded ? row : <Tooltip label="Dashboards">{row}</Tooltip>}
                 </button>
                 <AnimatePresence>
                   {dashboardMenuOpen && DASHBOARD_OPTIONS.length > 1 && (
@@ -126,7 +156,7 @@ export function Sidebar({ visible = true }: { visible?: boolean }) {
                       exit={{ opacity: 0, y: -4 }}
                       transition={{ duration: 0.12 }}
                       className={`absolute z-50 min-w-45 overflow-hidden rounded-lg bg-navy-950 py-1 shadow-lg ${
-                        expanded ? 'left-0 top-full mt-1' : 'left-full top-0 ml-2'
+                        isExpanded ? 'left-0 top-full mt-1' : 'left-full top-0 ml-2'
                       }`}
                     >
                       {DASHBOARD_OPTIONS.map((option) => (
@@ -137,6 +167,7 @@ export function Sidebar({ visible = true }: { visible?: boolean }) {
                           onClick={() => {
                             setDashboardMenuOpen(false);
                             router.push(option.href);
+                            onClose?.();
                           }}
                           className={`block w-full whitespace-nowrap px-3 py-2 text-left text-sm font-medium ${
                             option.comingSoon
@@ -159,13 +190,13 @@ export function Sidebar({ visible = true }: { visible?: boolean }) {
           const inner = item.comingSoon ? (
             row
           ) : (
-            <Link href={item.href} aria-label={item.label}>
+            <Link href={item.href} aria-label={item.label} onClick={onClose}>
               {row}
             </Link>
           );
 
           return (
-            <div key={item.href}>{expanded ? inner : <Tooltip label={tooltipLabel}>{inner}</Tooltip>}</div>
+            <div key={item.href}>{isExpanded ? inner : <Tooltip label={tooltipLabel}>{inner}</Tooltip>}</div>
           );
         })}
       </nav>
@@ -174,16 +205,18 @@ export function Sidebar({ visible = true }: { visible?: boolean }) {
         <SidebarButton
           icon={isDark ? Sun : Moon}
           label={isDark ? 'Light mode' : 'Dark mode'}
-          expanded={expanded}
+          expanded={isExpanded}
           onClick={toggleTheme}
         />
-        <SidebarButton
-          icon={expanded ? PanelLeftClose : PanelLeftOpen}
-          label={expanded ? 'Hide labels' : 'Show labels'}
-          expanded={expanded}
-          onClick={toggleExpanded}
-        />
-        <SidebarButton icon={LogOut} label="Log out" expanded={expanded} onClick={handleLogout} />
+        {!mobile && (
+          <SidebarButton
+            icon={expanded ? PanelLeftClose : PanelLeftOpen}
+            label={expanded ? 'Hide labels' : 'Show labels'}
+            expanded={expanded}
+            onClick={toggleExpanded}
+          />
+        )}
+        <SidebarButton icon={LogOut} label="Log out" expanded={isExpanded} onClick={handleLogout} />
       </div>
     </motion.aside>
   );
