@@ -114,7 +114,7 @@ export function Sidebar({ visible = true }: { visible?: boolean }) {
                     }
                     setDashboardMenuOpen((prev) => !prev);
                   }}
-                  className="flex w-full items-center text-left"
+                  className="w-full text-left"
                 >
                   {expanded ? row : <Tooltip label="Dashboards">{row}</Tooltip>}
                 </button>
