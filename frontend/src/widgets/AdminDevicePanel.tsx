@@ -1,27 +1,14 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Select,
-  SelectItem,
-  Spinner,
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
-} from '@heroui/react';
+import { Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@heroui/react';
 import { Plus, X, Cpu } from 'lucide-react';
 import { useCustomerChildren, useAssetChildren } from '@/hooks/useHierarchyChildren';
 import { useLinkDevice, useUnlinkDevice } from '@/hooks/useDeviceLink';
 import { useEntities } from '@/hooks/useEntities';
-import { ApiError } from '@/lib/api-client';
+import { Dialog, DialogHeader, DialogTitle, DialogCloseButton, DialogBody, DialogFooter } from '@/components/Dialog';
+import { Select } from '@/components/Select';
+import { toastError, toastSuccess } from '@/lib/toast';
 
 export interface AdminDevicePanelProps {
   title: string;
@@ -61,9 +48,6 @@ export function AdminDevicePanel({ title, activeNode }: AdminDevicePanelProps) {
     setPickedDeviceId(undefined);
     linkDevice.reset();
   };
-
-  const errorMessage =
-    linkDevice.error instanceof ApiError ? linkDevice.error.message : linkDevice.error ? 'Unknown error' : null;
 
   const devices = children?.devices ?? [];
 
@@ -123,7 +107,16 @@ export function AdminDevicePanel({ title, activeNode }: AdminDevicePanelProps) {
                     <div className="flex justify-end">
                       <button
                         type="button"
-                        onClick={() => activeNode && unlinkDevice.mutate({ assetId: activeNode.id, deviceId: device.id })}
+                        onClick={() =>
+                          activeNode &&
+                          unlinkDevice.mutate(
+                            { assetId: activeNode.id, deviceId: device.id },
+                            {
+                              onSuccess: () => toastSuccess('Device unassigned', device.name),
+                              onError: (error) => toastError("Couldn't unassign device", error),
+                            },
+                          )
+                        }
                         className="rounded p-1 text-red-600 hover:bg-surface"
                         aria-label="Unassign"
                         title="Unassign"
@@ -139,56 +132,47 @@ export function AdminDevicePanel({ title, activeNode }: AdminDevicePanelProps) {
         )}
       </div>
 
-      <Modal isOpen={isAssignOpen} onClose={closeAssign} size="sm" placement="center" classNames={{ base: 'w-full max-w-sm my-auto rounded-2xl bg-surface-card border border-border' }}>
-        <ModalContent>
-          <ModalHeader className="border-b border-border px-6 py-4">
-            <h2 className="text-lg font-semibold text-heading">Assign Device</h2>
-          </ModalHeader>
-          <ModalBody className="px-6 py-4">
-            <Select
-              label="Device"
-              placeholder="Select a Device"
-              labelPlacement="outside"
-              variant="bordered"
-              size="sm"
-              classNames={{
-                label: 'text-sm font-medium text-body',
-                trigger: 'rounded-md border border-border bg-surface data-[hover=true]:bg-surface-card data-[open=true]:border-accent shadow-none',
-                value: 'text-sm text-heading',
-                popoverContent: 'rounded-md border border-border bg-surface-card shadow-lg',
-              }}
-              selectedKeys={pickedDeviceId ? [pickedDeviceId] : []}
-              onSelectionChange={(keys) => {
-                const [key] = Array.from(keys) as string[];
-                setPickedDeviceId(key);
-              }}
-            >
-              {availableDevices.map((d) => (
-                <SelectItem key={d.id}>{d.name}</SelectItem>
-              ))}
-            </Select>
-            {errorMessage && (
-              <div className="mt-3 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{errorMessage}</div>
-            )}
-          </ModalBody>
-          <ModalFooter className="border-t border-border px-6 py-4">
-            <button type="button" onClick={closeAssign} className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-surface">
-              Cancel
-            </button>
-            <button
-              type="button"
-              disabled={!pickedDeviceId || linkDevice.isPending}
-              onClick={() => {
-                if (!activeNode || !pickedDeviceId) return;
-                linkDevice.mutate({ assetId: activeNode.id, deviceId: pickedDeviceId }, { onSuccess: closeAssign });
-              }}
-              className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90 disabled:opacity-60"
-            >
-              {linkDevice.isPending ? 'Assigning…' : 'Assign'}
-            </button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <Dialog isOpen={isAssignOpen} onClose={closeAssign}>
+        <DialogHeader>
+          <DialogTitle>Assign Device</DialogTitle>
+          <DialogCloseButton />
+        </DialogHeader>
+        <DialogBody>
+          <Select
+            label="Device"
+            placeholder="Select a Device"
+            value={pickedDeviceId}
+            onChange={setPickedDeviceId}
+            options={availableDevices.map((d) => ({ value: d.id, label: d.name }))}
+          />
+        </DialogBody>
+        <DialogFooter>
+          <button type="button" onClick={closeAssign} className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-surface">
+            Cancel
+          </button>
+          <button
+            type="button"
+            disabled={!pickedDeviceId || linkDevice.isPending}
+            onClick={() => {
+              if (!activeNode || !pickedDeviceId) return;
+              const deviceName = availableDevices.find((d) => d.id === pickedDeviceId)?.name;
+              linkDevice.mutate(
+                { assetId: activeNode.id, deviceId: pickedDeviceId },
+                {
+                  onSuccess: () => {
+                    closeAssign();
+                    toastSuccess('Device assigned', deviceName);
+                  },
+                  onError: (error) => toastError("Couldn't assign device", error),
+                },
+              );
+            }}
+            className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90 disabled:opacity-60"
+          >
+            {linkDevice.isPending ? 'Assigning…' : 'Assign'}
+          </button>
+        </DialogFooter>
+      </Dialog>
     </div>
   );
 }

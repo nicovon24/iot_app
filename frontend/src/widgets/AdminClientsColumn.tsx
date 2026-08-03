@@ -14,6 +14,7 @@ import { Plus, Trash2 } from 'lucide-react';
 import { useDeleteCustomer } from '@/hooks/useCustomers';
 import { AdminBreadcrumbs } from '@/widgets/AdminBreadcrumbs';
 import { ConfirmDialog } from '@/widgets/ConfirmDialog';
+import { toastError, toastSuccess } from '@/lib/toast';
 import type { EntityRef } from '@/types';
 
 const TABLE_CLASSNAMES = {
@@ -59,7 +60,7 @@ export function AdminClientsColumn({
           onClick={onAddClient}
           className="flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs text-body hover:bg-surface"
         >
-          <Plus size={12} /> Add Client
+          <Plus size={12} /> Add 
         </button>
       </div>
 
@@ -121,7 +122,14 @@ export function AdminClientsColumn({
         onClose={closeDeleteDialog}
         onConfirm={() => {
           if (!pendingDelete) return;
-          deleteCustomer.mutate(pendingDelete.id, { onSuccess: closeDeleteDialog });
+          const deletedName = pendingDelete.name;
+          deleteCustomer.mutate(pendingDelete.id, {
+            onSuccess: () => {
+              closeDeleteDialog();
+              toastSuccess('Client deleted', deletedName);
+            },
+            onError: (error) => toastError("Couldn't delete Client", error),
+          });
         }}
       />
     </div>

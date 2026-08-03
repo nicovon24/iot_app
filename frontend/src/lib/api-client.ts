@@ -33,11 +33,18 @@ async function request<T>(method: 'GET' | 'POST' | 'PATCH' | 'DELETE', path: str
     } catch {
       // response had no JSON body
     }
-    throw new ApiError(response.statusText, response.status, errorBody);
+    const detailMessage =
+      errorBody && typeof errorBody === 'object' && 'message' in errorBody && typeof errorBody.message === 'string'
+        ? errorBody.message
+        : response.statusText || `Request failed with status ${response.status}`;
+    throw new ApiError(detailMessage, response.status, errorBody);
   }
 
-  if (response.status === 204) return undefined as T;
-  return (await response.json()) as T;
+  // Some endpoints respond 200/201 with no body (e.g. link/unlink actions returning `void`) —
+  // only 204 is guaranteed empty, so parse defensively instead of assuming JSON is always present.
+  const text = await response.text();
+  if (!text) return undefined as T;
+  return JSON.parse(text) as T;
 }
 
 export const apiClient = {

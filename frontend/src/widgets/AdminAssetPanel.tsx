@@ -15,7 +15,7 @@ import { useCreateAsset, useDeleteAsset } from '@/hooks/useCreateAsset';
 import { usePatchAsset } from '@/hooks/usePatchAsset';
 import { useCustomerChildren, useAssetChildren, useInvalidateHierarchyChildren } from '@/hooks/useHierarchyChildren';
 import { ConfirmDialog } from '@/widgets/ConfirmDialog';
-import { ApiError } from '@/lib/api-client';
+import { toastError, toastSuccess } from '@/lib/toast';
 import type { EntityRef } from '@/types';
 
 const TABLE_CLASSNAMES = {
@@ -26,8 +26,9 @@ const TABLE_CLASSNAMES = {
 };
 
 export interface AdminAssetPanelProps {
+  /** Also doubles as the Asset's `type` on creation (e.g. "Site") — one level, one profile. */
   title: string;
-  customerId: string;
+  customerId?: string;
   /** Undefined until the previous hierarchy level has a selection — the column then stays empty. */
   parentId?: string;
   parentType: 'CUSTOMER' | 'ASSET';
@@ -47,7 +48,7 @@ export function AdminAssetPanel({
 }: AdminAssetPanelProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [newName, setNewName] = useState('');
-  const [newType, setNewType] = useState('');
+  const [newLabel, setNewLabel] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [pendingDelete, setPendingDelete] = useState<EntityRef | null>(null);
@@ -62,20 +63,19 @@ export function AdminAssetPanel({
   const deleteAsset = useDeleteAsset();
   const invalidateChildren = useInvalidateHierarchyChildren();
 
-  const createErrorMessage =
-    createAsset.error instanceof ApiError ? createAsset.error.message : createAsset.error ? 'Unknown error' : null;
-
   const submitCreate = () => {
-    if (!parentId || !newName.trim() || !newType.trim()) return;
+    if (!customerId || !parentId || !newName.trim()) return;
     createAsset.mutate(
-      { name: newName.trim(), type: newType.trim(), customerId, levelIndex, parentId },
+      { name: newName.trim(), type: title, label: newLabel.trim() || undefined, customerId, levelIndex, parentId },
       {
         onSuccess: () => {
           setIsAdding(false);
           setNewName('');
-          setNewType('');
+          setNewLabel('');
           invalidateChildren({ id: parentId, type: parentType });
+          toastSuccess(`${title} created`);
         },
+        onError: (error) => toastError(`Couldn't create ${title}`, error),
       },
     );
   };
@@ -94,6 +94,7 @@ export function AdminAssetPanel({
           setEditingId(null);
           invalidateChildren({ id: parentId, type: parentType });
         },
+        onError: (error) => toastError('Couldn\'t rename', error),
       },
     );
   };
@@ -116,7 +117,7 @@ export function AdminAssetPanel({
           title={parentId ? undefined : 'Select the previous level first'}
           className="flex shrink-0 items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs text-body hover:bg-surface disabled:cursor-not-allowed disabled:opacity-40"
         >
-          <Plus size={12} /> Add Asset
+          <Plus size={12} /> Add {title}
         </button>
       </div>
 
@@ -130,12 +131,11 @@ export function AdminAssetPanel({
             className="rounded-md border border-border bg-surface-card px-2.5 py-1.5 text-sm text-heading outline-none focus:border-accent"
           />
           <input
-            value={newType}
-            onChange={(e) => setNewType(e.target.value)}
-            placeholder="Type (e.g. warehouse)"
+            value={newLabel}
+            onChange={(e) => setNewLabel(e.target.value)}
+            placeholder="Label (optional)"
             className="rounded-md border border-border bg-surface-card px-2.5 py-1.5 text-sm text-heading outline-none focus:border-accent"
           />
-          {createErrorMessage && <span className="text-xs text-red-700">{createErrorMessage}</span>}
           <div className="flex justify-end gap-2">
             <button
               type="button"
@@ -166,16 +166,15 @@ export function AdminAssetPanel({
         {!isLoading && assets.length === 0 && (
           <div className="flex h-full min-h-32 items-center justify-center">
             <p className="text-sm text-muted">
-              {parentId ? 'No Assets here.' : 'Select the previous level to see its Assets.'}
+              {parentId ? `No ${title} here.` : 'Select the previous level first.'}
             </p>
           </div>
         )}
 
         {!isLoading && assets.length > 0 && (
-          <Table aria-label={`${title} assets`} classNames={TABLE_CLASSNAMES}>
+          <Table aria-label={`${title} list`} classNames={TABLE_CLASSNAMES}>
             <TableHeader>
               <TableColumn>NAME</TableColumn>
-              <TableColumn>TYPE</TableColumn>
               <TableColumn align="end">ACTIONS</TableColumn>
             </TableHeader>
             <TableBody items={assets}>
@@ -214,7 +213,6 @@ export function AdminAssetPanel({
                       asset.name
                     )}
                   </TableCell>
-                  <TableCell onClick={() => editingId !== asset.id && onSelect(asset)}>{asset.type ?? '—'}</TableCell>
                   <TableCell>
                     {editingId !== asset.id && (
                       <div className="flex justify-end gap-2">
@@ -246,8 +244,8 @@ export function AdminAssetPanel({
 
       <ConfirmDialog
         isOpen={!!pendingDelete}
-        title={`Delete ${pendingDelete?.name ?? 'this Asset'}?`}
-        description="This permanently removes the Asset from ThingsBoard. Blocked if it still has child Assets or linked Devices."
+        title={`Delete ${pendingDelete?.name ?? `this ${title}`}?`}
+        description={`This permanently removes the ${title} from ThingsBoard. Blocked if it still has child Assets or linked Devices.`}
         isPending={deleteAsset.isPending}
         error={deleteAsset.error}
         onClose={closeDeleteDialog}
@@ -257,7 +255,9 @@ export function AdminAssetPanel({
             onSuccess: () => {
               closeDeleteDialog();
               invalidateChildren({ id: parentId, type: parentType });
+              toastSuccess(`${title} deleted`, pendingDelete.name);
             },
+            onError: (error) => toastError(`Couldn't delete ${title}`, error),
           });
         }}
       />

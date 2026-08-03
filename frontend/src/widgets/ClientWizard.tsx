@@ -1,14 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@heroui/react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Plus, Trash2, ArrowUp, ArrowDown, GripVertical, Check } from 'lucide-react';
 import { useCreateCustomer } from '@/hooks/useCustomers';
+import { Dialog, DialogHeader, DialogCloseButton, DialogBody, DialogFooter } from '@/components/Dialog';
 import { ApiError } from '@/lib/api-client';
+import { toastSuccess } from '@/lib/toast';
+import { DEFAULT_HIERARCHY_LEVEL_NAMES } from '@/lib/hierarchy-defaults';
 
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -18,8 +20,6 @@ const schema = z.object({
 });
 
 type FormValues = z.infer<typeof schema>;
-
-const DEFAULT_LEVELS = ['Site', 'Area', 'Asset', 'Sensor'];
 
 const STEPS = [
   { n: 1, label: 'Info' },
@@ -59,7 +59,7 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
     resolver: zodResolver(schema),
     defaultValues: {
       name: '',
-      hierarchyLevels: DEFAULT_LEVELS.map((name) => ({ name })),
+      hierarchyLevels: DEFAULT_HIERARCHY_LEVEL_NAMES.map((name) => ({ name })),
     },
   });
 
@@ -101,7 +101,12 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
         parentCustomerId,
         hierarchyLevels: values.hierarchyLevels.map((l, i) => ({ levelIndex: i, name: l.name })),
       },
-      { onSuccess: close },
+      {
+        onSuccess: (customer) => {
+          close();
+          toastSuccess('Client created', customer.name);
+        },
+      },
     );
   });
 
@@ -113,22 +118,13 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
         : null;
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={close}
-      size="sm"
-      placement="center"
-      scrollBehavior="inside"
-      classNames={{
-        base: 'w-full max-w-sm max-h-[85vh] my-auto rounded-2xl bg-surface-card border border-border',
-        backdrop: 'bg-black/50 backdrop-blur-sm',
-        closeButton:
-          'top-4 end-4 rounded-full bg-surface text-body hover:bg-border hover:text-heading transition-colors',
-      }}
-    >
-      <ModalContent>
-        <ModalHeader className="flex flex-col gap-4 border-b border-border px-6 pb-4 pt-5">
-          <h2 className="text-lg font-semibold text-heading">Create Client</h2>
+    <Dialog isOpen={isOpen} onClose={close}>
+      <DialogHeader>
+        <div className="flex w-full flex-col gap-4 pt-1">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-heading">Create Client</h2>
+            <DialogCloseButton />
+          </div>
           <div className="flex items-center gap-2">
             {STEPS.map((s, i) => (
               <div key={s.n} className="flex flex-1 items-center gap-2">
@@ -163,10 +159,11 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
               </div>
             ))}
           </div>
-        </ModalHeader>
+        </div>
+      </DialogHeader>
 
-        <ModalBody className="px-6 py-5">
-          <div className="min-h-40 overflow-hidden">
+      <DialogBody>
+        <div className="min-h-40 overflow-hidden">
             <AnimatePresence mode="wait" custom={direction} initial={false}>
               {step === 1 && (
                 <motion.div
@@ -187,7 +184,7 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
                     autoFocus
                     {...register('name')}
                     className="rounded-md border border-border bg-surface px-3 py-2 text-sm text-heading outline-none focus:border-accent"
-                    placeholder="Acme Corp"
+                    placeholder="Test Comp"
                   />
                   <AnimatePresence>
                     {errors.name && (
@@ -333,10 +330,9 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
               )}
             </AnimatePresence>
           </div>
+      </DialogBody>
 
-        </ModalBody>
-
-        <ModalFooter className="flex justify-between border-t border-border px-6 py-4">
+      <DialogFooter className="justify-between">
           {step > 1 ? (
             <button
               type="button"
@@ -374,8 +370,7 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
               {createCustomer.isPending ? 'Creating…' : 'Create Client'}
             </motion.button>
           )}
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+      </DialogFooter>
+    </Dialog>
   );
 }
