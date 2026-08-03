@@ -20,14 +20,14 @@ export default function DashboardPage() {
 
   return (
     <div className="flex h-full w-full flex-col gap-4">
-      <div className="grid shrink-0 grid-cols-3 gap-4">
+      <div className="grid shrink-0 grid-cols-1 gap-4 sm:grid-cols-3">
         <CountTileWidget label="Devices" value={devicesQuery.data?.totalElements ?? 0} isLoading={devicesQuery.isLoading} />
         <CountTileWidget label="Assets" value={assetsQuery.data?.totalElements ?? 0} isLoading={assetsQuery.isLoading} />
         <CountTileWidget label="Active Alarms" value={activeAlarms.length} isLoading={alarmsQuery.isLoading} />
       </div>
 
-      <div className="grid min-h-0 flex-1 grid-cols-3 gap-4">
-        <div className="col-span-2 min-h-0">
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="min-h-0 lg:col-span-2">
           <FleetMapWidget heightClassName="h-full" />
         </div>
 
