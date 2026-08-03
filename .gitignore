@@ -8,3 +8,4 @@ backend/dist
 .mcp.json
 graphify-out/
 *.log
+NOTES.md

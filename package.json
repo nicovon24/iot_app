@@ -6,7 +6,7 @@
     "frontend"
   ],
   "scripts": {
-    "prepare": "husky || true"
+    "prepare": "node -e \"try{require('fs').existsSync('.git')&&require('child_process').execSync('husky',{stdio:'inherit'})}catch(e){}\""
   },
   "devDependencies": {
     "husky": "^9.1.7"

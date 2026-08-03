@@ -23,10 +23,9 @@ const PANEL_ICONS = [Activity, Wifi, Lock, Satellite, Laptop, RefreshCw, Brain, 
 
 export default function LoginPage() {
   const router = useRouter();
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -35,11 +34,11 @@ export default function LoginPage() {
     setError(null);
     setSubmitting(true);
     try {
-      await login(username, password);
+      await login(email, password);
       router.push('/dashboard');
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
-        setError('Invalid username or password.');
+        setError('Invalid email or password.');
       } else if (err instanceof ApiError) {
         setError(`Login failed: ${err.message}`);
       } else {
@@ -66,15 +65,15 @@ export default function LoginPage() {
 
           <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="username" className="text-sm font-medium text-body">
-                Username
+              <label htmlFor="email" className="text-sm font-medium text-body">
+                Email
               </label>
               <input
-                id="username"
-                type="text"
-                placeholder="Enter your username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
                 autoFocus
                 className="w-full rounded-md border border-border bg-surface-card px-3 py-2.5 text-sm text-heading placeholder:text-faint focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
@@ -106,16 +105,18 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <a href="#" className="-mt-3 text-sm font-medium text-body underline">
+            <span
+              aria-disabled="true"
+              className="-mt-3 cursor-not-allowed text-sm font-medium text-faint underline opacity-60"
+            >
               Forgot your password?
-            </a>
+            </span>
 
-            <label className="flex items-center gap-2 text-sm text-muted">
+            <label className="flex cursor-not-allowed items-center gap-2 text-sm text-faint opacity-60">
               <input
                 type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="h-4 w-4 rounded border-border accent-accent focus:ring-accent"
+                disabled
+                className="h-4 w-4 rounded border-border accent-accent"
               />
               Remember me
             </label>
@@ -131,11 +132,11 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className="mt-8 text-center text-sm text-muted">
+          <p className="mt-8 text-center text-sm text-faint opacity-60">
             Don&apos;t have an account?{' '}
-            <a href="#" className="font-medium text-body underline">
+            <span aria-disabled="true" className="cursor-not-allowed font-medium underline">
               Sign up
-            </a>
+            </span>
           </p>
         </div>
       </div>
