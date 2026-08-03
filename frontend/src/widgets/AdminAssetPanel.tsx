@@ -117,7 +117,7 @@ export function AdminAssetPanel({
           title={parentId ? undefined : 'Select the previous level first'}
           className="flex shrink-0 items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs text-body hover:bg-surface disabled:cursor-not-allowed disabled:opacity-40"
         >
-          <Plus size={12} /> Add {title}
+          <Plus size={12} /> Add
         </button>
       </div>
 
