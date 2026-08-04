@@ -4,8 +4,10 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useEntities } from '@/hooks/useEntities';
 import { useDeleteAsset } from '@/hooks/useCreateAsset';
+import { usePatchAsset } from '@/hooks/usePatchAsset';
 import { EntityListWidget } from '@/widgets/EntityListWidget';
 import { ConfirmDialog } from '@/widgets/ConfirmDialog';
+import { toastError } from '@/lib/toast';
 import type { EntityRef } from '@/types';
 
 export default function AssetsPage() {
@@ -13,6 +15,7 @@ export default function AssetsPage() {
   const [pendingDelete, setPendingDelete] = useState<EntityRef | null>(null);
   const { data, isLoading, isError, error } = useEntities('ASSET');
   const deleteAsset = useDeleteAsset();
+  const patchAsset = usePatchAsset();
 
   const closeDeleteDialog = () => {
     setPendingDelete(null);
@@ -30,6 +33,16 @@ export default function AssetsPage() {
           emptyLabel="No assets found"
           onRowClick={(entity) => router.push(`/entities/${entity.id}?type=${entity.type}`)}
           onDelete={(entity) => setPendingDelete(entity)}
+          editableFields={['name', 'label']}
+          editTitle="Edit Asset"
+          isEditPending={patchAsset.isPending}
+          editError={patchAsset.error}
+          onEditSave={(entity, values) =>
+            patchAsset.mutate(
+              { id: entity.id, dto: { name: values.name, label: values.label } },
+              { onError: (error) => toastError("Couldn't update Asset", error) },
+            )
+          }
         />
       </div>
 

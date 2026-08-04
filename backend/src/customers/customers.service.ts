@@ -47,6 +47,10 @@ export class CustomersService {
     return { ...customer, hierarchyLevels };
   }
 
+  async update(customerId: string, updates: { title?: string }): Promise<EntityRef> {
+    return this.entitiesService.updateCustomer(customerId, updates);
+  }
+
   async getHierarchy(customerId: string) {
     // Throws NotFoundException if the Customer doesn't exist in ThingsBoard.
     await this.entitiesService.getById(customerId, 'CUSTOMER');

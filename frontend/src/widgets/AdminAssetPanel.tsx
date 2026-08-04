@@ -10,16 +10,19 @@ import {
   TableHeader,
   TableRow,
 } from '@heroui/react';
-import { Plus, Pencil, Trash2, Check, X as XIcon } from 'lucide-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { useCreateAsset, useDeleteAsset } from '@/hooks/useCreateAsset';
 import { usePatchAsset } from '@/hooks/usePatchAsset';
 import { useCustomerChildren, useAssetChildren, useInvalidateHierarchyChildren } from '@/hooks/useHierarchyChildren';
 import { ConfirmDialog } from '@/widgets/ConfirmDialog';
+import { EditEntityDialog } from '@/widgets/EditEntityDialog';
+import { Dialog, DialogHeader, DialogTitle, DialogCloseButton, DialogBody, DialogFooter } from '@/components/Dialog';
 import { toastError, toastSuccess } from '@/lib/toast';
 import type { EntityRef } from '@/types';
 
 const TABLE_CLASSNAMES = {
-  wrapper: 'h-full rounded-none border-0 bg-transparent p-0 shadow-none overflow-y-auto',
+  base: 'h-full min-h-0',
+  wrapper: 'h-full rounded-none border-0 bg-transparent p-0 shadow-none table-scroll overflow-auto',
   th: 'bg-surface text-left text-xs font-semibold uppercase tracking-wider text-muted first:rounded-none last:rounded-none border-b border-border py-3',
   td: 'text-left py-3 text-sm text-body group-data-[hover=true]:bg-surface',
   tr: 'border-b border-border last:border-b-0 transition-colors',
@@ -49,8 +52,7 @@ export function AdminAssetPanel({
   const [isAdding, setIsAdding] = useState(false);
   const [newName, setNewName] = useState('');
   const [newLabel, setNewLabel] = useState('');
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editName, setEditName] = useState('');
+  const [editingAsset, setEditingAsset] = useState<EntityRef | null>(null);
   const [pendingDelete, setPendingDelete] = useState<EntityRef | null>(null);
 
   const customerChildren = useCustomerChildren(parentType === 'CUSTOMER' ? parentId : undefined);
@@ -63,38 +65,24 @@ export function AdminAssetPanel({
   const deleteAsset = useDeleteAsset();
   const invalidateChildren = useInvalidateHierarchyChildren();
 
+  const closeAddDialog = () => {
+    setIsAdding(false);
+    setNewName('');
+    setNewLabel('');
+    createAsset.reset();
+  };
+
   const submitCreate = () => {
     if (!customerId || !parentId || !newName.trim()) return;
     createAsset.mutate(
       { name: newName.trim(), type: title, label: newLabel.trim() || undefined, customerId, levelIndex, parentId },
       {
         onSuccess: () => {
-          setIsAdding(false);
-          setNewName('');
-          setNewLabel('');
+          closeAddDialog();
           invalidateChildren({ id: parentId, type: parentType });
           toastSuccess(`${title} created`);
         },
         onError: (error) => toastError(`Couldn't create ${title}`, error),
-      },
-    );
-  };
-
-  const startEdit = (asset: EntityRef) => {
-    setEditingId(asset.id);
-    setEditName(asset.name);
-  };
-
-  const submitEdit = (id: string) => {
-    if (!parentId || !editName.trim()) return;
-    patchAsset.mutate(
-      { id, dto: { name: editName.trim() } },
-      {
-        onSuccess: () => {
-          setEditingId(null);
-          invalidateChildren({ id: parentId, type: parentType });
-        },
-        onError: (error) => toastError('Couldn\'t rename', error),
       },
     );
   };
@@ -120,41 +108,6 @@ export function AdminAssetPanel({
           <Plus size={12} /> Add
         </button>
       </div>
-
-      {isAdding && parentId && (
-        <div className="flex flex-col gap-2 rounded-lg border border-border bg-surface p-3">
-          <input
-            autoFocus
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            placeholder="Name"
-            className="rounded-md border border-border bg-surface-card px-2.5 py-1.5 text-sm text-heading outline-none focus:border-accent"
-          />
-          <input
-            value={newLabel}
-            onChange={(e) => setNewLabel(e.target.value)}
-            placeholder="Label (optional)"
-            className="rounded-md border border-border bg-surface-card px-2.5 py-1.5 text-sm text-heading outline-none focus:border-accent"
-          />
-          <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => setIsAdding(false)}
-              className="rounded-md border border-border px-3 py-1 text-xs text-body hover:bg-surface-card"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              disabled={createAsset.isPending}
-              onClick={submitCreate}
-              className="rounded-md bg-accent px-3 py-1 text-xs font-semibold text-white hover:brightness-90 disabled:opacity-60"
-            >
-              {createAsset.isPending ? 'Creating…' : 'Create'}
-            </button>
-          </div>
-        </div>
-      )}
 
       <div className="min-h-0 flex-1 overflow-y-auto">
         {parentId && isLoading && (
@@ -183,57 +136,34 @@ export function AdminAssetPanel({
                   key={asset.id}
                   className={`group cursor-pointer ${selectedAssetId === asset.id ? 'bg-surface' : ''}`}
                 >
-                  <TableCell className="font-medium text-heading" onClick={() => editingId !== asset.id && onSelect(asset)}>
-                    {editingId === asset.id ? (
-                      <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-                        <input
-                          autoFocus
-                          value={editName}
-                          onChange={(e) => setEditName(e.target.value)}
-                          className="w-full rounded-md border border-border bg-surface px-2 py-1 text-sm text-heading outline-none focus:border-accent"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => submitEdit(asset.id)}
-                          className="rounded p-1 text-accent hover:bg-surface"
-                          aria-label="Save"
-                        >
-                          <Check size={14} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setEditingId(null)}
-                          className="rounded p-1 text-body hover:bg-surface"
-                          aria-label="Cancel"
-                        >
-                          <XIcon size={14} />
-                        </button>
-                      </div>
-                    ) : (
-                      asset.name
-                    )}
+                  <TableCell className="font-medium text-heading" onClick={() => onSelect(asset)}>
+                    {asset.name}
                   </TableCell>
                   <TableCell>
-                    {editingId !== asset.id && (
-                      <div className="flex justify-end gap-2">
-                        <button
-                          type="button"
-                          onClick={() => startEdit(asset)}
-                          className="rounded p-1 text-body hover:bg-surface"
-                          aria-label="Edit"
-                        >
-                          <Pencil size={13} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setPendingDelete(asset)}
-                          className="rounded p-1 text-red-600 hover:bg-surface"
-                          aria-label="Delete"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                    )}
+                    <div className="flex justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingAsset(asset);
+                        }}
+                        className="rounded p-1 text-body hover:bg-surface"
+                        aria-label="Edit"
+                      >
+                        <Pencil size={13} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPendingDelete(asset);
+                        }}
+                        className="rounded p-1 text-red-600 hover:bg-surface"
+                        aria-label="Delete"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
                   </TableCell>
                 </TableRow>
               )}
@@ -259,6 +189,76 @@ export function AdminAssetPanel({
             },
             onError: (error) => toastError(`Couldn't delete ${title}`, error),
           });
+        }}
+      />
+
+      <Dialog isOpen={isAdding} onClose={closeAddDialog}>
+        <DialogHeader>
+          <DialogTitle>Add {title}</DialogTitle>
+          <DialogCloseButton />
+        </DialogHeader>
+        <DialogBody className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-body" htmlFor="new-asset-name">
+              Name
+            </label>
+            <input
+              id="new-asset-name"
+              autoFocus
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              className="rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-heading outline-none focus:border-accent"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-body" htmlFor="new-asset-label">
+              Label (optional)
+            </label>
+            <input
+              id="new-asset-label"
+              value={newLabel}
+              onChange={(e) => setNewLabel(e.target.value)}
+              className="rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-heading outline-none focus:border-accent"
+            />
+          </div>
+        </DialogBody>
+        <DialogFooter>
+          <button
+            type="button"
+            onClick={closeAddDialog}
+            className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-surface"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            disabled={!newName.trim() || createAsset.isPending}
+            onClick={submitCreate}
+            className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90 disabled:opacity-60"
+          >
+            {createAsset.isPending ? 'Creating…' : 'Create'}
+          </button>
+        </DialogFooter>
+      </Dialog>
+
+      <EditEntityDialog
+        isOpen={!!editingAsset}
+        onClose={() => setEditingAsset(null)}
+        title={`Edit ${title}`}
+        entity={editingAsset}
+        fields={['name', 'label']}
+        isPending={patchAsset.isPending}
+        error={patchAsset.error}
+        onSubmit={(values) => {
+          if (!editingAsset || !parentId || !values.name?.trim()) return;
+          patchAsset.mutate(
+            { id: editingAsset.id, dto: { name: values.name.trim(), label: values.label } },
+            {
+              onSuccess: () => invalidateChildren({ id: parentId, type: parentType }),
+              onError: (error) => toastError("Couldn't rename", error),
+            },
+          );
+          setEditingAsset(null);
         }}
       />
     </div>

@@ -301,6 +301,26 @@ export class EntitiesService {
     return mapped;
   }
 
+  async updateDevice(id: string, updates: { label?: string }): Promise<EntityRef> {
+    const existing = await this.tb.request<TbDevice>('GET', `/api/device/${id}`);
+    const updated = await this.tb.request<TbDevice>('POST', '/api/device', {
+      ...existing,
+      label: updates.label ?? existing.label,
+    });
+    const [mapped] = await this.mapWithRefs([updated], 'DEVICE');
+    return mapped;
+  }
+
+  async updateCustomer(id: string, updates: { title?: string }): Promise<EntityRef> {
+    const existing = await this.tb.request<TbCustomer>('GET', `/api/customer/${id}`);
+    const updated = await this.tb.request<TbCustomer>('POST', '/api/customer', {
+      ...existing,
+      title: updates.title ?? existing.title,
+    });
+    const [mapped] = await this.mapWithRefs([updated], 'CUSTOMER');
+    return mapped;
+  }
+
   /** Creates a real ThingsBoard "Contains" relation. */
   async createRelation(
     fromId: string,

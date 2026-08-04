@@ -1,15 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { useCustomers, useDeleteCustomer } from '@/hooks/useCustomers';
+import { useCustomers, useDeleteCustomer, usePatchCustomer } from '@/hooks/useCustomers';
 import { EntityListWidget } from '@/widgets/EntityListWidget';
 import { ConfirmDialog } from '@/widgets/ConfirmDialog';
+import { toastError } from '@/lib/toast';
 import type { EntityRef } from '@/types';
 
 export default function ClientsPage() {
   const [pendingDelete, setPendingDelete] = useState<EntityRef | null>(null);
   const { data, isLoading, isError, error } = useCustomers();
   const deleteCustomer = useDeleteCustomer();
+  const patchCustomer = usePatchCustomer();
 
   const closeDeleteDialog = () => {
     setPendingDelete(null);
@@ -30,6 +32,16 @@ export default function ClientsPage() {
           error={error}
           emptyLabel="No clients found"
           onDelete={(entity) => setPendingDelete(entity)}
+          editableFields={['name']}
+          editTitle="Edit Client"
+          isEditPending={patchCustomer.isPending}
+          editError={patchCustomer.error}
+          onEditSave={(entity, values) =>
+            patchCustomer.mutate(
+              { id: entity.id, dto: { title: values.name ?? '' } },
+              { onError: (error) => toastError("Couldn't update Client", error) },
+            )
+          }
         />
       </div>
 

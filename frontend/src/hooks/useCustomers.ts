@@ -27,3 +27,14 @@ export function useDeleteCustomer() {
     },
   });
 }
+
+export function usePatchCustomer() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, dto }: { id: string; dto: { title: string } }) =>
+      apiClient.patch<EntityRef>(`/customers/${id}`, dto),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['entities', 'CUSTOMER'] });
+    },
+  });
+}

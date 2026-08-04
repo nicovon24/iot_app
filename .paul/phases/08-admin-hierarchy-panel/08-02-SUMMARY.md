@@ -120,6 +120,31 @@ None structural. `AddAssetModal.tsx` was left in place unused rather than delete
 **Blockers:** None. Phase 8 is complete pending user's own interactive verification in a browser.
 
 ---
+
+## Addendum (2026-08-05, chat-driven continuation session)
+
+On top of the 08-03 Miller-column redesign (chat follow-up, already narrated in `STATE.md`'s Decisions/Session Continuity — no separate `08-03-SUMMARY.md` was written for it), the same day's/next session's chat continued iterating directly on the Admin panel and the shared entity-list tables, entirely user-driven (no `/paul:discuss`/`/paul:plan`). Folded into this plan's summary per explicit user request rather than opened as a new numbered plan.
+
+**Backend (`backend/`):**
+
+- `PATCH /devices/:id` (label only) and `PATCH /customers/:id` (title only) added — `DevicesController`/`CustomersController` + `EntitiesService.updateDevice()`/`updateCustomer()` (same GET-then-POST-to-TB pattern as the existing `updateAsset()`). `CustomersController`'s PATCH is `@Roles('SYSADMIN')`-gated like its sibling create/delete routes. New DTOs: `UpdateDeviceDto`, `UpdateCustomerDto`.
+
+**Frontend (`frontend/`):**
+
+- **Edit UX overhaul**: inline row-editing (text input + check/cancel swapped into the table cell) was replaced everywhere with a shared `EditEntityDialog` (Radix `Dialog`-based modal, matching `ConfirmDialog`'s visual weight) — used by `EntityListWidget` (Assets: name+label, Devices: label, Clients: title→name) and by `AdminAssetPanel`'s own Edit action (name+label). Root cause for switching: HeroUI's `Table` caches each row's rendered JSX by the row *item's object identity* (`@react-stately/collections`' `CollectionBuilder`, a `WeakMap` keyed on the value passed via `items`), so a plain external state change (`editingId`) did not force the library to re-render the row — the Edit button visually "did nothing" even though state updated correctly. A modal sidesteps the bug entirely (no per-row conditional render inside the cached `<Table>`).
+- **Add UX**: `AdminAssetPanel`'s inline "Add" form (text inputs appearing below the panel title) replaced with the same `Dialog` primitive (`Dialog`/`DialogHeader`/`DialogBody`/`DialogFooter` from `frontend/src/components/Dialog.tsx`), name+label fields, matching the Edit modal's shape.
+- **Table scroll fix**: HeroUI `Table`'s `classNames` has two nested slots — an outer `base` div and an inner `wrapper` div (the actual scroll container). Only `wrapper` had `h-full`/`overflow-auto`; `base` had no height, so `h-full` on `wrapper` had nothing to resolve against (parent height was `auto`), the table grew to its full unclipped height, and the outer card's `overflow-hidden` silently clipped the bottom rows with no scrollbar at all. Fixed by also setting `base: 'h-full min-h-0'` in every affected `TABLE_CLASSNAMES` (`EntityListWidget`, `AlarmsListWidget`, `AdminAssetPanel`). A new `.table-scroll` CSS class (`globals.css`) gives all these tables a thin, light-gray, always-visible (not hover-only) draggable scrollbar — distinct from the pre-existing hover-only `.map-popup-scroll`.
+- **Cursor pointer, app-wide**: added a global rule to `globals.css` (`button:not(:disabled), select:not(:disabled) { cursor: pointer }` + the `:disabled`/`not-allowed` counterpart) instead of hand-adding `cursor-pointer` to every button — browsers don't give `<button>`/`<select>` a pointer cursor by default, which is why roughly half the app's buttons already had a manual `cursor-pointer` class and half didn't.
+- **Action-button restyle**: `EntityListWidget`'s Details/Edit/Delete row actions changed from filled color circles (`bg-navy-950`/`bg-red-600` circular buttons) to flat icon buttons (`rounded p-1 text-{color} hover:bg-surface`, no background at rest) per a user-supplied reference screenshot — now matches the flat icon-button convention already used in `AdminAssetPanel`/`AdminClientsColumn`/`AdminDevicePanel`.
+- **Error toast restyle**: `providers.tsx`'s `sonner` `Toaster` `error` classNames gained a red-tinted background/border and red title text (previously just a thin left border), so error toasts read as visually distinct from success toasts at a glance.
+
+**Key files touched this addendum:** `backend/src/devices/{devices.controller.ts,dto/update-device.dto.ts}`, `backend/src/customers/{customers.controller.ts,customers.service.ts,dto/update-customer.dto.ts}`, `backend/src/entities/entities.service.ts`; `frontend/src/widgets/{EntityListWidget.tsx,EditEntityDialog.tsx(new),AdminAssetPanel.tsx,AlarmsListWidget.tsx,AttributesTableWidget.tsx}`, `frontend/src/hooks/{usePatchDevice.ts(new),useCustomers.ts}`, `frontend/src/app/{assets,devices,clients}/page.tsx`, `frontend/src/app/providers.tsx`, `frontend/src/app/globals.css`.
+
+**Verification:** `npx tsc --noEmit` clean in both `backend/` and `frontend/` after every change; dev server (Turbopack) hot-reload confirmed no compile errors. No automated browser check available in this environment (same standing limitation as every prior phase) — table-scroll and modal-open behavior were diagnosed by reading the `@react-stately/collections`/HeroUI `table.js` theme source directly (root-caused, not guessed) rather than via a live browser session; final interactive confirmation is the user's own.
+
+**Not done / left as-is:** `AddAssetModal.tsx` remains unused dead code (flagged again, still not deleted). Customer's `PATCH` edits `title` only (ThingsBoard `Customer` has no native `label` field, confirmed via `TbCustomer` type — user explicitly chose to edit `title` instead when asked).
+
+---
 *Built with PAUL Framework · iot_app*
 *Phase: 08-admin-hierarchy-panel, Plan: 02*
-*Completed: 2026-08-04*
+*Completed: 2026-08-04 (addendum: 2026-08-05)*
