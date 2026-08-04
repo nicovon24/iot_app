@@ -14,7 +14,7 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(method: 'GET' | 'POST', path: string, body?: unknown): Promise<T> {
+async function request<T>(method: 'GET' | 'POST' | 'PATCH' | 'DELETE', path: string, body?: unknown): Promise<T> {
   const headers: Record<string, string> = {};
   const token = getSessionToken();
   if (token) headers['x-session-token'] = token;
@@ -33,14 +33,23 @@ async function request<T>(method: 'GET' | 'POST', path: string, body?: unknown):
     } catch {
       // response had no JSON body
     }
-    throw new ApiError(response.statusText, response.status, errorBody);
+    const detailMessage =
+      errorBody && typeof errorBody === 'object' && 'message' in errorBody && typeof errorBody.message === 'string'
+        ? errorBody.message
+        : response.statusText || `Request failed with status ${response.status}`;
+    throw new ApiError(detailMessage, response.status, errorBody);
   }
 
-  if (response.status === 204) return undefined as T;
-  return (await response.json()) as T;
+  // Some endpoints respond 200/201 with no body (e.g. link/unlink actions returning `void`) —
+  // only 204 is guaranteed empty, so parse defensively instead of assuming JSON is always present.
+  const text = await response.text();
+  if (!text) return undefined as T;
+  return JSON.parse(text) as T;
 }
 
 export const apiClient = {
   get: <T>(path: string) => request<T>('GET', path),
   post: <T>(path: string, body?: unknown) => request<T>('POST', path, body),
+  patch: <T>(path: string, body?: unknown) => request<T>('PATCH', path, body),
+  delete: <T>(path: string) => request<T>('DELETE', path),
 };

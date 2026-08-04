@@ -13,8 +13,12 @@ Prove ThingsBoard can back a product with a far more capable frontend and API th
 ## Current Milestone
 
 **Version 1 — ThingsBoard-backed API + live dashboard shell** (v1.0)
+Status: Complete
+Phases: 7 of 7 complete (+6 inserted phases: 2.1, 2.2, 2.3, 4.3, 6.4, 6.5 — all complete). All V1 scope shipped: backend (Phases 1-4.3), frontend foundation through entity views/fleet map/dashboard (Phases 5-6.5), and the Client creation wizard + Asset creation flow (Phase 7). V1 milestone complete.
+
+**Version 2 — Admin hierarchy panel + Device linking** (v2.0, in progress)
 Status: In progress
-Phases: 6 of 7 complete (+5 inserted phases: 2.1, 2.2, 2.3, 4.3, 6.4 — all complete; 6.5 discussing). Backend V1 (Phases 1-4.3) and Phases 5-6 (+6.4) (Frontend foundation, Entity views, Fleet map view) done. Next: Phase 6.5 (Main Dashboard) — required before Phase 7.
+Phase 8 (Admin hierarchy management panel) complete 2026-08-04, first V2 phase shipped. Backend (08-01: sub-customer breadcrumbs, Contains-relation tree reads, Asset PATCH, Device assign/unassign) and frontend (08-02: the `/admin` panel itself) both applied and verified.
 
 ## Phases
 
@@ -33,8 +37,9 @@ Phases: 6 of 7 complete (+5 inserted phases: 2.1, 2.2, 2.3, 4.3, 6.4 — all com
 | 5 | Frontend foundation & API/WS clients | 3 | Complete | 2026-08-02 |
 | 6 | Entity views — devices, assets, attributes, live telemetry, alarms, map | 3 | Complete | 2026-08-02 |
 | 6.4 | Fleet map view — custom markers, clustering, nav entry [INSERTED] | 1 | Complete | 2026-08-02 |
-| 6.5 | Main Dashboard — fleet summary, counts, map, tables, alarms [INSERTED] | 1 | Planning | - |
-| 7 | Client creation wizard UI | TBD | Not started | - |
+| 6.5 | Main Dashboard — fleet summary, counts, map, tables, alarms [INSERTED] | 1 | Complete | 2026-08-03 |
+| 7 | Client creation wizard UI + Asset creation flow | 2 | Complete | 2026-08-03 |
+| 8 | Admin hierarchy management panel (V2, first phase) | 2 | Complete | 2026-08-04 |
 
 ## Phase Details
 
@@ -155,7 +160,7 @@ Phases: 6 of 7 complete (+5 inserted phases: 2.1, 2.2, 2.3, 4.3, 6.4 — all com
 
 **Plans:**
 - [x] 04-01: Prisma setup + Postgres wiring (`PrismaModule`/`PrismaService`, port-conflict fix, Prisma v6 pin) — applied and unified against a real local Postgres instance (see `.paul/phases/04-client-wizard-hierarchy/04-01-SUMMARY.md` — schema section superseded, infra section still accurate)
-- [x] 04-02: Original standalone `POST /clients`/`GET /clients/:id/hierarchy` — applied, then **merged same-day into `customers/`** per user direction: `POST /customers` (sysadmin-only, atomic Customer+hierarchy creation, real TB Customer, hierarchy keyed by real `customerId`) + `GET /customers/:id/hierarchy`. Verified live end-to-end against real ThingsBoard Cloud (created "Acme Corp" Customer with Site/Area/Asset/Sensor levels, confirmed via `GET /customers/:id`). See `.paul/phases/04-client-wizard-hierarchy/04-02-SUMMARY.md`'s superseded-note
+- [x] 04-02: Original standalone `POST /clients`/`GET /clients/:id/hierarchy` — applied, then **merged same-day into `customers/`** per user direction: `POST /customers` (sysadmin-only, atomic Customer+hierarchy creation, real TB Customer, hierarchy keyed by real `customerId`) + `GET /customers/:id/hierarchy`. Verified live end-to-end against real ThingsBoard Cloud (created "Test Comp" Customer with Site/Area/Asset/Sensor levels, confirmed via `GET /customers/:id`). See `.paul/phases/04-client-wizard-hierarchy/04-02-SUMMARY.md`'s superseded-note
 
 ### Phase 4.3: Asset hierarchy linking — parentCustomerId, Asset↔Customer/hierarchy Contains relation, remove POST /devices [INSERTED]
 
@@ -237,21 +242,38 @@ Phases: 6 of 7 complete (+5 inserted phases: 2.1, 2.2, 2.3, 4.3, 6.4 — all com
 - User-creatable/shareable custom dashboards (a separate, larger ask raised in the same conversation) are explicitly deferred to Version 2/3 — this phase is the single fixed main dashboard only, not a dashboard-builder system
 
 **Plans:**
-- [ ] 6.5-01: Pending /paul:plan
+- [x] 6.5-01: `CountTileWidget` + fleet counts + non-functional future-dashboards seam + fleet map + Devices table + active-alarms table — applied, verified live against real ThingsBoard Cloud data (4 Devices, 1 Asset, 0 active alarms at verification time) and unified (see `.paul/phases/6.5-main-dashboard/6.5-01-SUMMARY.md`)
 
-### Phase 7: Client creation wizard UI
+### Phase 7: Client creation wizard UI + Asset creation flow
 
-**Goal:** An admin can create a Client and define its hierarchy from the frontend, matching the backend wizard from Phase 4.
-**Depends on:** Phase 4, Phase 5
-**Research:** Unlikely (standard multi-step form, React Hook Form + Zod already in stack)
+**Goal:** An admin can create a Client and define its hierarchy from the frontend (matching the backend wizard from Phase 4), and separately create Assets linked into an existing Client's hierarchy (matching Phase 4.3's backend). Device creation/linking is explicitly out of scope — no backend support exists, deferred to V2 (confirmed with user 2026-08-03).
+**Depends on:** Phase 4, Phase 4.3, Phase 5, Phase 6 (Assets list)
+**Research:** Unlikely (standard multi-step form; `react-hook-form`/`zod` need to be added — despite this roadmap previously claiming they were "already in stack", they are not present in `frontend/package.json`)
 
-**Scope:**
-- Wizard flow: Client basic info → hierarchy level definition (add/reorder levels) → review → submit
+**Scope (confirmed 2026-08-03, see `.paul/phases/07-client-wizard-ui/CONTEXT.md`):**
+- Two separate flows, not one combined wizard: (1) Client-creation wizard (basic info → hierarchy level definition, add/reorder/rename → review → submit), (2) a separate "Add Asset" flow for an existing Client (pick Customer → hierarchy level → parent → submit)
 - Client-side validation mirroring backend (hierarchy required, immutable after submit — UI makes this explicit)
+- No backend changes — both flows consume existing `POST /customers` (Phase 4) and `POST /assets` (Phase 4.3) endpoints as-is
 
 **Plans:**
-- [ ] 07-01: Wizard steps + form state (React Hook Form + Zod)
-- [ ] 07-02: Submit flow wired to `POST /clients` + confirmation/error states
+- [x] 07-01: Clients list page + Client creation wizard (info → hierarchy → review), wired to `POST /customers` — applied, verified live against real ThingsBoard Cloud (created a real Customer with a 2-level hierarchy) and unified (see `.paul/phases/07-client-wizard-ui/07-01-SUMMARY.md`)
+- [x] 07-02: "Add Asset" flow (Customer → level → parent picker) on `/assets`, wired to `POST /assets` — applied, verified live (created a real level-0 Asset parented to the Customer, then a real level-1 Asset parented to it) and unified (see `.paul/phases/07-client-wizard-ui/07-02-SUMMARY.md`)
+
+### Phase 8: Admin hierarchy management panel [V2, first phase]
+
+**Goal:** A new "Admin" nav section where a user picks a Client (breadcrumb-navigable into sub-clients), sees that Client's Asset hierarchy as a drillable tree, and sees/manages real ThingsBoard Devices linked to whichever node (Client or Asset) is currently selected — add/delete Customers, add/delete/edit Assets, assign/unassign Devices, all from one view. "Create Client"/"Add Asset" buttons removed from `/clients`/`/assets` (creation moves here).
+**Depends on:** Phase 7 (reuses `useCustomers`, `ClientWizard`, `AddAssetModal`'s patterns, `useCreateAsset`/`useDeleteAsset`/`useDeleteCustomer`, `ConfirmDialog`)
+**Reason:** User-requested, discussed interactively 2026-08-03/04 after V1 shipped — first Version 2 feature. Confirmed via clarifying questions: Devices are real ThingsBoard Devices (not just the "Sensor" hierarchy-level name), Admin is a new nav section (not a `/clients`/`/assets` replacement), editing is Asset-only, Device row actions are assign/unassign only (no edit/delete-the-device).
+
+**Scope (confirmed 2026-08-03/04, see `.paul/phases/08-admin-hierarchy-panel/CONTEXT.md`):**
+- No Postgres schema changes — Device↔Asset/Customer↔Asset hierarchy reads are pure real TB "Contains" relations (project constraint: TB is the single source of truth)
+- New backend: `parentCustomerId` exposed on Customer `EntityRef`, `GET /customers/:id/children` + `GET /assets/:id/children` (relation-based tree reads), `PATCH /assets/:id`, `POST`/`DELETE /assets/:id/devices(/:deviceId)` (assign/unassign), `AssetsService.delete()` now blocks if the Asset has children
+- New frontend: `/admin` page, breadcrumb Customer/Asset columns, Device panel (assign/unassign only)
+
+**Plans:**
+- [x] 08-01: Backend (parentCustomerId, relation-tree reads, Asset PATCH, Device link/unlink, delete-with-children guard) — applied, all 5 ACs verified live against real ThingsBoard Cloud, no Postgres changes (see `.paul/phases/08-admin-hierarchy-panel/08-01-SUMMARY.md`)
+- [x] 08-02: Frontend admin panel (breadcrumb Customers/Assets/Devices columns, add/delete/edit/assign/unassign, remove old create buttons) — applied, `tsc` clean, verified via route/render checks + re-confirmed backend contract live (see `.paul/phases/08-admin-hierarchy-panel/08-02-SUMMARY.md`)
+- [x] 08-03 (chat-driven follow-up, not a formal plan doc, 2026-08-04): Redesigned `/admin` from the fixed 3-breadcrumb-column layout into hierarchy-driven Miller columns — one HeroUI `Table` column per Client hierarchy level (Site/Area/Asset/…), always shown up front (falls back to the default Site→Area→Asset→Sensor set before a Client is picked), populated progressively as each level is selected, ending in a Devices column named after the last level. Asset creation forms simplified (dropped the free-text Type field — now auto-set to the level name — kept Name + optional Label). Clients table now keeps the selected Client visible as a row (not just in the breadcrumb) alongside its sub-Clients. Moved nav entry to right under Dashboard, full-width responsive grid layout. Fixed a real bug in `api-client.ts` (empty 201 bodies on link/unlink were throwing a non-`ApiError` client-side parse error, masking successful requests as "Unknown error" and skipping cache invalidation) and switched error messages to surface the backend's real `message` instead of `response.statusText`. Replaced HeroUI's `Modal`/`Select`/`Toast` with a custom Radix UI + framer-motion `Dialog`/`Select` (`frontend/src/components/`) and the `sonner` toast library (HeroUI's own Toast rendered unstyled/black and overlapped the sidebar) — `ConfirmDialog`, `ClientWizard`, and the Assign Device modal all migrated. No backend changes. `tsc --noEmit` clean throughout.
 
 ## Version 2 (Not yet planned)
 
@@ -259,8 +281,8 @@ Deferred scope, pulled from PROJECT.md "Planned (Next — Version 2)" and STATE.
 
 | Item | Origin | Effort | Notes |
 |------|--------|--------|-------|
-| Asset creation wizard | PROJECT.md V2 scope | M | Mirrors the V1 Client wizard pattern from Phase 4/7 |
-| Device creation + linking wizard (link Device to Client + Asset, default structure from `client_hierarchy_levels` template) | PROJECT.md V2 scope | M | V1 Phase 2.1 only creates bare unlinked Devices/Assets — this wizard does the linking |
+| ~~Asset creation wizard~~ | PROJECT.md V2 scope | M | **Done — Phase 7 (07-02)** |
+| Device linking (link existing Device to an Asset) | PROJECT.md V2 scope | M | **In progress — Phase 8 (08-01 backend done pending verification, 08-02 frontend not started)**. No Device *creation* wizard yet — Devices are still created outside the app; this only covers linking an existing Device to an Asset via Contains relation |
 | Área/asset-level permission granularity (finer than customer hierarchy) | PROJECT.md V2 scope / Phase 2.2 clarification | M | No design chosen yet — ThingsBoard CE has no Entity Groups to back it; would need either a TB PE upgrade or a parallel Postgres permission layer, a real architectural decision to make when picked up |
 | User-creatable/editable dashboards (`react-grid-layout`), full dashboard config persistence, **sharable by admin/sysadmin users with other users** (explicit user requirement, 2026-08-02) | PROJECT.md V2 scope | L | Needs a Postgres schema for dashboard configs + a sharing/permission model, out of V1's narrow Prisma scope; the V1 Main Dashboard (Phase 6.5) is a single fixed dashboard, not this system |
 | DELETE endpoints for devices/assets/customers | STATE.md Deferred Issues (Phase 2.1) | S | Add when a V2 wizard needs entity deletion |
@@ -277,4 +299,4 @@ Deferred scope, pulled from PROJECT.md "Planned (Next — Version 2)" and STATE.
 
 ---
 *Roadmap created: 2026-07-30*
-*Last updated: 2026-08-02 (after Phase 6.4)*
+*Last updated: 2026-08-03 (after Phase 7 — V1 milestone complete)*

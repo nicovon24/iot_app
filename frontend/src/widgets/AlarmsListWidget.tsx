@@ -14,7 +14,8 @@ export interface AlarmsListWidgetProps {
 }
 
 const TABLE_CLASSNAMES = {
-  wrapper: 'h-full rounded-none border-0 bg-transparent p-0 shadow-none overflow-y-auto',
+  base: 'h-full min-h-0',
+  wrapper: 'h-full rounded-none border-0 bg-transparent p-0 shadow-none table-scroll overflow-auto',
   th: 'bg-surface text-center text-xs font-semibold uppercase tracking-wider text-muted first:rounded-none last:rounded-none border-b border-border py-3',
   td: 'text-center py-3 text-sm text-body group-data-[hover=true]:bg-surface',
   tr: 'border-b border-border last:border-b-0 transition-colors',

@@ -3,7 +3,7 @@ import { ThingsboardClientService } from '../thingsboard/thingsboard-client.serv
 import { RedisService } from '../thingsboard/redis.service';
 import { AppSession } from '../auth/auth.service';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
-import { EntityRef, EntityRefLink, EntityType, TbAsset, TbCustomer, TbDevice, TbPageData } from '../types';
+import { EntityRef, EntityRefLink, EntityType, TbAsset, TbCustomer, TbDevice, TbPageData, TbRelation } from '../types';
 
 type RefKind = 'tenant' | 'customer' | 'assetProfile';
 
@@ -146,6 +146,7 @@ export class EntitiesService {
       const ownerId = entity.ownerId?.id;
       const ownerKind: RefKind | undefined =
         entity.ownerId?.entityType === 'TENANT' ? 'tenant' : entity.ownerId?.entityType === 'CUSTOMER' ? 'customer' : undefined;
+      const parentCustomerId = 'parentCustomerId' in entity ? entity.parentCustomerId?.id : undefined;
 
       return {
         id: entity.id.id,
@@ -156,6 +157,7 @@ export class EntitiesService {
         customerId: customerId ? refMap.get(`customer:${customerId}`) ?? { id: customerId } : undefined,
         assetProfileId: assetProfileId ? refMap.get(`assetProfile:${assetProfileId}`) ?? { id: assetProfileId } : undefined,
         ownerId: ownerId ? (ownerKind ? refMap.get(`${ownerKind}:${ownerId}`) : undefined) ?? { id: ownerId } : undefined,
+        parentCustomerId: parentCustomerId ? refMap.get(`customer:${parentCustomerId}`) ?? { id: parentCustomerId } : undefined,
         additionalInfo: entity.additionalInfo,
       };
     });
@@ -168,6 +170,7 @@ export class EntitiesService {
       if (entity.tenantId?.id) refs.push({ id: entity.tenantId.id, kind: 'tenant' });
       if ('customerId' in entity && entity.customerId?.id) refs.push({ id: entity.customerId.id, kind: 'customer' });
       if ('assetProfileId' in entity && entity.assetProfileId?.id) refs.push({ id: entity.assetProfileId.id, kind: 'assetProfile' });
+      if ('parentCustomerId' in entity && entity.parentCustomerId?.id) refs.push({ id: entity.parentCustomerId.id, kind: 'customer' });
       if (entity.ownerId?.id) {
         if (entity.ownerId.entityType === 'TENANT') refs.push({ id: entity.ownerId.id, kind: 'tenant' });
         else if (entity.ownerId.entityType === 'CUSTOMER') refs.push({ id: entity.ownerId.id, kind: 'customer' });
@@ -286,12 +289,44 @@ export class EntitiesService {
     await this.tb.request('DELETE', `/api/asset/${id}`);
   }
 
-  /** Creates a real ThingsBoard relation (first real use of the Relations API in this codebase). */
+  async updateAsset(id: string, updates: { name?: string; type?: string; label?: string }): Promise<EntityRef> {
+    const existing = await this.tb.request<TbAsset>('GET', `/api/asset/${id}`);
+    const updated = await this.tb.request<TbAsset>('POST', '/api/asset', {
+      ...existing,
+      name: updates.name ?? existing.name,
+      type: updates.type ?? existing.type,
+      label: updates.label ?? existing.label,
+    });
+    const [mapped] = await this.mapWithRefs([updated], 'ASSET');
+    return mapped;
+  }
+
+  async updateDevice(id: string, updates: { label?: string }): Promise<EntityRef> {
+    const existing = await this.tb.request<TbDevice>('GET', `/api/device/${id}`);
+    const updated = await this.tb.request<TbDevice>('POST', '/api/device', {
+      ...existing,
+      label: updates.label ?? existing.label,
+    });
+    const [mapped] = await this.mapWithRefs([updated], 'DEVICE');
+    return mapped;
+  }
+
+  async updateCustomer(id: string, updates: { title?: string }): Promise<EntityRef> {
+    const existing = await this.tb.request<TbCustomer>('GET', `/api/customer/${id}`);
+    const updated = await this.tb.request<TbCustomer>('POST', '/api/customer', {
+      ...existing,
+      title: updates.title ?? existing.title,
+    });
+    const [mapped] = await this.mapWithRefs([updated], 'CUSTOMER');
+    return mapped;
+  }
+
+  /** Creates a real ThingsBoard "Contains" relation. */
   async createRelation(
     fromId: string,
     fromType: 'CUSTOMER' | 'ASSET',
     toId: string,
-    toType: 'ASSET',
+    toType: 'ASSET' | 'DEVICE',
   ): Promise<void> {
     await this.tb.request('POST', '/api/relation', {
       from: { id: fromId, entityType: fromType },
@@ -299,5 +334,37 @@ export class EntitiesService {
       type: 'Contains',
       typeGroup: 'COMMON',
     });
+  }
+
+  /** Removes a real ThingsBoard "Contains" relation (unlink, does not delete either entity). */
+  async deleteRelation(fromId: string, fromType: 'ASSET', toId: string, toType: 'DEVICE'): Promise<void> {
+    const params = new URLSearchParams({
+      fromId,
+      fromType,
+      toId,
+      toType,
+      relationType: 'Contains',
+      relationTypeGroup: 'COMMON',
+    });
+    await this.tb.request('DELETE', `/api/relation?${params.toString()}`);
+  }
+
+  /**
+   * Direct children of a Customer or Asset via real TB "Contains" relations, split by type.
+   * Powers the admin hierarchy browser — Customer→Asset (level 0) and Asset→Asset/Device chains
+   * are both expressed as Contains relations, unlike the Customer→sub-Customer tree (parentCustomerId).
+   */
+  async getRelationChildren(fromId: string, fromType: 'CUSTOMER' | 'ASSET'): Promise<{ assets: EntityRef[]; devices: EntityRef[] }> {
+    const params = new URLSearchParams({ fromId, fromType, relationTypeGroup: 'COMMON' });
+    const relations = await this.tb.request<TbRelation[]>('GET', `/api/relations?${params.toString()}`);
+    const contains = relations.filter((r) => r.type === 'Contains');
+    const assetIds = contains.filter((r) => r.to.entityType === 'ASSET').map((r) => r.to.id);
+    const deviceIds = contains.filter((r) => r.to.entityType === 'DEVICE').map((r) => r.to.id);
+
+    const [assets, devices] = await Promise.all([
+      Promise.all(assetIds.map((id) => this.getById(id, 'ASSET'))),
+      Promise.all(deviceIds.map((id) => this.getById(id, 'DEVICE'))),
+    ]);
+    return { assets, devices };
   }
 }

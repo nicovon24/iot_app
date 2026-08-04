@@ -81,6 +81,17 @@ body {
   font-family: var(--font-nunito-sans), Arial, Helvetica, sans-serif;
 }
 
+/* Browsers don't give <button>/<select> a pointer cursor by default — apply it
+ * app-wide instead of remembering `cursor-pointer` on every one-off button. */
+button:not(:disabled),
+select:not(:disabled) {
+  cursor: pointer;
+}
+button:disabled,
+select:disabled {
+  cursor: not-allowed;
+}
+
 /*
  * Barely-visible scrollbar for the map popup's telemetry list — invisible at
  * rest, a faint thumb only appears on hover so the popup doesn't look "busy"
@@ -105,4 +116,28 @@ body {
 }
 .map-popup-scroll:hover::-webkit-scrollbar-thumb {
   background: rgba(100, 116, 139, 0.35);
+}
+
+/*
+ * Table scrollbar — unlike .map-popup-scroll this stays visible at rest so
+ * cramped table widgets clearly signal there's more content to drag through,
+ * while staying thin/light-gray so it doesn't compete with the table itself.
+ */
+.table-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.5) transparent;
+}
+.table-scroll::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+.table-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.table-scroll::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.5);
+  border-radius: 9999px;
+}
+.table-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.8);
 }

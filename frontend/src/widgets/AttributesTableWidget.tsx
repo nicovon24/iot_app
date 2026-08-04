@@ -25,7 +25,7 @@ const SCOPE_LABELS: Record<AttributeScope, string> = {
 };
 
 const TABLE_CLASSNAMES = {
-  wrapper: 'rounded-xl border border-border bg-surface-card p-0 shadow-sm',
+  wrapper: 'rounded-xl border border-border bg-surface-card p-0 shadow-sm table-scroll overflow-x-auto',
   th: 'bg-surface text-center text-xs font-semibold uppercase tracking-wider text-muted border-b border-border py-3',
   td: 'text-center py-2.5 text-sm text-body',
   tr: 'border-b border-border last:border-b-0',

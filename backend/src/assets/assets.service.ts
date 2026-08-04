@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { EntitiesService } from '../entities/entities.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { EntityRef } from '../types';
@@ -81,5 +81,40 @@ export class AssetsService {
     }
 
     return created;
+  }
+
+  /**
+   * Deletes the real ThingsBoard Asset and its Postgres hierarchy-assignment row.
+   * Blocked if the Asset still has children (child Assets or linked Devices via a real TB
+   * "Contains" relation) — those must be unlinked/deleted first, same integrity guard as
+   * CustomersService.delete. Idempotent against a TB 404 (entity already gone, e.g. orphaned
+   * by a prior TB-side quota/plan issue — see STATE.md Blockers).
+   */
+  async delete(id: string): Promise<void> {
+    const { assets, devices } = await this.entitiesService.getRelationChildren(id, 'ASSET');
+    if (assets.length > 0 || devices.length > 0) {
+      throw new BadRequestException(
+        `Cannot delete this Asset — it still has ${assets.length} child Asset(s) and ${devices.length} linked Device(s). Remove them first.`,
+      );
+    }
+
+    try {
+      await this.entitiesService.deleteAsset(id);
+    } catch (err) {
+      if (!(err instanceof HttpException) || err.getStatus() !== 404) throw err;
+    }
+    await this.prisma.assetHierarchyAssignment.deleteMany({ where: { assetId: id } });
+  }
+
+  async update(id: string, updates: { name?: string; type?: string; label?: string }): Promise<EntityRef> {
+    return this.entitiesService.updateAsset(id, updates);
+  }
+
+  async linkDevice(assetId: string, deviceId: string): Promise<void> {
+    await this.entitiesService.createRelation(assetId, 'ASSET', deviceId, 'DEVICE');
+  }
+
+  async unlinkDevice(assetId: string, deviceId: string): Promise<void> {
+    await this.entitiesService.deleteRelation(assetId, 'ASSET', deviceId, 'DEVICE');
   }
 }

@@ -15,7 +15,7 @@ export class HierarchyLevelDto {
 }
 
 export class CreateCustomerDto {
-  @ApiProperty({ example: 'Acme Corp', description: 'Becomes the ThingsBoard Customer title' })
+  @ApiProperty({ example: 'Test Comp', description: 'Becomes the ThingsBoard Customer title' })
   @IsString()
   @IsNotEmpty()
   name!: string;

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { EntitiesService } from '../entities/entities.service';
 import { EntityRef, TbPageData } from '../types';
@@ -10,6 +10,7 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
+import { UpdateCustomerDto } from './dto/update-customer.dto';
 
 @ApiTags('customers')
 @ApiSecurity('session-token')
@@ -59,5 +60,37 @@ export class CustomersController {
   @ApiResponse({ status: 404, description: 'Customer not found' })
   async getHierarchy(@Param('id', ParseTbIdPipe) id: string) {
     return this.customersService.getHierarchy(id);
+  }
+
+  @Patch(':id')
+  @UseGuards(RolesGuard)
+  @Roles('SYSADMIN')
+  @ApiOperation({ summary: "Update a Client's title, sysadmin-only" })
+  @ApiParam({ name: 'id' })
+  @ApiResponse({ status: 403, description: 'Caller is not sysadmin' })
+  async update(@Param('id', ParseTbIdPipe) id: string, @Body() dto: UpdateCustomerDto) {
+    return this.customersService.update(id, dto);
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  @UseGuards(RolesGuard)
+  @Roles('SYSADMIN')
+  @ApiOperation({
+    summary: 'Delete a Client (Customer) + its hierarchy, sysadmin-only',
+    description: 'Blocked if any Asset is still tracked under this Customer — delete those first.',
+  })
+  @ApiResponse({ status: 204 })
+  @ApiResponse({ status: 400, description: 'Customer still has Assets assigned to its hierarchy' })
+  @ApiResponse({ status: 403, description: 'Caller is not sysadmin' })
+  async delete(@Param('id', ParseTbIdPipe) id: string): Promise<void> {
+    await this.customersService.delete(id);
+  }
+
+  @Get(':id/children')
+  @ApiOperation({ summary: 'Direct level-0 Assets attached to this Customer via real TB Contains relations' })
+  @ApiParam({ name: 'id' })
+  async getChildren(@Param('id', ParseTbIdPipe) id: string): Promise<{ assets: EntityRef[]; devices: EntityRef[] }> {
+    return this.entitiesService.getRelationChildren(id, 'CUSTOMER');
   }
 }
