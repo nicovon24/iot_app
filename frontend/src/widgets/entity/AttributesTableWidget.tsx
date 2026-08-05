@@ -25,7 +25,7 @@ const SCOPE_LABELS: Record<AttributeScope, string> = {
 };
 
 const TABLE_CLASSNAMES = {
-  wrapper: 'rounded-xl border border-border bg-surface-card p-0 shadow-sm table-scroll overflow-x-auto',
+  wrapper: 'glass-card p-0 table-scroll overflow-x-auto',
   th: 'bg-surface text-center text-xs font-semibold uppercase tracking-wider text-muted border-b border-border py-3',
   td: 'text-center py-2.5 text-sm text-body',
   tr: 'border-b border-border last:border-b-0',
@@ -43,7 +43,7 @@ export function AttributesTableWidget({ data, isLoading, isError, error }: Attri
   if (isError) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     return (
-      <div className="flex h-40 items-center justify-center rounded-xl border border-border bg-surface-card">
+      <div className="glass-card flex h-40 items-center justify-center">
         <p className="text-sm text-danger">Failed to load attributes: {message}</p>
       </div>
     );
@@ -59,7 +59,7 @@ export function AttributesTableWidget({ data, isLoading, isError, error }: Attri
           <div key={scope} className="flex flex-col gap-2">
             <h3 className="text-sm font-semibold text-heading">{SCOPE_LABELS[scope]}</h3>
             {attributes.length === 0 ? (
-              <p className="rounded-xl border border-border bg-surface-card px-4 py-3 text-sm text-muted">
+              <p className="glass-card px-4 py-3 text-sm text-muted">
                 No attributes in this scope
               </p>
             ) : (

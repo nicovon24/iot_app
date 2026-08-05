@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { AlertTriangle } from 'lucide-react';
-import { Dialog, DialogBody } from '@/components/Dialog';
+import { Dialog, DialogBody } from '@/components/ui/Dialog';
 import { ApiError } from '@/lib/api-client';
 
 export interface ConfirmDialogProps {
@@ -22,7 +22,7 @@ export function ConfirmDialog({ isOpen, title, description, isPending, error, on
     <Dialog isOpen={isOpen} onClose={onClose} widthClassName="max-w-xs">
       <DialogBody className="flex flex-col gap-3 py-4">
         <div className="flex items-start gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-500/15 text-red-400">
             <AlertTriangle size={18} />
           </div>
           <div>
@@ -35,7 +35,7 @@ export function ConfirmDialog({ isOpen, title, description, isPending, error, on
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+            className="rounded-md border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400"
           >
             {errorMessage}
           </motion.div>

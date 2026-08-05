@@ -14,7 +14,7 @@ export function ValueTileWidget({ label, value, unit, ts }: ValueTileWidgetProps
   const displayValue = formatTelemetryValue(value);
 
   return (
-    <div className="flex flex-col gap-1 rounded-xl border border-border bg-surface-card px-5 py-4 shadow-sm">
+    <div className="glass-card flex flex-col gap-1 px-5 py-4">
       <span className="text-xs font-semibold uppercase tracking-wider text-muted">{label}</span>
       <motion.span
         key={value}

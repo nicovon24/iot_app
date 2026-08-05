@@ -50,10 +50,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full">
+    <div className="flex min-h-screen w-full bg-surface">
       {/* Left: form */}
       <div className="flex w-full flex-col justify-center px-8 py-12 sm:px-16 lg:w-1/2 lg:px-24">
-        <div className="mx-auto w-full max-w-sm">
+        <div className="glass-card animate-fade-up mx-auto w-full max-w-sm p-8">
           <div className="mb-10 flex flex-col items-center gap-3">
             <Image src="/logo.png" alt="IoTArg logo" width={64} height={64} className="h-16 w-16 object-contain" priority />
             <p className="text-center text-base font-medium text-body">
@@ -76,7 +76,7 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoFocus
-                className="w-full rounded-md border border-border bg-surface-card px-3 py-2.5 text-sm text-heading placeholder:text-faint focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                className="w-full rounded-md border border-border bg-white/5 px-3 py-2.5 text-sm text-heading placeholder:text-faint focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
               />
             </div>
 
@@ -92,7 +92,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full rounded-md border border-border bg-surface-card px-3 py-2.5 pr-10 text-sm text-heading placeholder:text-faint focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                  className="w-full rounded-md border border-border bg-white/5 px-3 py-2.5 pr-10 text-sm text-heading placeholder:text-faint focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
                 />
                 <button
                   type="button"
@@ -126,25 +126,22 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full rounded-md bg-accent py-2.5 text-sm font-semibold text-white transition hover:brightness-90 disabled:opacity-60"
+              style={{ background: 'var(--gradient-accent)' }}
+              className="w-full rounded-md py-2.5 text-sm font-semibold text-white transition hover:brightness-95 disabled:opacity-60"
             >
               {submitting ? 'Logging in…' : 'Log in'}
             </button>
           </form>
-
-          <p className="mt-8 text-center text-sm text-faint opacity-60">
-            Don&apos;t have an account?{' '}
-            <span aria-disabled="true" className="cursor-not-allowed font-medium underline">
-              Sign up
-            </span>
-          </p>
         </div>
       </div>
 
       {/* Right: decorative panel */}
-      <div className="relative hidden overflow-hidden bg-accent lg:flex lg:w-1/2 lg:items-center lg:justify-center">
-        <div className="absolute -right-40 -top-40 h-96 w-96 rounded-full bg-white/10" />
-        <div className="absolute -bottom-32 -right-20 h-112 w-md rounded-full bg-white/10" />
+      <div
+        className="relative hidden overflow-hidden lg:flex lg:w-1/2 lg:items-center lg:justify-center"
+        style={{ background: 'var(--gradient-accent)' }}
+      >
+        <div className="absolute -right-40 -top-40 h-96 w-96 rounded-full bg-white/10 blur-2xl" />
+        <div className="absolute -bottom-32 -right-20 h-112 w-md rounded-full bg-white/10 blur-2xl" />
         <div className="relative grid grid-cols-3 gap-10 p-10">
           {PANEL_ICONS.map((Icon, i) => (
             <div key={i} className="flex h-16 w-16 items-center justify-center">

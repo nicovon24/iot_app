@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEntities } from '@/hooks/useEntities';
 import { usePatchDevice } from '@/hooks/usePatchDevice';
-import { EntityListWidget } from '@/widgets/EntityListWidget';
+import { EntityListWidget } from '@/widgets/entity/EntityListWidget';
 import { toastError } from '@/lib/toast';
 
 export default function DevicesPage() {

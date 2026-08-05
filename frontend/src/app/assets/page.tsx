@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useEntities } from '@/hooks/useEntities';
 import { useDeleteAsset } from '@/hooks/useCreateAsset';
 import { usePatchAsset } from '@/hooks/usePatchAsset';
-import { EntityListWidget } from '@/widgets/EntityListWidget';
-import { ConfirmDialog } from '@/widgets/ConfirmDialog';
+import { EntityListWidget } from '@/widgets/entity/EntityListWidget';
+import { ConfirmDialog } from '@/widgets/forms/ConfirmDialog';
 import { toastError } from '@/lib/toast';
 import type { EntityRef } from '@/types';
 

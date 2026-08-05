@@ -37,7 +37,7 @@ export function Select({ label, placeholder, value, onChange, options }: SelectP
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.97, y: -4 }}
             transition={{ duration: 0.12 }}
-            className="z-50 w-[var(--radix-select-trigger-width)] overflow-hidden rounded-md border border-border bg-surface-card shadow-lg"
+            className="glass-card z-50 w-[var(--radix-select-trigger-width)] overflow-hidden !rounded-md"
           >
             <RadixSelect.Viewport className="max-h-64 p-1">
               <AnimatePresence>

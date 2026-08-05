@@ -10,11 +10,11 @@ import { useTelemetryKeys, useTelemetryHistory, useTelemetryLatest } from '@/hoo
 import { useLiveTelemetry } from '@/hooks/useLiveTelemetry';
 import { useEntityAlarms } from '@/hooks/useEntityAlarms';
 import { useLiveAlarms } from '@/hooks/useLiveAlarms';
-import { AttributesTableWidget } from '@/widgets/AttributesTableWidget';
-import { ValueTileWidget } from '@/widgets/ValueTileWidget';
-import { LineChartWidget } from '@/widgets/LineChartWidget';
-import { AlarmsListWidget } from '@/widgets/AlarmsListWidget';
-import { MapWidget } from '@/widgets/MapWidget';
+import { AttributesTableWidget } from '@/widgets/entity/AttributesTableWidget';
+import { ValueTileWidget } from '@/widgets/charts/ValueTileWidget';
+import { LineChartWidget } from '@/widgets/charts/LineChartWidget';
+import { AlarmsListWidget } from '@/widgets/entity/AlarmsListWidget';
+import { MapWidget } from '@/widgets/maps/MapWidget';
 import type { Alarm, EntityRef, EntityType } from '@/types';
 
 const ENTITY_TYPES: EntityType[] = ['DEVICE', 'ASSET', 'CUSTOMER'];
@@ -22,10 +22,10 @@ const LIST_PATH: Record<'DEVICE' | 'ASSET', string> = { DEVICE: 'devices', ASSET
 
 const TABS_CLASSNAMES = {
   tabList: 'gap-6 border-b border-border bg-transparent p-0',
-  cursor: 'bg-accent',
+  cursor: 'bg-[linear-gradient(135deg,var(--gradient-accent-from),var(--gradient-accent-to))]',
   tab: 'h-auto px-1 py-3',
   tabContent: 'text-muted font-medium group-data-[selected=true]:text-accent group-data-[selected=true]:font-semibold',
-  panel: 'pt-4',
+  panel: 'pt-4 animate-fade-up',
 };
 
 function parseType(raw: string | null): EntityType {
@@ -128,7 +128,7 @@ export default function EntityDetailPage() {
                 value={selectedKey ?? ''}
                 onChange={(e) => setSelectedKey(e.target.value || undefined)}
                 disabled={keysQuery.isLoading || (keysQuery.data?.length ?? 0) === 0}
-                className="w-full rounded-md border border-border bg-surface-card px-3 py-2.5 text-sm text-heading focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-60"
+                className="w-full rounded-md border border-border bg-white/5 px-3 py-2.5 text-sm text-heading focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-60"
               >
                 {(keysQuery.data ?? []).map((key) => (
                   <option key={key} value={key}>

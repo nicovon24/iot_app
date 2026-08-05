@@ -37,7 +37,7 @@ export function Dialog({ isOpen, onClose, children, widthClassName = 'max-w-sm' 
                 exit={{ opacity: 0, scale: 0.96, y: 8 }}
                 transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
               >
-                <div className="relative max-h-[85vh] overflow-y-auto rounded-2xl border border-border bg-surface-card shadow-2xl">
+                <div className="glass-card relative max-h-[85vh] overflow-y-auto">
                   {children}
                 </div>
               </motion.div>

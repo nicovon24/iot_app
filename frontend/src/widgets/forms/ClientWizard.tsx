@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Plus, Trash2, ArrowUp, ArrowDown, GripVertical, Check } from 'lucide-react';
 import { useCreateCustomer } from '@/hooks/useCustomers';
-import { Dialog, DialogHeader, DialogCloseButton, DialogBody, DialogFooter } from '@/components/Dialog';
+import { Dialog, DialogHeader, DialogCloseButton, DialogBody, DialogFooter } from '@/components/ui/Dialog';
 import { ApiError } from '@/lib/api-client';
 import { toastSuccess } from '@/lib/toast';
 import { DEFAULT_HIERARCHY_LEVEL_NAMES } from '@/lib/hierarchy-defaults';
@@ -313,7 +313,7 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
                       ))}
                     </div>
                   </div>
-                  <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                  <div className="rounded-md border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
                     The hierarchy cannot be changed after the Client is created. Review it carefully before
                     submitting.
                   </div>
@@ -321,7 +321,7 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+                      className="rounded-md border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400"
                     >
                       {errorMessage}
                     </motion.div>

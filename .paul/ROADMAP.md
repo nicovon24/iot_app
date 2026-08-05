@@ -18,7 +18,7 @@ Phases: 7 of 7 complete (+6 inserted phases: 2.1, 2.2, 2.3, 4.3, 6.4, 6.5 — al
 
 **Version 2 — Admin hierarchy panel + Device linking** (v2.0, in progress)
 Status: In progress
-Phase 8 (Admin hierarchy management panel) complete 2026-08-04, first V2 phase shipped. Backend (08-01: sub-customer breadcrumbs, Contains-relation tree reads, Asset PATCH, Device assign/unassign) and frontend (08-02: the `/admin` panel itself) both applied and verified.
+Phase 8 (Admin hierarchy management panel) complete 2026-08-04, first V2 phase shipped. Backend (08-01: sub-customer breadcrumbs, Contains-relation tree reads, Asset PATCH, Device assign/unassign) and frontend (08-02: the `/admin` panel itself) both applied and verified. Phase 9.1 (Visual modernization) planned and applied 2026-08-05 — all 3 plans (9.1-01/02/03) done, `tsc --noEmit` clean, awaiting user's visual confirmation + `/paul:unify`. Phases 9.2 (roles/users) and 10 (dashboard builder) discussed (CONTEXT.md written) but not yet planned.
 
 ## Phases
 
@@ -281,21 +281,17 @@ Deferred scope, pulled from PROJECT.md "Planned (Next — Version 2)" and STATE.
 
 | Item | Origin | Effort | Notes |
 |------|--------|--------|-------|
-| ~~Asset creation wizard~~ | PROJECT.md V2 scope | M | **Done — Phase 7 (07-02)** |
-| Device linking (link existing Device to an Asset) | PROJECT.md V2 scope | M | **In progress — Phase 8 (08-01 backend done pending verification, 08-02 frontend not started)**. No Device *creation* wizard yet — Devices are still created outside the app; this only covers linking an existing Device to an Asset via Contains relation |
-| Área/asset-level permission granularity (finer than customer hierarchy) | PROJECT.md V2 scope / Phase 2.2 clarification | M | No design chosen yet — ThingsBoard CE has no Entity Groups to back it; would need either a TB PE upgrade or a parallel Postgres permission layer, a real architectural decision to make when picked up |
-| User-creatable/editable dashboards (`react-grid-layout`), full dashboard config persistence, **sharable by admin/sysadmin users with other users** (explicit user requirement, 2026-08-02) | PROJECT.md V2 scope | L | Needs a Postgres schema for dashboard configs + a sharing/permission model, out of V1's narrow Prisma scope; the V1 Main Dashboard (Phase 6.5) is a single fixed dashboard, not this system |
+| Área/asset-level permission granularity (finer than customer hierarchy) | PROJECT.md V2 scope / Phase 2.2 clarification | M | No design chosen yet — ThingsBoard CE has no Entity Groups to back it; would need either a TB PE upgrade or a parallel Postgres permission layer, a real architectural decision to make when picked up. Explicitly still deferred per Phase 9.2's CONTEXT.md |
 | DELETE endpoints for devices/assets/customers | STATE.md Deferred Issues (Phase 2.1) | S | Add when a V2 wizard needs entity deletion |
 | Jest test harness for `ThingsboardClientService`/cache-hit/auth-guard behavior | STATE.md Deferred Issues (Phase 1-2.1) | S | Deferred per explicit instruction until backend V1 is done — manual runtime verification covers V1 so far |
 | Modify assets/devices "Contains" relations (relocate to another asset/location area) + read Relations API generally | IMPROVEMENTS.md | M | Extends the internal-only relations use from `CustomerScopeGuard` into a general read/write Relations capability |
 | Maps/photos per asset/device/location-area with child-only pins (one level deep) + navigation dashboard w/ status/type filters | IMPROVEMENTS.md | L | Frontend-heavy; needs a place to persist map/photo refs, likely Postgres |
 | Device Profiles / Asset Profiles access (read, eventually manage) | IMPROVEMENTS.md | M | TB alarm rules are defined at profile level — natural pairing with the V1 Alarms module (Phase 3) once profiles are picked up |
 | Entity Groups for asset creation (set groups within owner) | IMPROVEMENTS.md | M | Only available while the current ThingsBoard Professional Edition trial (1 month, up to 5 sensors) is active — depends on that subscription continuing or a deliberate PE upgrade |
-| Tenant Admin: list all tenant users + "login as user" impersonation | IMPROVEMENTS.md | M | Extends Phase 2.2's `users` module; impersonation needs careful session/security design (whose TB token is used, audit trail) |
-| User edit: attributes + customer reassignment; email-based activation w/ double password confirmation as an alternative to the existing activation-link flow | IMPROVEMENTS.md | M | Extends Phase 2.2-02's `users` module (create/list/delete → add update + alternate activation flow) |
-| User profile fields (first/last name, phone, description) + default dashboard / fullscreen preference via `additionalInfo` | IMPROVEMENTS.md | M | Dashboard preference depends on Phase 4/7's dashboard model existing first |
+| User edit: attributes + customer reassignment; email-based activation w/ double password confirmation as an alternative to the existing activation-link flow | IMPROVEMENTS.md | M | Extends Phase 2.2-02's `users` module (create/list/delete → add update + alternate activation flow). Note: user *management UI* (create/list/delete) + impersonation are now covered by planned Phase 9.2, not this row |
+| User profile fields (first/last name, phone, description) + default dashboard / fullscreen preference via `additionalInfo` | IMPROVEMENTS.md | M | Dashboard preference depends on the Dashboard model Phase 10 will introduce |
 | Reporting module | IMPROVEMENTS.md | L | Explicitly deferred to the last stages of the project, lowest priority in this table |
-| Audit Logs | IMPROVEMENTS.md | S | Not v1, not yet scheduled for v2 either — revisit when picked up |
+| Audit Logs | IMPROVEMENTS.md | S | Not v1, not yet scheduled for v2 either — revisit when picked up. Phase 9.2 adds a narrow `ImpersonationLog`, not general audit logging |
 
 ---
 *Roadmap created: 2026-07-30*

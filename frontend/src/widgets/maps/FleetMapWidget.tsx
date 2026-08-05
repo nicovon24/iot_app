@@ -15,6 +15,7 @@ import { useEntityAlarms } from '@/hooks/useEntityAlarms';
 import { EntityMapMarker } from './EntityMapMarker';
 import { MapStyleToggle } from './MapStyleToggle';
 import { MAP_TILE_CONFIG, type MapTileStyle } from '@/lib/map-tiles';
+import { MapSkeleton } from '@/components/feedback/Skeleton';
 import type { EntityRef, TelemetryLatest } from '@/types';
 
 const DEFAULT_CENTER: [number, number] = [20, 0];
@@ -169,8 +170,8 @@ export function FleetMapWidget({ heightClassName = 'h-[32rem]' }: FleetMapWidget
 
   if (isLoading || positionsLoading) {
     return (
-      <div className={`flex ${heightClassName} items-center justify-center rounded-xl border border-border bg-surface-card`}>
-        <p className="text-sm text-muted">Loading fleet…</p>
+      <div className={`relative ${heightClassName} overflow-hidden rounded-xl border border-border`}>
+        <MapSkeleton />
       </div>
     );
   }

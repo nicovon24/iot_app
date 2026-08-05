@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import {
-  Spinner,
   Table,
   TableBody,
   TableCell,
@@ -10,10 +9,11 @@ import {
   TableHeader,
   TableRow,
 } from '@heroui/react';
-import { Pencil, Play, Trash2 } from 'lucide-react';
-import { Tooltip } from '@/components/Tooltip';
-import { EditEntityDialog, type EditableField } from '@/widgets/EditEntityDialog';
-import type { EntityRef, PageData } from '@/types';
+import { Building2, Cpu, Box, Pencil, Play, Trash2 } from 'lucide-react';
+import { Tooltip } from '@/components/ui/Tooltip';
+import { EntityRowsSkeleton, TableRowsSkeleton } from '@/components/feedback/Skeleton';
+import { EditEntityDialog, type EditableField } from '@/widgets/forms/EditEntityDialog';
+import type { EntityRef, EntityType, PageData } from '@/types';
 
 export type { EditableField };
 
@@ -31,8 +31,30 @@ export interface EntityListWidgetProps {
   onEditSave?: (entity: EntityRef, values: Partial<Record<EditableField, string>>) => void;
   isEditPending?: boolean;
   editError?: unknown;
-  /** Optional card title rendered above the table, inside the same white card. */
+  /** Optional card title rendered above the list, inside the same white card. */
   title?: string;
+  /** 'cards' (default) — the avatar/badge row layout. 'table' — the classic
+   * NAME/TYPE/CUSTOMER/ACTIONS table, kept for the dashboard's compact widgets. */
+  variant?: 'cards' | 'table';
+}
+
+const TYPE_ICONS: Record<EntityType, typeof Cpu> = {
+  DEVICE: Cpu,
+  ASSET: Box,
+  CUSTOMER: Building2,
+};
+
+function EntityAvatar({ type }: { type: EntityType }) {
+  const Icon = TYPE_ICONS[type];
+  return (
+    <span
+      aria-hidden
+      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
+      style={{ background: 'var(--gradient-accent)' }}
+    >
+      <Icon size={20} className="text-white" strokeWidth={1.75} />
+    </span>
+  );
 }
 
 const TABLE_CLASSNAMES = {
@@ -57,17 +79,14 @@ export function EntityListWidget({
   isEditPending,
   editError,
   title,
+  variant = 'cards',
 }: EntityListWidgetProps) {
   const [editingEntity, setEditingEntity] = useState<EntityRef | null>(null);
 
   let content: React.ReactNode;
 
   if (isLoading) {
-    content = (
-      <div className="flex h-full min-h-40 items-center justify-center">
-        <Spinner label="Loading…" color="primary" />
-      </div>
-    );
+    content = variant === 'table' ? <TableRowsSkeleton rows={4} columns={4} /> : <EntityRowsSkeleton rows={4} />;
   } else if (isError) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     content = (
@@ -84,7 +103,7 @@ export function EntityListWidget({
           <p className="text-sm text-muted">{emptyLabel}</p>
         </div>
       );
-    } else {
+    } else if (variant === 'table') {
       content = (
         <Table aria-label="Entity list" classNames={TABLE_CLASSNAMES}>
           <TableHeader>
@@ -146,13 +165,80 @@ export function EntityListWidget({
           </TableBody>
         </Table>
       );
+    } else {
+      content = (
+        <div className="table-scroll flex h-full flex-col gap-3 overflow-y-auto p-4">
+          {rows.map((entity) => (
+            <div
+              key={entity.id}
+              className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-surface-card px-4 py-3"
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                <EntityAvatar type={entity.type} />
+                <div className="flex min-w-0 flex-col">
+                  <span className="truncate text-sm font-semibold text-heading">{entity.name}</span>
+                  <span className="text-[11px] font-semibold tracking-wider text-muted">{entity.type}</span>
+                </div>
+              </div>
+
+              <div className="flex shrink-0 items-center gap-4">
+                <span className="hidden text-xs text-muted sm:inline">
+                  {entity.customerId?.name ?? '—'} customer
+                </span>
+
+                {(onRowClick || editableFields || onDelete) && (
+                  <div className="flex items-center gap-2">
+                    {onRowClick && (
+                      <Tooltip label="Details">
+                        <button
+                          type="button"
+                          aria-label="Details"
+                          onClick={() => onRowClick(entity)}
+                          className="flex h-9 w-9 items-center justify-center rounded-full text-white transition-opacity hover:opacity-90"
+                          style={{ background: 'var(--gradient-accent)' }}
+                        >
+                          <Play size={14} fill="currentColor" strokeWidth={0} />
+                        </button>
+                      </Tooltip>
+                    )}
+                    {editableFields && editableFields.length > 0 && (
+                      <Tooltip label="Edit">
+                        <button
+                          type="button"
+                          aria-label="Edit"
+                          onClick={() => setEditingEntity(entity)}
+                          className="flex h-9 w-9 items-center justify-center rounded-full bg-navy-800 text-muted transition-colors hover:text-heading"
+                        >
+                          <Pencil size={14} />
+                        </button>
+                      </Tooltip>
+                    )}
+                    {onDelete && (
+                      <Tooltip label="Delete">
+                        <button
+                          type="button"
+                          aria-label="Delete"
+                          onClick={() => onDelete(entity)}
+                          className="flex h-9 w-9 items-center justify-center rounded-full bg-red-500/15 text-red-400 transition-colors hover:bg-red-500/25"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </Tooltip>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      );
     }
   }
 
   const widget = !title ? (
-    <div className="h-full rounded-xl border border-border bg-surface-card p-0 shadow-sm">{content}</div>
+    <div className="glass-card h-full p-0">{content}</div>
   ) : (
-    <div className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-surface-card shadow-sm">
+    <div className="glass-card flex h-full flex-col overflow-hidden">
       <h2 className="shrink-0 px-4 py-3 text-sm font-semibold text-heading">{title}</h2>
       <div className="min-h-0 flex-1">{content}</div>
     </div>

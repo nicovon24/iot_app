@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Dialog, DialogHeader, DialogTitle, DialogCloseButton, DialogBody, DialogFooter } from '@/components/Dialog';
+import { Dialog, DialogHeader, DialogTitle, DialogCloseButton, DialogBody, DialogFooter } from '@/components/ui/Dialog';
 import { ApiError } from '@/lib/api-client';
 import type { EntityRef } from '@/types';
 
@@ -77,7 +77,7 @@ export function EditEntityDialog({
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+            className="rounded-md border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400"
           >
             {errorMessage}
           </motion.div>
@@ -96,7 +96,8 @@ export function EditEntityDialog({
           type="button"
           disabled={isPending || !canSubmit}
           onClick={() => onSubmit(values)}
-          className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90 disabled:opacity-60"
+          style={{ background: 'var(--gradient-accent)' }}
+          className="rounded-md px-4 py-2 text-sm font-semibold text-white transition hover:brightness-95 disabled:opacity-60"
         >
           {isPending ? 'Saving…' : 'Save'}
         </button>

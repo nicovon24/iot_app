@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import {
-  Spinner,
   Table,
   TableBody,
   TableCell,
@@ -12,8 +11,9 @@ import {
 } from '@heroui/react';
 import { Plus, Trash2 } from 'lucide-react';
 import { useDeleteCustomer } from '@/hooks/useCustomers';
-import { AdminBreadcrumbs } from '@/widgets/AdminBreadcrumbs';
-import { ConfirmDialog } from '@/widgets/ConfirmDialog';
+import { AdminBreadcrumbs } from './AdminBreadcrumbs';
+import { ConfirmDialog } from '@/widgets/forms/ConfirmDialog';
+import { TableRowsSkeleton } from '@/components/feedback/Skeleton';
 import { toastError, toastSuccess } from '@/lib/toast';
 import type { EntityRef } from '@/types';
 
@@ -52,26 +52,23 @@ export function AdminClientsColumn({
   };
 
   return (
-    <div className="flex h-96 shrink-0 flex-col gap-3 rounded-xl border border-border bg-surface-card p-4 shadow-sm md:h-full md:min-h-0 md:w-full">
+    <div className="glass-card flex h-96 shrink-0 flex-col gap-3 p-4 md:h-full md:min-h-0 md:w-full">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-heading">Clients</h2>
         <button
           type="button"
           onClick={onAddClient}
-          className="flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs text-body hover:bg-surface"
+          className="flex items-center gap-1 text-xs font-semibold hover:underline"
+          style={{ color: 'var(--gradient-accent-from)' }}
         >
-          <Plus size={12} /> Add 
+          <Plus size={12} /> Add
         </button>
       </div>
 
       <AdminBreadcrumbs rootLabel="Root" trail={trail.map((c) => ({ id: c.id, name: c.name }))} onNavigate={onNavigateTrail} />
 
       <div className="min-h-0 flex-1 overflow-y-auto">
-        {isLoading && (
-          <div className="flex h-full min-h-32 items-center justify-center">
-            <Spinner label="Loading…" color="primary" />
-          </div>
-        )}
+        {isLoading && <TableRowsSkeleton rows={3} columns={2} />}
 
         {!isLoading && customers.length === 0 && (
           <div className="flex h-full min-h-32 items-center justify-center">

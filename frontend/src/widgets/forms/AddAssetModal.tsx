@@ -87,7 +87,7 @@ export function AddAssetModal({ isOpen, onClose }: AddAssetModalProps) {
       placement="center"
       scrollBehavior="inside"
       classNames={{
-        base: 'w-full max-w-md max-h-[85vh] my-auto rounded-2xl bg-surface-card border border-border',
+        base: 'glass-card w-full max-w-md max-h-[85vh] my-auto !rounded-2xl',
         backdrop: 'bg-black/50 backdrop-blur-sm',
         closeButton:
           'top-4 end-4 rounded-full bg-surface text-body hover:bg-border hover:text-heading transition-colors',
@@ -170,7 +170,7 @@ export function AddAssetModal({ isOpen, onClose }: AddAssetModalProps) {
                   ))}
                 </Select>
                 {needsParentButNoneAvailable && (
-                  <span className="text-xs text-red-700">Create a level-0 Asset for this Client first.</span>
+                  <span className="text-xs text-red-400">Create a level-0 Asset for this Client first.</span>
                 )}
               </motion.div>
             )}
@@ -186,7 +186,7 @@ export function AddAssetModal({ isOpen, onClose }: AddAssetModalProps) {
                 {...register('name')}
                 className="rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-heading outline-none focus:border-accent"
               />
-              {errors.name && <span className="text-xs text-red-700">{errors.name.message}</span>}
+              {errors.name && <span className="text-xs text-red-400">{errors.name.message}</span>}
             </div>
 
             <div className="flex flex-col gap-1">
@@ -199,7 +199,7 @@ export function AddAssetModal({ isOpen, onClose }: AddAssetModalProps) {
                 className="rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-heading outline-none focus:border-accent"
                 placeholder="warehouse"
               />
-              {errors.type && <span className="text-xs text-red-700">{errors.type.message}</span>}
+              {errors.type && <span className="text-xs text-red-400">{errors.type.message}</span>}
             </div>
           </div>
 
@@ -218,7 +218,7 @@ export function AddAssetModal({ isOpen, onClose }: AddAssetModalProps) {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+              className="rounded-md border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400"
             >
               {errorMessage}
             </motion.div>
@@ -238,7 +238,8 @@ export function AddAssetModal({ isOpen, onClose }: AddAssetModalProps) {
             whileTap={{ scale: 0.97 }}
             onClick={onSubmit}
             disabled={!canSubmit || createAsset.isPending}
-            className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90 disabled:opacity-60"
+            style={{ background: 'var(--gradient-accent)' }}
+            className="rounded-md px-4 py-2 text-sm font-semibold text-white transition hover:brightness-95 disabled:opacity-60"
           >
             {createAsset.isPending ? 'Creating…' : 'Create Asset'}
           </motion.button>

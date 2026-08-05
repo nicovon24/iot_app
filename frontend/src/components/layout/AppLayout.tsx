@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Menu, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { AuthGate } from './AuthGate';
-import { Tooltip } from './Tooltip';
+import { Tooltip } from '../ui/Tooltip';
 import { NAV_ITEMS } from '@/lib/nav-items';
 
 const SIDEBAR_VISIBLE_STORAGE_KEY = 'iot_sidebar_visible';

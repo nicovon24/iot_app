@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Select, SelectItem } from '@heroui/react';
 import { useGlobalAlarms } from '@/hooks/useEntityAlarms';
-import { AlarmsListWidget } from '@/widgets/AlarmsListWidget';
+import { AlarmsListWidget } from '@/widgets/entity/AlarmsListWidget';
 import type { AlarmSeverity, AlarmStatus } from '@/types';
 
 const SEVERITIES: AlarmSeverity[] = ['CRITICAL', 'MAJOR', 'MINOR', 'WARNING', 'INDETERMINATE'];
@@ -25,7 +25,7 @@ export default function AlarmsPage() {
 
   return (
     <div className="flex h-full w-full flex-col gap-4">
-      <div className="flex shrink-0 gap-4 rounded-xl border border-border bg-surface-card p-4 shadow-sm">
+      <div className="glass-card flex shrink-0 gap-4 p-4">
         <Select
           label="Severity"
           placeholder="All severities"

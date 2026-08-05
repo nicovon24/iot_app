@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import {
-  Spinner,
   Table,
   TableBody,
   TableCell,
@@ -11,12 +10,13 @@ import {
   TableRow,
 } from '@heroui/react';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { TableRowsSkeleton } from '@/components/feedback/Skeleton';
 import { useCreateAsset, useDeleteAsset } from '@/hooks/useCreateAsset';
 import { usePatchAsset } from '@/hooks/usePatchAsset';
 import { useCustomerChildren, useAssetChildren, useInvalidateHierarchyChildren } from '@/hooks/useHierarchyChildren';
-import { ConfirmDialog } from '@/widgets/ConfirmDialog';
-import { EditEntityDialog } from '@/widgets/EditEntityDialog';
-import { Dialog, DialogHeader, DialogTitle, DialogCloseButton, DialogBody, DialogFooter } from '@/components/Dialog';
+import { ConfirmDialog } from '@/widgets/forms/ConfirmDialog';
+import { EditEntityDialog } from '@/widgets/forms/EditEntityDialog';
+import { Dialog, DialogHeader, DialogTitle, DialogCloseButton, DialogBody, DialogFooter } from '@/components/ui/Dialog';
 import { toastError, toastSuccess } from '@/lib/toast';
 import type { EntityRef } from '@/types';
 
@@ -93,7 +93,7 @@ export function AdminAssetPanel({
   };
 
   return (
-    <div className="flex h-96 shrink-0 flex-col gap-3 rounded-xl border border-border bg-surface-card p-4 shadow-sm md:h-full md:min-h-0 md:w-full">
+    <div className="glass-card flex h-96 shrink-0 flex-col gap-3 p-4 md:h-full md:min-h-0 md:w-full">
       <div className="flex items-center justify-between">
         <h2 className="truncate text-sm font-semibold text-heading" title={title}>
           {title}
@@ -103,18 +103,15 @@ export function AdminAssetPanel({
           disabled={!parentId}
           onClick={() => setIsAdding((v) => !v)}
           title={parentId ? undefined : 'Select the previous level first'}
-          className="flex shrink-0 items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs text-body hover:bg-surface disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex shrink-0 items-center gap-1 text-xs font-semibold hover:underline disabled:cursor-not-allowed disabled:opacity-40 disabled:no-underline"
+          style={{ color: 'var(--gradient-accent-from)' }}
         >
           <Plus size={12} /> Add
         </button>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto">
-        {parentId && isLoading && (
-          <div className="flex h-full min-h-32 items-center justify-center">
-            <Spinner label="Loading…" color="primary" />
-          </div>
-        )}
+        {parentId && isLoading && <TableRowsSkeleton rows={3} columns={2} />}
 
         {!isLoading && assets.length === 0 && (
           <div className="flex h-full min-h-32 items-center justify-center">

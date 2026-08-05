@@ -1,13 +1,14 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@heroui/react';
-import { Plus, X, Cpu } from 'lucide-react';
+import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@heroui/react';
+import { Plus, X, Cpu, UserPlus } from 'lucide-react';
 import { useCustomerChildren, useAssetChildren } from '@/hooks/useHierarchyChildren';
-import { useLinkDevice, useUnlinkDevice } from '@/hooks/useDeviceLink';
+import { useLinkDevice, useUnlinkDevice, useClaimDevice } from '@/hooks/useDeviceLink';
 import { useEntities } from '@/hooks/useEntities';
-import { Dialog, DialogHeader, DialogTitle, DialogCloseButton, DialogBody, DialogFooter } from '@/components/Dialog';
-import { Select } from '@/components/Select';
+import { Dialog, DialogHeader, DialogTitle, DialogCloseButton, DialogBody, DialogFooter } from '@/components/ui/Dialog';
+import { Select } from '@/components/ui/Select';
+import { TableRowsSkeleton } from '@/components/feedback/Skeleton';
 import { toastError, toastSuccess } from '@/lib/toast';
 
 export interface AdminDevicePanelProps {
@@ -25,6 +26,8 @@ const TABLE_CLASSNAMES = {
 export function AdminDevicePanel({ title, activeNode }: AdminDevicePanelProps) {
   const [isAssignOpen, setIsAssignOpen] = useState(false);
   const [pickedDeviceId, setPickedDeviceId] = useState<string | undefined>(undefined);
+  const [isClaimOpen, setIsClaimOpen] = useState(false);
+  const [claimDeviceId, setClaimDeviceId] = useState<string | undefined>(undefined);
 
   const customerChildren = useCustomerChildren(activeNode?.type === 'CUSTOMER' ? activeNode.id : undefined);
   const assetChildren = useAssetChildren(activeNode?.type === 'ASSET' ? activeNode.id : undefined);
@@ -34,11 +37,18 @@ export function AdminDevicePanel({ title, activeNode }: AdminDevicePanelProps) {
   const devicesQuery = useEntities('DEVICE');
   const linkDevice = useLinkDevice();
   const unlinkDevice = useUnlinkDevice();
+  const claimDevice = useClaimDevice();
 
   const linkedIds = useMemo(() => new Set((children?.devices ?? []).map((d) => d.id)), [children]);
   const availableDevices = useMemo(
     () => (devicesQuery.data?.data ?? []).filter((d) => !linkedIds.has(d.id)),
     [devicesQuery.data, linkedIds],
+  );
+  // Devices ThingsBoard has never assigned to a real Customer — a Customer User must
+  // claim one of these into their own customer before it can be linked to an Asset.
+  const unclaimedDevices = useMemo(
+    () => (devicesQuery.data?.data ?? []).filter((d) => !d.customerId),
+    [devicesQuery.data],
   );
 
   const canAssign = activeNode?.type === 'ASSET';
@@ -49,23 +59,41 @@ export function AdminDevicePanel({ title, activeNode }: AdminDevicePanelProps) {
     linkDevice.reset();
   };
 
+  const closeClaim = () => {
+    setIsClaimOpen(false);
+    setClaimDeviceId(undefined);
+    claimDevice.reset();
+  };
+
   const devices = children?.devices ?? [];
 
   return (
-    <div className="flex h-96 shrink-0 flex-col gap-3 rounded-xl border border-border bg-surface-card p-4 shadow-sm md:h-full md:min-h-0 md:w-full">
+    <div className="glass-card flex h-96 shrink-0 flex-col gap-3 p-4 md:h-full md:min-h-0 md:w-full">
       <div className="flex items-center justify-between">
         <h2 className="truncate text-sm font-semibold text-heading" title={title}>
           {title}
         </h2>
-        <button
-          type="button"
-          disabled={!canAssign}
-          onClick={() => setIsAssignOpen(true)}
-          title={canAssign ? undefined : 'Select an Asset to assign a Device'}
-          className="flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs text-body hover:bg-surface disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          <Plus size={12} /> Assign
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setIsClaimOpen(true)}
+            title="Claim a Device with no Customer into your own Customer"
+            className="flex items-center gap-1 text-xs font-semibold hover:underline"
+            style={{ color: 'var(--gradient-accent-from)' }}
+          >
+            <UserPlus size={12} /> Claim
+          </button>
+          <button
+            type="button"
+            disabled={!canAssign}
+            onClick={() => setIsAssignOpen(true)}
+            title={canAssign ? undefined : 'Select an Asset to assign a Device'}
+            className="flex items-center gap-1 text-xs font-semibold hover:underline disabled:cursor-not-allowed disabled:opacity-40 disabled:no-underline"
+            style={{ color: 'var(--gradient-accent-from)' }}
+          >
+            <Plus size={12} /> Assign
+          </button>
+        </div>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto">
@@ -75,11 +103,7 @@ export function AdminDevicePanel({ title, activeNode }: AdminDevicePanelProps) {
           </div>
         )}
 
-        {activeNode && isLoading && (
-          <div className="flex h-full min-h-32 items-center justify-center">
-            <Spinner label="Loading…" color="primary" />
-          </div>
-        )}
+        {activeNode && isLoading && <TableRowsSkeleton rows={3} columns={2} />}
 
         {activeNode && !isLoading && devices.length === 0 && (
           <div className="flex h-full min-h-32 items-center justify-center">
@@ -167,9 +191,53 @@ export function AdminDevicePanel({ title, activeNode }: AdminDevicePanelProps) {
                 },
               );
             }}
-            className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90 disabled:opacity-60"
+            style={{ background: 'var(--gradient-accent)' }}
+            className="rounded-md px-4 py-2 text-sm font-semibold text-white transition hover:brightness-95 disabled:opacity-60"
           >
             {linkDevice.isPending ? 'Assigning…' : 'Assign'}
+          </button>
+        </DialogFooter>
+      </Dialog>
+
+      <Dialog isOpen={isClaimOpen} onClose={closeClaim}>
+        <DialogHeader>
+          <DialogTitle>Claim Device</DialogTitle>
+          <DialogCloseButton />
+        </DialogHeader>
+        <DialogBody>
+          <p className="mb-3 text-sm text-muted">
+            Claims a Device with no Customer into your own Customer, so it can then be assigned to an Asset.
+          </p>
+          <Select
+            label="Device"
+            placeholder={unclaimedDevices.length === 0 ? 'No unclaimed devices' : 'Select a Device'}
+            value={claimDeviceId}
+            onChange={setClaimDeviceId}
+            options={unclaimedDevices.map((d) => ({ value: d.id, label: d.name }))}
+          />
+        </DialogBody>
+        <DialogFooter>
+          <button type="button" onClick={closeClaim} className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-surface">
+            Cancel
+          </button>
+          <button
+            type="button"
+            disabled={!claimDeviceId || claimDevice.isPending}
+            onClick={() => {
+              if (!claimDeviceId) return;
+              const deviceName = unclaimedDevices.find((d) => d.id === claimDeviceId)?.name;
+              claimDevice.mutate(claimDeviceId, {
+                onSuccess: () => {
+                  closeClaim();
+                  toastSuccess('Device claimed', deviceName);
+                },
+                onError: (error) => toastError("Couldn't claim device", error),
+              });
+            }}
+            style={{ background: 'var(--gradient-accent)' }}
+            className="rounded-md px-4 py-2 text-sm font-semibold text-white transition hover:brightness-95 disabled:opacity-60"
+          >
+            {claimDevice.isPending ? 'Claiming…' : 'Claim'}
           </button>
         </DialogFooter>
       </Dialog>

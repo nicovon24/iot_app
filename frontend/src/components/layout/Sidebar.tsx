@@ -5,11 +5,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronDown, LogOut, Moon, PanelLeftClose, PanelLeftOpen, Sun, X, type LucideProps } from 'lucide-react';
+import { ChevronDown, LogOut, PanelLeftClose, PanelLeftOpen, X, type LucideProps } from 'lucide-react';
 import { NAV_ITEMS } from '@/lib/nav-items';
 import { logout } from '@/lib/auth';
-import { Tooltip } from './Tooltip';
-import { useTheme } from '@/hooks/useTheme';
+import { Tooltip } from '../ui/Tooltip';
 
 const SIDEBAR_STORAGE_KEY = 'iot_sidebar_expanded';
 
@@ -26,7 +25,6 @@ export function Sidebar({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { isDark, toggle: toggleTheme } = useTheme();
   const [expanded, setExpanded] = useState(true);
   const [dashboardMenuOpen, setDashboardMenuOpen] = useState(false);
   const dashboardMenuRef = useRef<HTMLDivElement>(null);
@@ -74,11 +72,17 @@ export function Sidebar({
       className={
         mobile
           ? 'fixed inset-y-0 left-0 z-50 flex h-full w-full flex-col overflow-hidden py-6'
-          : 'flex h-full shrink-0 flex-col overflow-hidden py-6'
+          : 'relative flex h-full shrink-0 flex-col overflow-hidden py-6'
       }
-      style={{ background: 'linear-gradient(180deg, var(--gradient-header-from), var(--gradient-header-to))' }}
+      style={{ background: 'var(--gradient-sidebar)' }}
     >
-      <div className={`mb-6 flex items-center gap-2.5 ${isExpanded ? 'px-4' : 'justify-center'}`}>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full opacity-30 blur-3xl"
+        style={{ background: 'var(--gradient-accent)' }}
+      />
+
+      <div className={`relative z-10 mb-6 flex items-center gap-2.5 ${isExpanded ? 'px-4' : 'justify-center'}`}>
         <Image src="/logo.png" alt="IoTArg logo" width={36} height={36} className="h-9 w-9 shrink-0 object-contain" priority />
         {isExpanded && <span className="truncate text-sm font-semibold text-white">IoTArg</span>}
         {mobile && (
@@ -93,7 +97,7 @@ export function Sidebar({
         )}
       </div>
 
-      <nav className="flex flex-1 flex-col gap-1 px-3">
+      <nav className="relative z-10 flex flex-1 flex-col gap-1 px-3">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -105,14 +109,15 @@ export function Sidebar({
                 item.comingSoon
                   ? 'cursor-not-allowed text-white/30'
                   : isActive
-                    ? 'text-navy-950'
+                    ? 'text-white'
                     : 'text-white/70 hover:bg-white/10 hover:text-white'
               }`}
             >
               {isActive && !item.comingSoon && (
                 <motion.div
                   layoutId={mobile ? 'sidebar-active-pill-mobile' : 'sidebar-active-pill'}
-                  className="absolute inset-0 rounded-xl bg-white"
+                  className="absolute inset-0 rounded-xl border border-white/20"
+                  style={{ background: 'var(--gradient-sidebar-active)' }}
                   transition={{ duration: 0.2 }}
                 />
               )}
@@ -201,13 +206,7 @@ export function Sidebar({
         })}
       </nav>
 
-      <div className="flex flex-col gap-1 px-3">
-        <SidebarButton
-          icon={isDark ? Sun : Moon}
-          label={isDark ? 'Light mode' : 'Dark mode'}
-          expanded={isExpanded}
-          onClick={toggleTheme}
-        />
+      <div className="relative z-10 flex flex-col gap-1 px-3">
         {!mobile && (
           <SidebarButton
             icon={expanded ? PanelLeftClose : PanelLeftOpen}

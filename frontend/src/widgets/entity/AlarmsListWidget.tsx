@@ -1,6 +1,8 @@
 'use client';
 
-import { Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@heroui/react';
+import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@heroui/react';
+import { BellOff } from 'lucide-react';
+import { TableRowsSkeleton } from '@/components/feedback/Skeleton';
 import type { Alarm, AlarmSeverity } from '@/types';
 
 export interface AlarmsListWidgetProps {
@@ -22,11 +24,11 @@ const TABLE_CLASSNAMES = {
 };
 
 const SEVERITY_CLASSNAMES: Record<AlarmSeverity, string> = {
-  CRITICAL: 'bg-red-100 text-red-700',
-  MAJOR: 'bg-red-100 text-red-700',
-  WARNING: 'bg-amber-100 text-amber-700',
-  MINOR: 'bg-amber-100 text-amber-700',
-  INDETERMINATE: 'bg-gray-100 text-gray-700',
+  CRITICAL: 'bg-red-500/15 text-red-400',
+  MAJOR: 'bg-red-500/15 text-red-400',
+  WARNING: 'bg-amber-500/15 text-amber-400',
+  MINOR: 'bg-amber-500/15 text-amber-400',
+  INDETERMINATE: 'bg-slate-500/15 text-slate-400',
 };
 
 function SeverityChip({ severity }: { severity: AlarmSeverity }) {
@@ -43,11 +45,7 @@ export function AlarmsListWidget({ alarms, isLoading, isError, error, emptyLabel
   let content: React.ReactNode;
 
   if (isLoading) {
-    content = (
-      <div className="flex h-full min-h-40 items-center justify-center">
-        <Spinner label="Loading…" color="primary" />
-      </div>
-    );
+    content = <TableRowsSkeleton rows={4} columns={5} />;
   } else if (isError) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     content = (
@@ -60,8 +58,15 @@ export function AlarmsListWidget({ alarms, isLoading, isError, error, emptyLabel
 
     if (rows.length === 0) {
       content = (
-        <div className="flex h-full min-h-40 items-center justify-center">
-          <p className="text-sm text-muted">{emptyLabel}</p>
+        <div className="flex h-full min-h-40 flex-col items-center justify-center gap-3 text-center">
+          <span
+            aria-hidden
+            className="flex h-11 w-11 items-center justify-center rounded-full"
+            style={{ background: 'linear-gradient(135deg, var(--gradient-info-from), var(--gradient-info-to))' }}
+          >
+            <BellOff size={20} className="text-white" strokeWidth={1.75} />
+          </span>
+          <p className="text-sm font-medium text-muted">{emptyLabel}</p>
         </div>
       );
     } else {
@@ -93,11 +98,11 @@ export function AlarmsListWidget({ alarms, isLoading, isError, error, emptyLabel
   }
 
   if (!title) {
-    return <div className="h-full rounded-xl border border-border bg-surface-card p-0 shadow-sm">{content}</div>;
+    return <div className="glass-card h-full p-0">{content}</div>;
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-surface-card shadow-sm">
+    <div className="glass-card flex h-full flex-col overflow-hidden">
       <h2 className="shrink-0 px-4 py-3 text-sm font-semibold text-heading">{title}</h2>
       <div className="min-h-0 flex-1">{content}</div>
     </div>

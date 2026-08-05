@@ -31,14 +31,14 @@ function formatValue(value: number) {
 export function LineChartWidget({ data, dataKey }: LineChartWidgetProps) {
   if (data.length === 0) {
     return (
-      <div className="flex h-64 items-center justify-center rounded-xl border border-border bg-surface-card">
+      <div className="glass-card flex h-64 items-center justify-center">
         <p className="text-sm text-muted">No historical data for this key yet</p>
       </div>
     );
   }
 
   return (
-    <div className="h-64 rounded-xl border border-border bg-surface-card p-4 shadow-sm">
+    <div className="glass-card h-64 p-4">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
