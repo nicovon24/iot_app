@@ -19,9 +19,9 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 | Attribute | Value |
 |-----------|-------|
 | Type | Application |
-| Version | v1.0 (complete) |
+| Version | v2.0 (in progress) — v1.0 complete |
 | Status | Prototype |
-| Last Updated | 2026-08-03 (after Phase 7 — V1 milestone complete) |
+| Last Updated | 2026-08-05 (after Phase 9.2 — roles enforcement & user management) |
 
 ## Requirements
 
@@ -51,17 +51,21 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 - [x] Fleet map view: alarm-colored map marker (shared between the per-entity Map tab and a new fleet-wide map) with a full-telemetry popup, a new "Maps" nav entry showing every real Device with location on one clustered map (`react-leaflet-cluster`), and a white/color map tile toggle — 2026-08-02 (Phase 6.4) — user-requested extension after using Phase 6's Map tab, verified live against real ThingsBoard Cloud data
 - [x] Main Dashboard: real fleet counts (Devices/Assets/active alarms), the clustered fleet map, a Devices table, and an active-alarms table, all composed from Phase 6/6.4 pieces with zero new backend calls, plus a non-functional visual seam anticipating future dashboards — 2026-08-03 (Phase 6.5) — verified live against real ThingsBoard Cloud data
 - [x] Client creation wizard UI: `/clients` list + a 3-step wizard (info → hierarchy → review) creating a real Customer + hierarchy via `POST /customers`; plus an "Add Asset" flow on `/assets` (Client → hierarchy level → parent picker) creating real linked Assets via `POST /assets` — 2026-08-03 (Phase 7) — user-requested scope expansion beyond the wizard alone; Device creation/linking explicitly confirmed out of scope (no backend support, deferred to V2); both flows verified live against real ThingsBoard Cloud data, zero backend changes
+- [x] **V1 milestone complete** (Phases 1-7 +6 inserted phases) — 2026-08-03
+- [x] Admin hierarchy management panel: `/admin` — Miller-column view (Clients → per-level Assets → Devices) with add/delete/edit/assign/unassign from one screen, backed by real TB "Contains" relations (no Postgres schema changes); creation moved out of `/clients`/`/assets` into this one place — 2026-08-04 (Phase 8, first V2 phase) — verified live against real ThingsBoard Cloud
+- [x] Visual modernization: light glassmorphic redesign (purple/indigo accents, `.glass-card` surfaces, Inter font, dark mode removed entirely), a reusable Skeleton loading system, and a full restyle of Sidebar/Login/Dashboard/Admin/dialogs/entity-detail/Alarms — every map-based screen explicitly excluded and confirmed untouched — 2026-08-05 (Phase 9.1) — further dark-theme palette iterations followed as chat-driven work after the initial light-glass ship (see STATE.md Decisions)
+- [x] Roles enforcement & user management: `ReaderBlockGuard` (global, blocks every mutating request from a READER session), `/users` page (create/list/delete `admin`/`reader` Customer Users, defaults to an "All Clients" tenant-wide view backed by TB's real `GET /api/customer/users`), sysadmin "Login as" impersonation with a durable `ImpersonationLog` audit trail (no live kill-switch, by design), and client-side role-based UI gating (`GET /auth/me` + `usePermissions()` — READER's write controls are hidden, not just backend-blocked) — 2026-08-05 (Phase 9.2) — live-tested interactively by the user through the session (found and fixed 2 real bugs: a ThingsBoard plain-text response crash, and a Tooltip portal/scroll-clipping bug)
 
 ### Active (In Progress)
 
-None — Version 1 milestone is complete. See "Planned (Next — Version 2)" below.
+- Phase 10 (dashboard builder) — discussed (`CONTEXT.md` written), not yet planned; next up, in a later session
 
 ### Planned (Next — Version 2)
 
-- [ ] Asset creation wizard
+- [x] ~~Asset creation wizard~~ — shipped (Phase 7's "Add Asset" flow, Phase 8's `/admin` panel)
 - [ ] Device creation + linking wizard (link Device to Customer + Asset, default structure from `CustomerHierarchyLevels` template)
 - [ ] Área/asset-level permission granularity (finer than customer hierarchy) — deferred, no design chosen yet since ThingsBoard CE has no Entity Groups to back it (see Constraints)
-- [ ] User-creatable/editable dashboards (`react-grid-layout`), full dashboard config persistence
+- [ ] User-creatable/editable dashboards (`react-grid-layout`), full dashboard config persistence — Phase 10, discussed but not yet planned
 
 ### Out of Scope (V1 and V2, per VISION.md)
 
@@ -122,6 +126,10 @@ None — Version 1 milestone is complete. See "Planned (Next — Version 2)" bel
 | Map tab uses HeroUI `Tabs`' `isDisabled` instead of omitting the tab for entities without lat/long | Lets the user see the capability exists but isn't available for this entity, rather than hiding it entirely | 2026-08-02 | Active |
 | Map marker/popup is one shared component (`EntityMapMarker`) used by both the per-entity Map tab and the fleet map, colored by alarm state (not severity-level granularity) | Avoids two divergent map implementations; matches the scope explicitly confirmed with the user before planning Phase 6.4 | 2026-08-02 | Active |
 | Map tiles default to a white/light basemap (CartoDB Positron), with a toggle to switch to color OSM tiles | Explicit user request after seeing Phase 6's color map — white is the default "at rest" look | 2026-08-02 | Active |
+| Impersonated sessions reuse the impersonator's own `tbToken`/`tbRefreshToken` rather than a second real TB login for the target user | Consistent with existing architecture — entity-scoped TB calls already go through the shared service-account credential regardless of whose app session is active, not the caller's own token | 2026-08-05 | Active |
+| No live kill-switch for impersonation — a sysadmin can't forcibly end another active impersonation session from elsewhere, only "Back to my session" on the impersonating browser itself | Explicit scope cut, confirmed with the user before planning Phase 9.2 | 2026-08-05 | Active |
+| Client-side role-based UI gating (READER's write controls hidden, not just backend-403'd) required adding `GET /auth/me` first | Superseded the Phase 7 decision to not build fake client-side role checks without a real endpoint backing them — that endpoint now exists | 2026-08-05 | Active |
+| READER's write controls are hidden entirely, not shown disabled | Initial implementation used disabled-with-tooltip; user explicitly asked to switch to fully hidden | 2026-08-05 | Active |
 
 ## Success Metrics
 
@@ -146,8 +154,8 @@ None — Version 1 milestone is complete. See "Planned (Next — Version 2)" bel
 
 | Resource | URL |
 |----------|-----|
-| Repository | (local, not yet pushed) |
+| Repository | https://github.com/nicovon24/iot_app (branch: `feature/admin`) |
 
 ---
 *PROJECT.md — Updated when requirements or context change*
-*Last updated: 2026-08-02 after Phase 6.4*
+*Last updated: 2026-08-05 after Phase 9.2*

@@ -33,6 +33,8 @@ export interface EntityListWidgetProps {
   editError?: unknown;
   /** Optional card title rendered above the list, inside the same white card. */
   title?: string;
+  /** READER accounts: Edit/Delete are hidden entirely, not just disabled. */
+  readOnly?: boolean;
   /** 'cards' (default) — the avatar/badge row layout. 'table' — the classic
    * NAME/TYPE/CUSTOMER/ACTIONS table, kept for the dashboard's compact widgets. */
   variant?: 'cards' | 'table';
@@ -79,6 +81,7 @@ export function EntityListWidget({
   isEditPending,
   editError,
   title,
+  readOnly = false,
   variant = 'cards',
 }: EntityListWidgetProps) {
   const [editingEntity, setEditingEntity] = useState<EntityRef | null>(null);
@@ -117,9 +120,9 @@ export function EntityListWidget({
               <TableRow key={entity.id} className="group">
                 <TableCell className="font-medium text-heading">{entity.name}</TableCell>
                 <TableCell>{entity.type}</TableCell>
-                <TableCell>{entity.customerId?.name ?? '—'}</TableCell>
+                <TableCell>{entity.customerId?.name ?? ''}</TableCell>
                 <TableCell>
-                  {(onRowClick || onDelete || editableFields) && (
+                  {(onRowClick || (!readOnly && (onDelete || editableFields))) && (
                     <div className="flex justify-center gap-3">
                       {onRowClick && (
                         <Tooltip label="Details">
@@ -133,7 +136,7 @@ export function EntityListWidget({
                           </button>
                         </Tooltip>
                       )}
-                      {editableFields && editableFields.length > 0 && (
+                      {!readOnly && editableFields && editableFields.length > 0 && (
                         <Tooltip label="Edit">
                           <button
                             type="button"
@@ -145,7 +148,7 @@ export function EntityListWidget({
                           </button>
                         </Tooltip>
                       )}
-                      {onDelete && (
+                      {!readOnly && onDelete && (
                         <Tooltip label="Delete">
                           <button
                             type="button"
@@ -182,11 +185,11 @@ export function EntityListWidget({
               </div>
 
               <div className="flex shrink-0 items-center gap-4">
-                <span className="hidden text-xs text-muted sm:inline">
-                  {entity.customerId?.name ?? '—'} customer
-                </span>
+                {entity.customerId?.name && (
+                  <span className="hidden text-xs text-muted sm:inline">{entity.customerId.name}</span>
+                )}
 
-                {(onRowClick || editableFields || onDelete) && (
+                {(onRowClick || (!readOnly && (editableFields || onDelete))) && (
                   <div className="flex items-center gap-2">
                     {onRowClick && (
                       <Tooltip label="Details">
@@ -201,7 +204,7 @@ export function EntityListWidget({
                         </button>
                       </Tooltip>
                     )}
-                    {editableFields && editableFields.length > 0 && (
+                    {!readOnly && editableFields && editableFields.length > 0 && (
                       <Tooltip label="Edit">
                         <button
                           type="button"
@@ -213,7 +216,7 @@ export function EntityListWidget({
                         </button>
                       </Tooltip>
                     )}
-                    {onDelete && (
+                    {!readOnly && onDelete && (
                       <Tooltip label="Delete">
                         <button
                           type="button"

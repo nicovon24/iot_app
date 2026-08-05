@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { useCustomers } from '@/hooks/useCustomers';
 import { useCustomerHierarchy } from '@/hooks/useCustomerHierarchy';
+import { usePermissions } from '@/hooks/useCurrentUser';
 import { DEFAULT_HIERARCHY_LEVELS } from '@/lib/hierarchy-defaults';
 import { ClientWizard } from '@/widgets/forms/ClientWizard';
 import { AdminClientsColumn } from '@/widgets/admin/AdminClientsColumn';
@@ -14,6 +15,7 @@ export default function AdminPage() {
   const [customerTrail, setCustomerTrail] = useState<EntityRef[]>([]);
   const [assetTrail, setAssetTrail] = useState<EntityRef[]>([]);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
+  const { canWrite } = usePermissions();
 
   const customersQuery = useCustomers();
   const allCustomers = customersQuery.data?.data ?? [];
@@ -103,6 +105,7 @@ export default function AdminPage() {
           onSelect={selectCustomer}
           onNavigateTrail={navigateCustomerTrail}
           onAddClient={() => setIsWizardOpen(true)}
+          readOnly={!canWrite}
         />
 
         {assetLevels.map((level) => (
@@ -115,10 +118,11 @@ export default function AdminPage() {
             levelIndex={level.levelIndex}
             selectedAssetId={assetTrail[level.levelIndex]?.id}
             onSelect={(asset) => selectAsset(level.levelIndex, asset)}
+            readOnly={!canWrite}
           />
         ))}
 
-        <AdminDevicePanel title={deviceLevelName} activeNode={activeNode} />
+        <AdminDevicePanel title={deviceLevelName} activeNode={activeNode} readOnly={!canWrite} />
       </div>
 
       <ClientWizard

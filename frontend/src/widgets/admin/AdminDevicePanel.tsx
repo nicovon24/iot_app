@@ -14,6 +14,7 @@ import { toastError, toastSuccess } from '@/lib/toast';
 export interface AdminDevicePanelProps {
   title: string;
   activeNode: { id: string; type: 'CUSTOMER' | 'ASSET'; name: string } | null;
+  readOnly?: boolean;
 }
 
 const TABLE_CLASSNAMES = {
@@ -23,7 +24,7 @@ const TABLE_CLASSNAMES = {
   tr: 'border-b border-border last:border-b-0 transition-colors',
 };
 
-export function AdminDevicePanel({ title, activeNode }: AdminDevicePanelProps) {
+export function AdminDevicePanel({ title, activeNode, readOnly = false }: AdminDevicePanelProps) {
   const [isAssignOpen, setIsAssignOpen] = useState(false);
   const [pickedDeviceId, setPickedDeviceId] = useState<string | undefined>(undefined);
   const [isClaimOpen, setIsClaimOpen] = useState(false);
@@ -73,27 +74,29 @@ export function AdminDevicePanel({ title, activeNode }: AdminDevicePanelProps) {
         <h2 className="truncate text-sm font-semibold text-heading" title={title}>
           {title}
         </h2>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setIsClaimOpen(true)}
-            title="Claim a Device with no Customer into your own Customer"
-            className="flex items-center gap-1 text-xs font-semibold hover:underline"
-            style={{ color: 'var(--gradient-accent-from)' }}
-          >
-            <UserPlus size={12} /> Claim
-          </button>
-          <button
-            type="button"
-            disabled={!canAssign}
-            onClick={() => setIsAssignOpen(true)}
-            title={canAssign ? undefined : 'Select an Asset to assign a Device'}
-            className="flex items-center gap-1 text-xs font-semibold hover:underline disabled:cursor-not-allowed disabled:opacity-40 disabled:no-underline"
-            style={{ color: 'var(--gradient-accent-from)' }}
-          >
-            <Plus size={12} /> Assign
-          </button>
-        </div>
+        {!readOnly && (
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setIsClaimOpen(true)}
+              title="Claim a Device with no Customer into your own Customer"
+              className="flex items-center gap-1 text-xs font-semibold hover:underline"
+              style={{ color: 'var(--gradient-accent-from)' }}
+            >
+              <UserPlus size={12} /> Claim
+            </button>
+            <button
+              type="button"
+              disabled={!canAssign}
+              onClick={() => setIsAssignOpen(true)}
+              title={canAssign ? undefined : 'Select an Asset to assign a Device'}
+              className="flex items-center gap-1 text-xs font-semibold hover:underline disabled:cursor-not-allowed disabled:opacity-40 disabled:no-underline"
+              style={{ color: 'var(--gradient-accent-from)' }}
+            >
+              <Plus size={12} /> Assign
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto">
@@ -128,26 +131,28 @@ export function AdminDevicePanel({ title, activeNode }: AdminDevicePanelProps) {
                     </span>
                   </TableCell>
                   <TableCell>
-                    <div className="flex justify-end">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          activeNode &&
-                          unlinkDevice.mutate(
-                            { assetId: activeNode.id, deviceId: device.id },
-                            {
-                              onSuccess: () => toastSuccess('Device unassigned', device.name),
-                              onError: (error) => toastError("Couldn't unassign device", error),
-                            },
-                          )
-                        }
-                        className="rounded p-1 text-red-600 hover:bg-surface"
-                        aria-label="Unassign"
-                        title="Unassign"
-                      >
-                        <X size={14} />
-                      </button>
-                    </div>
+                    {!readOnly && (
+                      <div className="flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            activeNode &&
+                            unlinkDevice.mutate(
+                              { assetId: activeNode.id, deviceId: device.id },
+                              {
+                                onSuccess: () => toastSuccess('Device unassigned', device.name),
+                                onError: (error) => toastError("Couldn't unassign device", error),
+                              },
+                            )
+                          }
+                          className="rounded p-1 text-red-600 hover:bg-surface"
+                          aria-label="Unassign"
+                          title="Unassign"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    )}
                   </TableCell>
                 </TableRow>
               )}

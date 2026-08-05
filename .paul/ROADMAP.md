@@ -18,7 +18,7 @@ Phases: 7 of 7 complete (+6 inserted phases: 2.1, 2.2, 2.3, 4.3, 6.4, 6.5 — al
 
 **Version 2 — Admin hierarchy panel + Device linking** (v2.0, in progress)
 Status: In progress
-Phase 8 (Admin hierarchy management panel) complete 2026-08-04, first V2 phase shipped. Backend (08-01: sub-customer breadcrumbs, Contains-relation tree reads, Asset PATCH, Device assign/unassign) and frontend (08-02: the `/admin` panel itself) both applied and verified. Phase 9.1 (Visual modernization) planned and applied 2026-08-05 — all 3 plans (9.1-01/02/03) done, `tsc --noEmit` clean, awaiting user's visual confirmation + `/paul:unify`. Phases 9.2 (roles/users) and 10 (dashboard builder) discussed (CONTEXT.md written) but not yet planned.
+Phase 8 (Admin hierarchy management panel) complete 2026-08-04, first V2 phase shipped. Backend (08-01: sub-customer breadcrumbs, Contains-relation tree reads, Asset PATCH, Device assign/unassign) and frontend (08-02: the `/admin` panel itself) both applied and verified. **Phase 9.1 (Visual modernization) complete 2026-08-05** — all 3 plans (light glassmorphic redesign, skeleton loading system, restyled Admin/dialogs/entity-detail/Alarms) applied, plus further chat-driven dark-theme palette iterations after the initial light-glass ship (see STATE.md Decisions/Addenda) — maps deliberately excluded throughout. **Phase 9.2 (roles enforcement & user management) complete 2026-08-05** — all 3 plans (9.2-01 READER write-block guard, 9.2-02 Users management UI, 9.2-03 impersonation) applied, plus a substantial chat-driven follow-up (client-side role-based UI gating via a new `GET /auth/me`, an "All Clients" default view, a real activation-link bug fix, code-review fixes, and a Tooltip portal rewrite) — see `9.2-03-SUMMARY.md`'s Addendum. Phase 10 (dashboard builder) discussed (CONTEXT.md written) but not yet planned — next up, in a later session.
 
 ## Phases
 
@@ -40,6 +40,8 @@ Phase 8 (Admin hierarchy management panel) complete 2026-08-04, first V2 phase s
 | 6.5 | Main Dashboard — fleet summary, counts, map, tables, alarms [INSERTED] | 1 | Complete | 2026-08-03 |
 | 7 | Client creation wizard UI + Asset creation flow | 2 | Complete | 2026-08-03 |
 | 8 | Admin hierarchy management panel (V2, first phase) | 2 | Complete | 2026-08-04 |
+| 9.1 | Visual modernization | 3 | Complete | 2026-08-05 |
+| 9.2 | Roles enforcement & user management | 3 | Complete | 2026-08-05 |
 
 ## Phase Details
 
@@ -275,24 +277,60 @@ Phase 8 (Admin hierarchy management panel) complete 2026-08-04, first V2 phase s
 - [x] 08-02: Frontend admin panel (breadcrumb Customers/Assets/Devices columns, add/delete/edit/assign/unassign, remove old create buttons) — applied, `tsc` clean, verified via route/render checks + re-confirmed backend contract live (see `.paul/phases/08-admin-hierarchy-panel/08-02-SUMMARY.md`)
 - [x] 08-03 (chat-driven follow-up, not a formal plan doc, 2026-08-04): Redesigned `/admin` from the fixed 3-breadcrumb-column layout into hierarchy-driven Miller columns — one HeroUI `Table` column per Client hierarchy level (Site/Area/Asset/…), always shown up front (falls back to the default Site→Area→Asset→Sensor set before a Client is picked), populated progressively as each level is selected, ending in a Devices column named after the last level. Asset creation forms simplified (dropped the free-text Type field — now auto-set to the level name — kept Name + optional Label). Clients table now keeps the selected Client visible as a row (not just in the breadcrumb) alongside its sub-Clients. Moved nav entry to right under Dashboard, full-width responsive grid layout. Fixed a real bug in `api-client.ts` (empty 201 bodies on link/unlink were throwing a non-`ApiError` client-side parse error, masking successful requests as "Unknown error" and skipping cache invalidation) and switched error messages to surface the backend's real `message` instead of `response.statusText`. Replaced HeroUI's `Modal`/`Select`/`Toast` with a custom Radix UI + framer-motion `Dialog`/`Select` (`frontend/src/components/`) and the `sonner` toast library (HeroUI's own Toast rendered unstyled/black and overlapped the sidebar) — `ConfirmDialog`, `ClientWizard`, and the Assign Device modal all migrated. No backend changes. `tsc --noEmit` clean throughout.
 
+### Phase 9.1: Visual modernization
+
+**Goal:** Move the app's look from the Phase 5/6 dark-navy/electric-blue rail to a lighter, glassmorphic, purple/indigo-accented design (from a shared reference mockup) — restyle every screen except the map-based ones, pure visual/styling pass, no new data/routes/behavior.
+**Depends on:** Phase 5-8 (restyles their existing components in place)
+**Reason:** User-requested, split from a larger ask alongside Phase 9.2 (roles/users) and Phase 10 (dashboards) — purely visual, no functional dependency on either.
+
+**Scope (see `.paul/phases/09-visual-and-roles/9.1-visual-modernization/CONTEXT.md`):**
+- Light glass design tokens (`--color-surface: #eef0f6`, translucent `.glass-card` surfaces), Inter font, **dark mode removed entirely** (not made a variant — `useTheme.ts` deleted, the toggle removed)
+- Sidebar/header restyle (dark purple/indigo gradient rail, accent-gradient active nav pill), Login split-screen restyle
+- Reusable `Skeleton`/`StatTileSkeleton`/`TableRowsSkeleton` system replacing `Spinner` loading states across `CountTileWidget`/`EntityListWidget`/`AlarmsListWidget`
+- Shared `Dialog`/`Select` restyled to glass (cascades to every consumer), Admin Miller-column panels, entity-detail tabs, global Alarms page
+- **All map-based UI explicitly excluded** (fleet `/maps`, per-entity Map tab, Dashboard's embedded map) — confirmed untouched via `git diff --stat` at the end of every plan
+
+**Plans:**
+- [x] 9.1-01: Light glass design tokens + Inter font + dark-mode removal, Sidebar/AppLayout restyle, Login split-screen restyle — applied, `tsc --noEmit` clean (see `9.1-01-SUMMARY.md`)
+- [x] 9.1-02: Reusable Skeleton system + Dashboard restyle (`CountTileWidget` accent badges, `EntityListWidget`/`AlarmsListWidget` glass cards + skeletons) — applied, `tsc --noEmit` clean (see `9.1-02-SUMMARY.md`)
+- [x] 9.1-03: Shared Dialog/Select restyle, Admin Miller-column panel, entity-detail tabs, global Alarms page — applied, `tsc --noEmit` clean, map exclusion confirmed via `git diff --stat` (see `9.1-03-SUMMARY.md`)
+- Chat-driven follow-up (same milestone, not new plan files, see STATE.md Decisions/Addenda): after the light-glass restyle shipped, several dark-theme palette iterations followed (control-room cyan/violet → steel-blue/orange → deep violet → back to a lighter cyan/violet, the current state) — all pure `:root` token swaps, plus a few one-time structural fixes (dark-friendly low-opacity variants for previously light-only error/severity colors, Admin Miller-column grid/contrast fixes, `FleetMapWidget` loading-indicator fix). Map styling untouched throughout.
+
+### Phase 9.2: Roles enforcement & user management
+
+**Goal:** `READER` accounts are actually blocked from writing (not just labeled), a sysadmin can manage `admin`/`reader` Customer Users from the frontend (create/list/delete, across all Clients or one), and a sysadmin can impersonate any Customer User ("Login as") with a durable audit trail.
+**Depends on:** Phase 2.2 (TB-native users/roles), Phase 8 (`/admin` panel patterns reused for `/users`)
+**Reason:** User-requested, discussed via `/paul:discuss` before planning (see `9.2-roles-permissions-users/CONTEXT.md`). Two design decisions resolved via `AskUserQuestion` before planning: (1) `Users` is a new top-level nav item (already existed as a `comingSoon` placeholder); (2) impersonation has no live kill-switch — ending is always "Back to my session" on the impersonating browser, plus normal session TTL expiry.
+
+**Scope:**
+- `ReaderBlockGuard`: new global `APP_GUARD` (third, after `SessionAuthGuard`/`CustomerScopeGuard`) — 403s every mutating request from a READER session, zero exceptions
+- `/users` page: Client picker (defaults to "All Clients" tenant-wide, added mid-session) + user list with role badges + Add/Delete, backed by `GET/POST/DELETE /users`
+- Impersonation: `ImpersonationLog` Prisma model (audit trail only, not general audit logging), `POST /users/:id/impersonate` + `POST /users/impersonate/:logId/end` (both sysadmin-only), a persistent "Viewing as {email}" banner + "Back to my session" on the frontend
+- Chat-driven follow-up (see `9.2-03-SUMMARY.md`'s Addendum): client-side role-based UI gating (new `GET /auth/me`, write controls hidden — not disabled — for READER), a real bug fix (ThingsBoard's activation-link endpoint returns plain text, not JSON), several code-review fixes, and a Tooltip component rewrite (portal-based via `@radix-ui/react-tooltip`, fixing a real scroll/clipping bug)
+
+**Plans:**
+- [x] 9.2-01: `ReaderBlockGuard` (backend-only) — applied, `tsc --noEmit` clean; live 403 verification deferred (no READER test account at the time), later exercised indirectly through the user's own live testing this session (see `9.2-03-SUMMARY.md` Addendum)
+- [x] 9.2-02: Users management UI (`/users` list/create/delete, `appRole` exposed on `GET /users`) — applied, then extended mid-session with an "All Clients" default view backed by TB's real `GET /api/customer/users` (confirmed live against this project's tenant)
+- [x] 9.2-03: Impersonation (`ImpersonationLog`, impersonate/end endpoints, banner + Login-as button) — applied; see its SUMMARY.md's substantial Addendum for the rest of this session's work (role-based UI gating, bug fixes, Tooltip rewrite) that closed out the phase
+
 ## Version 2 (Not yet planned)
 
 Deferred scope, pulled from PROJECT.md "Planned (Next — Version 2)" and STATE.md Deferred Issues. Not phase-numbered or scheduled — surfaced here so it isn't lost, to be broken into real phases when V1 ships.
 
 | Item | Origin | Effort | Notes |
 |------|--------|--------|-------|
-| Área/asset-level permission granularity (finer than customer hierarchy) | PROJECT.md V2 scope / Phase 2.2 clarification | M | No design chosen yet — ThingsBoard CE has no Entity Groups to back it; would need either a TB PE upgrade or a parallel Postgres permission layer, a real architectural decision to make when picked up. Explicitly still deferred per Phase 9.2's CONTEXT.md |
+| Área/asset-level permission granularity (finer than customer hierarchy) | PROJECT.md V2 scope / Phase 2.2 clarification | M | No design chosen yet — ThingsBoard CE has no Entity Groups to back it; would need either a TB PE upgrade or a parallel Postgres permission layer, a real architectural decision to make when picked up. Explicitly still deferred, Phase 9.2 (complete) only enforces role/customer-hierarchy scoping |
 | DELETE endpoints for devices/assets/customers | STATE.md Deferred Issues (Phase 2.1) | S | Add when a V2 wizard needs entity deletion |
 | Jest test harness for `ThingsboardClientService`/cache-hit/auth-guard behavior | STATE.md Deferred Issues (Phase 1-2.1) | S | Deferred per explicit instruction until backend V1 is done — manual runtime verification covers V1 so far |
 | Modify assets/devices "Contains" relations (relocate to another asset/location area) + read Relations API generally | IMPROVEMENTS.md | M | Extends the internal-only relations use from `CustomerScopeGuard` into a general read/write Relations capability |
 | Maps/photos per asset/device/location-area with child-only pins (one level deep) + navigation dashboard w/ status/type filters | IMPROVEMENTS.md | L | Frontend-heavy; needs a place to persist map/photo refs, likely Postgres |
 | Device Profiles / Asset Profiles access (read, eventually manage) | IMPROVEMENTS.md | M | TB alarm rules are defined at profile level — natural pairing with the V1 Alarms module (Phase 3) once profiles are picked up |
 | Entity Groups for asset creation (set groups within owner) | IMPROVEMENTS.md | M | Only available while the current ThingsBoard Professional Edition trial (1 month, up to 5 sensors) is active — depends on that subscription continuing or a deliberate PE upgrade |
-| User edit: attributes + customer reassignment; email-based activation w/ double password confirmation as an alternative to the existing activation-link flow | IMPROVEMENTS.md | M | Extends Phase 2.2-02's `users` module (create/list/delete → add update + alternate activation flow). Note: user *management UI* (create/list/delete) + impersonation are now covered by planned Phase 9.2, not this row |
+| User edit: attributes + customer reassignment; email-based activation w/ double password confirmation as an alternative to the existing activation-link flow | IMPROVEMENTS.md | M | Extends Phase 2.2-02's `users` module (create/list/delete → add update + alternate activation flow). Note: user *management UI* (create/list/delete, all-Clients view) + impersonation shipped in Phase 9.2 (complete), not this row — this row is only the remaining edit/alt-activation gap |
 | User profile fields (first/last name, phone, description) + default dashboard / fullscreen preference via `additionalInfo` | IMPROVEMENTS.md | M | Dashboard preference depends on the Dashboard model Phase 10 will introduce |
 | Reporting module | IMPROVEMENTS.md | L | Explicitly deferred to the last stages of the project, lowest priority in this table |
-| Audit Logs | IMPROVEMENTS.md | S | Not v1, not yet scheduled for v2 either — revisit when picked up. Phase 9.2 adds a narrow `ImpersonationLog`, not general audit logging |
+| Audit Logs | IMPROVEMENTS.md | S | Not v1, not yet scheduled for v2 either — revisit when picked up. Phase 9.2 (complete) added a narrow `ImpersonationLog`, not general audit logging |
 
 ---
 *Roadmap created: 2026-07-30*
-*Last updated: 2026-08-03 (after Phase 7 — V1 milestone complete)*
+*Last updated: 2026-08-05 (after Phase 9.2 — roles enforcement & user management complete)*

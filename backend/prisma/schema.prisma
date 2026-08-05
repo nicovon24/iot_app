@@ -30,3 +30,13 @@ model AssetHierarchyAssignment {
 
   @@index([customerId])
 }
+
+// Audit trail for sysadmin "Login as" impersonation (Phase 9.2). Narrowly scoped to
+// impersonation only — not a general audit-logging system.
+model ImpersonationLog {
+  id             String    @id @default(uuid())
+  impersonatorId String
+  targetUserId   String
+  startedAt      DateTime  @default(now())
+  endedAt        DateTime?
+}

@@ -14,6 +14,7 @@ import { useDeleteCustomer } from '@/hooks/useCustomers';
 import { AdminBreadcrumbs } from './AdminBreadcrumbs';
 import { ConfirmDialog } from '@/widgets/forms/ConfirmDialog';
 import { TableRowsSkeleton } from '@/components/feedback/Skeleton';
+import { Tooltip } from '@/components/ui/Tooltip';
 import { toastError, toastSuccess } from '@/lib/toast';
 import type { EntityRef } from '@/types';
 
@@ -32,6 +33,7 @@ export interface AdminClientsColumnProps {
   onSelect: (customer: EntityRef) => void;
   onNavigateTrail: (index: number) => void;
   onAddClient: () => void;
+  readOnly?: boolean;
 }
 
 export function AdminClientsColumn({
@@ -42,6 +44,7 @@ export function AdminClientsColumn({
   onSelect,
   onNavigateTrail,
   onAddClient,
+  readOnly = false,
 }: AdminClientsColumnProps) {
   const [pendingDelete, setPendingDelete] = useState<EntityRef | null>(null);
   const deleteCustomer = useDeleteCustomer();
@@ -55,14 +58,16 @@ export function AdminClientsColumn({
     <div className="glass-card flex h-96 shrink-0 flex-col gap-3 p-4 md:h-full md:min-h-0 md:w-full">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-heading">Clients</h2>
-        <button
-          type="button"
-          onClick={onAddClient}
-          className="flex items-center gap-1 text-xs font-semibold hover:underline"
-          style={{ color: 'var(--gradient-accent-from)' }}
-        >
-          <Plus size={12} /> Add
-        </button>
+        {!readOnly && (
+          <button
+            type="button"
+            onClick={onAddClient}
+            className="flex items-center gap-1 text-xs font-semibold hover:underline"
+            style={{ color: 'var(--gradient-accent-from)' }}
+          >
+            <Plus size={12} /> Add
+          </button>
+        )}
       </div>
 
       <AdminBreadcrumbs rootLabel="Root" trail={trail.map((c) => ({ id: c.id, name: c.name }))} onNavigate={onNavigateTrail} />
@@ -92,16 +97,20 @@ export function AdminClientsColumn({
                     {customer.name}
                   </TableCell>
                   <TableCell>
-                    <div className="flex justify-end">
-                      <button
-                        type="button"
-                        onClick={() => setPendingDelete(customer)}
-                        className="rounded p-1 text-red-600 hover:bg-surface"
-                        aria-label="Delete"
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
+                    {!readOnly && (
+                      <div className="flex justify-end">
+                        <Tooltip label="Delete">
+                          <button
+                            type="button"
+                            onClick={() => setPendingDelete(customer)}
+                            className="rounded p-1 text-red-600 hover:bg-surface"
+                            aria-label="Delete"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </Tooltip>
+                      </div>
+                    )}
                   </TableCell>
                 </TableRow>
               )}

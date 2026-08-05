@@ -17,6 +17,7 @@ import { useCustomerChildren, useAssetChildren, useInvalidateHierarchyChildren }
 import { ConfirmDialog } from '@/widgets/forms/ConfirmDialog';
 import { EditEntityDialog } from '@/widgets/forms/EditEntityDialog';
 import { Dialog, DialogHeader, DialogTitle, DialogCloseButton, DialogBody, DialogFooter } from '@/components/ui/Dialog';
+import { Tooltip } from '@/components/ui/Tooltip';
 import { toastError, toastSuccess } from '@/lib/toast';
 import type { EntityRef } from '@/types';
 
@@ -38,6 +39,7 @@ export interface AdminAssetPanelProps {
   levelIndex: number;
   selectedAssetId?: string;
   onSelect: (asset: EntityRef) => void;
+  readOnly?: boolean;
 }
 
 export function AdminAssetPanel({
@@ -48,6 +50,7 @@ export function AdminAssetPanel({
   levelIndex,
   selectedAssetId,
   onSelect,
+  readOnly = false,
 }: AdminAssetPanelProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [newName, setNewName] = useState('');
@@ -98,16 +101,18 @@ export function AdminAssetPanel({
         <h2 className="truncate text-sm font-semibold text-heading" title={title}>
           {title}
         </h2>
-        <button
-          type="button"
-          disabled={!parentId}
-          onClick={() => setIsAdding((v) => !v)}
-          title={parentId ? undefined : 'Select the previous level first'}
-          className="flex shrink-0 items-center gap-1 text-xs font-semibold hover:underline disabled:cursor-not-allowed disabled:opacity-40 disabled:no-underline"
-          style={{ color: 'var(--gradient-accent-from)' }}
-        >
-          <Plus size={12} /> Add
-        </button>
+        {!readOnly && (
+          <button
+            type="button"
+            disabled={!parentId}
+            onClick={() => setIsAdding((v) => !v)}
+            title={parentId ? undefined : 'Select the previous level first'}
+            className="flex shrink-0 items-center gap-1 text-xs font-semibold hover:underline disabled:cursor-not-allowed disabled:opacity-40 disabled:no-underline"
+            style={{ color: 'var(--gradient-accent-from)' }}
+          >
+            <Plus size={12} /> Add
+          </button>
+        )}
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto">
@@ -138,28 +143,36 @@ export function AdminAssetPanel({
                   </TableCell>
                   <TableCell>
                     <div className="flex justify-end gap-2">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingAsset(asset);
-                        }}
-                        className="rounded p-1 text-body hover:bg-surface"
-                        aria-label="Edit"
-                      >
-                        <Pencil size={13} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setPendingDelete(asset);
-                        }}
-                        className="rounded p-1 text-red-600 hover:bg-surface"
-                        aria-label="Delete"
-                      >
-                        <Trash2 size={13} />
-                      </button>
+                      {!readOnly && (
+                      <Tooltip label="Edit">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingAsset(asset);
+                          }}
+                          className="rounded p-1 text-body hover:bg-surface"
+                          aria-label="Edit"
+                        >
+                          <Pencil size={13} />
+                        </button>
+                      </Tooltip>
+                      )}
+                      {!readOnly && (
+                      <Tooltip label="Delete">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPendingDelete(asset);
+                          }}
+                          className="rounded p-1 text-red-600 hover:bg-surface"
+                          aria-label="Delete"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </Tooltip>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

@@ -9,6 +9,8 @@ import { Sidebar } from './Sidebar';
 import { AuthGate } from './AuthGate';
 import { Tooltip } from '../ui/Tooltip';
 import { NAV_ITEMS } from '@/lib/nav-items';
+import { getImpersonationMeta, type ImpersonationMeta } from '@/lib/session';
+import { endImpersonation } from '@/hooks/useImpersonation';
 
 const SIDEBAR_VISIBLE_STORAGE_KEY = 'iot_sidebar_visible';
 
@@ -35,10 +37,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const pageTitle = usePageTitle();
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [impersonation, setImpersonation] = useState<ImpersonationMeta | null>(null);
 
   useEffect(() => {
     const stored = window.localStorage.getItem(SIDEBAR_VISIBLE_STORAGE_KEY);
     if (stored) setSidebarVisible(stored === 'true');
+    setImpersonation(getImpersonationMeta());
   }, []);
 
   // Close the mobile drawer automatically on navigation.
@@ -83,6 +87,18 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         <div className="flex flex-1 flex-col overflow-hidden">
+          {impersonation && (
+            <div className="flex shrink-0 items-center justify-between gap-3 bg-amber-500 px-4 py-1.5 text-sm font-medium text-black">
+              <span>Viewing as {impersonation.label}</span>
+              <button
+                type="button"
+                onClick={() => void endImpersonation()}
+                className="rounded-md border border-black/20 px-2.5 py-1 text-xs font-semibold transition hover:bg-black/10"
+              >
+                Back to my session
+              </button>
+            </div>
+          )}
           <header
             className="flex h-20 shrink-0 items-center gap-3 px-8 text-white shadow-sm"
             style={{

@@ -124,6 +124,39 @@ export class ThingsboardClientService {
     return parseJsonBody<T>(response);
   }
 
+  /**
+   * Same auth/refresh-on-401 contract as `request()`, but for TB endpoints that respond with a
+   * raw plain-text body instead of JSON (e.g. `/api/user/:id/activationLink` returns the bare
+   * URL string, not `{ value: "..." }` — found live, `parseJsonBody` crashed with a SyntaxError
+   * trying to JSON.parse it).
+   */
+  async requestText(method: string, path: string): Promise<string> {
+    const token = await this.getToken();
+    const response = await fetch(`${this.config.thingsboardUrl}${path}`, {
+      method,
+      headers: { 'X-Authorization': `Bearer ${token}` },
+    });
+
+    if (response.status === 401) {
+      await this.redis.del(JWT_CACHE_KEY);
+      const freshToken = await this.getToken();
+      const retry = await fetch(`${this.config.thingsboardUrl}${path}`, {
+        method,
+        headers: { 'X-Authorization': `Bearer ${freshToken}` },
+      });
+      if (!retry.ok) {
+        await throwForFailedResponse(retry);
+      }
+      return retry.text();
+    }
+
+    if (!response.ok) {
+      await throwForFailedResponse(response);
+    }
+
+    return response.text();
+  }
+
   async request<T>(method: string, path: string, body?: unknown): Promise<T> {
     const token = await this.getToken();
     const response = await fetch(`${this.config.thingsboardUrl}${path}`, {

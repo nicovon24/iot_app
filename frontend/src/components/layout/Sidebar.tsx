@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown, LogOut, PanelLeftClose, PanelLeftOpen, X, type LucideProps } from 'lucide-react';
 import { NAV_ITEMS } from '@/lib/nav-items';
 import { logout } from '@/lib/auth';
+import { usePermissions } from '@/hooks/useCurrentUser';
 import { Tooltip } from '../ui/Tooltip';
 
 const SIDEBAR_STORAGE_KEY = 'iot_sidebar_expanded';
@@ -25,6 +26,10 @@ export function Sidebar({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { isSysadmin } = usePermissions();
+  // Users management is sysadmin-only on the backend (RolesGuard) — hidden from the nav for
+  // everyone else rather than shown and then 403ing on every action.
+  const visibleNavItems = NAV_ITEMS.filter((item) => item.href !== '/users' || isSysadmin);
   const [expanded, setExpanded] = useState(true);
   const [dashboardMenuOpen, setDashboardMenuOpen] = useState(false);
   const dashboardMenuRef = useRef<HTMLDivElement>(null);
@@ -98,7 +103,7 @@ export function Sidebar({
       </div>
 
       <nav className="relative z-10 flex flex-1 flex-col gap-1 px-3">
-        {NAV_ITEMS.map((item) => {
+        {visibleNavItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
           const isDashboard = item.href === '/dashboard';
