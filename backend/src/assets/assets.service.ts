@@ -1,6 +1,7 @@
-import { BadRequestException, HttpException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, HttpException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { EntitiesService } from '../entities/entities.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { AppSession } from '../auth/auth.service';
 import { EntityRef } from '../types';
 import { CreateAssetDto } from './dto/create-asset.dto';
 
@@ -110,11 +111,38 @@ export class AssetsService {
     return this.entitiesService.updateAsset(id, updates);
   }
 
-  async linkDevice(assetId: string, deviceId: string): Promise<void> {
+  /**
+   * Links the Device to the Asset via a real TB "Contains" relation, then reassigns the
+   * Device's ThingsBoard owner to the same Customer as the Asset — otherwise the Device's
+   * customerId stays unset and the Devices list can never show a Customer name for it.
+   *
+   * Scoped for CUSTOMER_USER sessions: both the Asset and the Device must already be
+   * within the caller's own customer hierarchy — a Customer User cannot use this to pull in
+   * another customer's device, or claim an unassigned one (see EntitiesService.claimDevice
+   * for that). TENANT_ADMIN/SYS_ADMIN bypass entirely (isInScope returns true for them),
+   * so a tenant admin can still freely assign an unassigned device to any Asset.
+   */
+  async linkDevice(assetId: string, deviceId: string, session: AppSession | null): Promise<void> {
+    if (!(await this.entitiesService.isInScope(session, assetId, 'ASSET'))) {
+      throw new ForbiddenException('This asset is outside your customer hierarchy');
+    }
+    if (!(await this.entitiesService.isInScope(session, deviceId, 'DEVICE'))) {
+      throw new ForbiddenException(
+        'This device is unassigned or belongs to a different customer — claim it first if it is unassigned',
+      );
+    }
+
     await this.entitiesService.createRelation(assetId, 'ASSET', deviceId, 'DEVICE');
+    const assignment = await this.prisma.assetHierarchyAssignment.findUnique({ where: { assetId } });
+    if (assignment) {
+      await this.entitiesService.assignDeviceToCustomer(assignment.customerId, deviceId);
+    }
   }
 
-  async unlinkDevice(assetId: string, deviceId: string): Promise<void> {
+  async unlinkDevice(assetId: string, deviceId: string, session: AppSession | null): Promise<void> {
+    if (!(await this.entitiesService.isInScope(session, assetId, 'ASSET'))) {
+      throw new ForbiddenException('This asset is outside your customer hierarchy');
+    }
     await this.entitiesService.deleteRelation(assetId, 'ASSET', deviceId, 'DEVICE');
   }
 }

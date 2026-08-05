@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useEntities } from '@/hooks/useEntities';
 import { useDeleteAsset } from '@/hooks/useCreateAsset';
 import { usePatchAsset } from '@/hooks/usePatchAsset';
-import { EntityListWidget } from '@/widgets/EntityListWidget';
-import { ConfirmDialog } from '@/widgets/ConfirmDialog';
+import { usePermissions } from '@/hooks/useCurrentUser';
+import { EntityListWidget } from '@/widgets/entity/EntityListWidget';
+import { ConfirmDialog } from '@/widgets/forms/ConfirmDialog';
 import { toastError } from '@/lib/toast';
 import type { EntityRef } from '@/types';
 
@@ -16,6 +17,7 @@ export default function AssetsPage() {
   const { data, isLoading, isError, error } = useEntities('ASSET');
   const deleteAsset = useDeleteAsset();
   const patchAsset = usePatchAsset();
+  const { canWrite } = usePermissions();
 
   const closeDeleteDialog = () => {
     setPendingDelete(null);
@@ -34,6 +36,7 @@ export default function AssetsPage() {
           onRowClick={(entity) => router.push(`/entities/${entity.id}?type=${entity.type}`)}
           onDelete={(entity) => setPendingDelete(entity)}
           editableFields={['name', 'label']}
+          readOnly={!canWrite}
           editTitle="Edit Asset"
           isEditPending={patchAsset.isPending}
           editError={patchAsset.error}

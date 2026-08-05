@@ -77,12 +77,22 @@ export class AssetsController {
   }
 
   @Post(':id/devices')
-  @ApiOperation({ summary: 'Link an existing Device to this Asset via a real TB Contains relation' })
+  @ApiOperation({
+    summary: 'Link an existing Device to this Asset via a real TB Contains relation',
+    description:
+      "Scoped: both the Asset and the Device must already be within the caller's own customer hierarchy " +
+      '(Customer Users only) — 403 otherwise. Tenant admins bypass this and may link any Device, including ' +
+      'one never assigned to a Customer. A Customer User must claim an unassigned Device first (POST /devices/:id/claim).',
+  })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 201 })
   @HttpCode(201)
-  async linkDevice(@Param('id', ParseTbIdPipe) id: string, @Body() dto: LinkDeviceDto): Promise<void> {
-    await this.assetsService.linkDevice(id, dto.deviceId);
+  async linkDevice(
+    @Param('id', ParseTbIdPipe) id: string,
+    @Body() dto: LinkDeviceDto,
+    @CurrentSession() session: AppSession | null,
+  ): Promise<void> {
+    await this.assetsService.linkDevice(id, dto.deviceId, session);
   }
 
   @Delete(':id/devices/:deviceId')
@@ -93,7 +103,8 @@ export class AssetsController {
   async unlinkDevice(
     @Param('id', ParseTbIdPipe) id: string,
     @Param('deviceId', ParseTbIdPipe) deviceId: string,
+    @CurrentSession() session: AppSession | null,
   ): Promise<void> {
-    await this.assetsService.unlinkDevice(id, deviceId);
+    await this.assetsService.unlinkDevice(id, deviceId, session);
   }
 }

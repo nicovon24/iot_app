@@ -1,4 +1,4 @@
-import { FleetMapWidget } from '@/widgets/FleetMapWidget';
+import { FleetMapWidget } from '@/widgets/maps/FleetMapWidget';
 
 export default function MapPage() {
   return (

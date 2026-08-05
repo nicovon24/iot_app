@@ -27,7 +27,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Alarms', href: '/alarms', icon: Bell },
   { label: 'Maps', href: '/map', icon: Map },
   { label: 'Clients', href: '/clients', icon: Building2 },
-  { label: 'Users', href: '/users', icon: UserCog, comingSoon: true },
+  { label: 'Users', href: '/users', icon: UserCog },
   { label: 'White Label', href: '/white-label', icon: Palette, comingSoon: true },
   { label: 'Settings', href: '/settings', icon: Settings, comingSoon: true },
 ];

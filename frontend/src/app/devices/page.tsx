@@ -3,13 +3,15 @@
 import { useRouter } from 'next/navigation';
 import { useEntities } from '@/hooks/useEntities';
 import { usePatchDevice } from '@/hooks/usePatchDevice';
-import { EntityListWidget } from '@/widgets/EntityListWidget';
+import { usePermissions } from '@/hooks/useCurrentUser';
+import { EntityListWidget } from '@/widgets/entity/EntityListWidget';
 import { toastError } from '@/lib/toast';
 
 export default function DevicesPage() {
   const router = useRouter();
   const { data, isLoading, isError, error } = useEntities('DEVICE');
   const patchDevice = usePatchDevice();
+  const { canWrite } = usePermissions();
 
   return (
     <div className="h-full w-full">
@@ -21,6 +23,7 @@ export default function DevicesPage() {
         emptyLabel="No devices found"
         onRowClick={(entity) => router.push(`/entities/${entity.id}?type=${entity.type}`)}
         editableFields={['label']}
+        readOnly={!canWrite}
         editTitle="Edit Device"
         isEditPending={patchDevice.isPending}
         editError={patchDevice.error}

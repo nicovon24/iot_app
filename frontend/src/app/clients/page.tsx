@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { useCustomers, useDeleteCustomer, usePatchCustomer } from '@/hooks/useCustomers';
-import { EntityListWidget } from '@/widgets/EntityListWidget';
-import { ConfirmDialog } from '@/widgets/ConfirmDialog';
+import { usePermissions } from '@/hooks/useCurrentUser';
+import { EntityListWidget } from '@/widgets/entity/EntityListWidget';
+import { ConfirmDialog } from '@/widgets/forms/ConfirmDialog';
 import { toastError } from '@/lib/toast';
 import type { EntityRef } from '@/types';
 
@@ -12,6 +13,7 @@ export default function ClientsPage() {
   const { data, isLoading, isError, error } = useCustomers();
   const deleteCustomer = useDeleteCustomer();
   const patchCustomer = usePatchCustomer();
+  const { canWrite } = usePermissions();
 
   const closeDeleteDialog = () => {
     setPendingDelete(null);
@@ -33,6 +35,7 @@ export default function ClientsPage() {
           emptyLabel="No clients found"
           onDelete={(entity) => setPendingDelete(entity)}
           editableFields={['name']}
+          readOnly={!canWrite}
           editTitle="Edit Client"
           isEditPending={patchCustomer.isPending}
           editError={patchCustomer.error}

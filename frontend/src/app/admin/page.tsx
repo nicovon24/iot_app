@@ -3,17 +3,19 @@
 import { useMemo, useState } from 'react';
 import { useCustomers } from '@/hooks/useCustomers';
 import { useCustomerHierarchy } from '@/hooks/useCustomerHierarchy';
+import { usePermissions } from '@/hooks/useCurrentUser';
 import { DEFAULT_HIERARCHY_LEVELS } from '@/lib/hierarchy-defaults';
-import { ClientWizard } from '@/widgets/ClientWizard';
-import { AdminClientsColumn } from '@/widgets/AdminClientsColumn';
-import { AdminAssetPanel } from '@/widgets/AdminAssetPanel';
-import { AdminDevicePanel } from '@/widgets/AdminDevicePanel';
+import { ClientWizard } from '@/widgets/forms/ClientWizard';
+import { AdminClientsColumn } from '@/widgets/admin/AdminClientsColumn';
+import { AdminAssetPanel } from '@/widgets/admin/AdminAssetPanel';
+import { AdminDevicePanel } from '@/widgets/admin/AdminDevicePanel';
 import type { EntityRef } from '@/types';
 
 export default function AdminPage() {
   const [customerTrail, setCustomerTrail] = useState<EntityRef[]>([]);
   const [assetTrail, setAssetTrail] = useState<EntityRef[]>([]);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
+  const { canWrite } = usePermissions();
 
   const customersQuery = useCustomers();
   const allCustomers = customersQuery.data?.data ?? [];
@@ -81,11 +83,20 @@ export default function AdminPage() {
     };
   });
 
+  // Total number of Miller columns on screen right now (Clients + one per Asset
+  // hierarchy level + the trailing Devices column) — drives the grid below so all
+  // columns share the available width evenly instead of a fixed-width horizontal
+  // scroll that clips the last column off-screen.
+  const totalColumns = 1 + assetLevels.length + 1;
+
   return (
     <div className="flex h-full w-full flex-col gap-4">
       <h1 className="text-lg font-semibold text-heading">Admin</h1>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-2 md:grid md:auto-cols-[minmax(320px,380px)] md:grid-flow-col md:justify-start md:overflow-x-auto md:overflow-y-hidden">
+      <div
+        className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-2 md:grid md:overflow-x-auto md:overflow-y-hidden"
+        style={{ gridTemplateColumns: `repeat(${totalColumns}, minmax(240px, 1fr))` }}
+      >
         <AdminClientsColumn
           isLoading={customersQuery.isLoading}
           customers={visibleCustomers}
@@ -94,6 +105,7 @@ export default function AdminPage() {
           onSelect={selectCustomer}
           onNavigateTrail={navigateCustomerTrail}
           onAddClient={() => setIsWizardOpen(true)}
+          readOnly={!canWrite}
         />
 
         {assetLevels.map((level) => (
@@ -106,10 +118,11 @@ export default function AdminPage() {
             levelIndex={level.levelIndex}
             selectedAssetId={assetTrail[level.levelIndex]?.id}
             onSelect={(asset) => selectAsset(level.levelIndex, asset)}
+            readOnly={!canWrite}
           />
         ))}
 
-        <AdminDevicePanel title={deviceLevelName} activeNode={activeNode} />
+        <AdminDevicePanel title={deviceLevelName} activeNode={activeNode} readOnly={!canWrite} />
       </div>
 
       <ClientWizard

@@ -1,12 +1,13 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { Cpu, Box, AlertTriangle } from 'lucide-react';
 import { useEntities } from '@/hooks/useEntities';
 import { useGlobalAlarms } from '@/hooks/useEntityAlarms';
-import { CountTileWidget } from '@/widgets/CountTileWidget';
-import { FleetMapWidget } from '@/widgets/FleetMapWidget';
-import { EntityListWidget } from '@/widgets/EntityListWidget';
-import { AlarmsListWidget } from '@/widgets/AlarmsListWidget';
+import { CountTileWidget } from '@/widgets/charts/CountTileWidget';
+import { FleetMapWidget } from '@/widgets/maps/FleetMapWidget';
+import { EntityListWidget } from '@/widgets/entity/EntityListWidget';
+import { AlarmsListWidget } from '@/widgets/entity/AlarmsListWidget';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -25,9 +26,9 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid shrink-0 grid-cols-1 gap-4 sm:grid-cols-3">
-        <CountTileWidget label="Devices" value={devicesQuery.data?.totalElements ?? 0} isLoading={devicesQuery.isLoading} />
-        <CountTileWidget label="Assets" value={assetsQuery.data?.totalElements ?? 0} isLoading={assetsQuery.isLoading} />
-        <CountTileWidget label="Active Alarms" value={activeAlarms.length} isLoading={alarmsQuery.isLoading} />
+        <CountTileWidget label="Devices" value={devicesQuery.data?.totalElements ?? 0} isLoading={devicesQuery.isLoading} accent="info" icon={Cpu} />
+        <CountTileWidget label="Assets" value={assetsQuery.data?.totalElements ?? 0} isLoading={assetsQuery.isLoading} accent="info" icon={Box} />
+        <CountTileWidget label="Active Alarms" value={activeAlarms.length} isLoading={alarmsQuery.isLoading} accent="danger" icon={AlertTriangle} />
       </div>
 
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-3">
@@ -44,6 +45,7 @@ export default function DashboardPage() {
               error={devicesQuery.error}
               emptyLabel="No devices found"
               title="Devices"
+              variant="table"
               onRowClick={(entity) => router.push(`/entities/${entity.id}?type=${entity.type}`)}
             />
           </div>

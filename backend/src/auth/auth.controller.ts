@@ -1,8 +1,16 @@
-import { Body, Controller, Headers, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Headers, HttpCode, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
+import { CurrentSession } from '../common/decorators/current-session.decorator';
 import { Public } from '../common/decorators/public.decorator';
-import { AuthService } from './auth.service';
+import { AppSession, AuthService } from './auth.service';
 import { LoginDto, LoginResponseDto } from './dto/login.dto';
+
+export interface CurrentUserResponse {
+  email: string;
+  authority: AppSession['authority'];
+  appRole: AppSession['appRole'];
+  customerId: string | null;
+}
 
 @ApiTags('auth')
 @Controller('auth')
@@ -28,5 +36,21 @@ export class AuthController {
     if (sessionToken) {
       await this.authService.logout(sessionToken);
     }
+  }
+
+  @Get('me')
+  @ApiSecurity('session-token')
+  @ApiOperation({ summary: "Return the caller's own session identity (role/authority/customer), for frontend UI gating" })
+  @ApiResponse({ status: 200 })
+  me(@CurrentSession() session: AppSession | null): CurrentUserResponse {
+    if (!session) {
+      throw new ForbiddenException('No active session');
+    }
+    return {
+      email: session.email,
+      authority: session.authority,
+      appRole: session.appRole,
+      customerId: session.customerId,
+    };
   }
 }

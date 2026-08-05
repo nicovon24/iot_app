@@ -6,53 +6,66 @@
  * CSS custom properties. A future white-label theme overrides only this block
  * (e.g. injected per-tenant via a <style> tag or `element.style.setProperty`)
  * with no rebuild and no component changes required.
+ *
+ * Dark "control room" theme — slate bg/sidebar with a petrol-cyan accent used
+ * everywhere (icons, buttons, borders, header). Sidebar active/selected uses
+ * a washed-out (desaturated) pastel version of the same cyan instead of a
+ * second hue, so "selected" reads as a faded variant of the main accent
+ * rather than a different color (Phase 9.1 experiment #4c, see STATE.md
+ * Decisions).
  */
 :root {
-  --color-navy-950: #0b1220;
-  --color-navy-900: #0f172a;
-  --color-navy-800: #17233d;
-  --color-accent: #0ea5e9;
-  --color-accent-soft: #7dd3fc;
-  --color-surface: #f1f5f9;
-  --color-surface-card: #ffffff;
-  --color-border: #e2e8f0;
-  --color-muted: #64748b;
+  /* Fixed dark constants (tooltips, dropdown menus) — kept for contrast against
+   * the dark page itself, tuned a shade darker than the page background. */
+  --color-navy-950: #060a14;
+  --color-navy-900: #0b1220;
+  --color-navy-800: #131b2e;
+
+  --color-accent: #0891b2;
+  --color-accent-soft: #67e8f9;
+  --color-link-hover: #67e8f9;
+  --color-surface: #0f172a;
+  --color-surface-card: rgba(30, 41, 59, 0.72);
+  --color-border: rgba(8, 145, 178, 0.18);
+  --color-muted: #94a3b8;
 
   /* Text tokens — every text-* color in the app resolves here instead of a
-   * literal Tailwind gray (text-slate-900 etc), so dark mode can lighten
-   * text, not just backgrounds. */
-  --color-heading: #0f172a;
-  --color-body: #334155;
-  --color-faint: #94a3b8;
-  --color-danger: #dc2626;
-
-  /* Top header banner gradient — matches the accent color; tenants can override both stops. */
-  --gradient-header-from: #0284c7;
-  --gradient-header-to: #0ea5e9;
-
-  --background: var(--color-surface);
-  --foreground: #1e293b;
-}
-
-/*
- * Dark mode override — toggled by adding/removing `dark` on <html> (see
- * frontend/src/hooks/useTheme.ts). Page/sidebar surfaces go near-black
- * (#0a0a0a); the accent (celeste) stays the same in both modes by design.
- */
-:root.dark {
-  --color-surface: #0a0a0a;
-  --color-surface-card: #141414;
-  --color-border: #262626;
-  --color-muted: #94a3b8;
+   * literal Tailwind gray, tuned for legibility on the dark slate surfaces. */
   --color-heading: #f1f5f9;
   --color-body: #cbd5e1;
   --color-faint: #64748b;
-  --color-danger: #f87171;
-  --background: var(--color-surface);
-  --foreground: #e2e8f0;
+  --color-danger: #dc2626;
 
-  --gradient-header-from: #0a0a0a;
-  --gradient-header-to: #0a0a0a;
+  /* Primary petrol-cyan accent gradient — logo badge, primary buttons, icons,
+   * avatar badges, toggle "on" state. Monochrome petrol cyan, used across the
+   * whole app as the one main accent. */
+  --gradient-accent-from: #0891b2;
+  --gradient-accent-to: #0e7490;
+  --gradient-accent: linear-gradient(135deg, var(--gradient-accent-from), var(--gradient-accent-to));
+
+  /* Secondary status gradients — stat-card icon badges, status dots. */
+  --gradient-ok-from: #34d399;
+  --gradient-ok-to: #059669;
+  --gradient-danger-from: #ef4444;
+  --gradient-danger-to: #dc2626;
+  --gradient-info-from: #0891b2;
+  --gradient-info-to: #0891b2;
+
+  /* Sidebar rail — #1E293B family, a shade lighter than the page background. */
+  --gradient-sidebar: linear-gradient(165deg, #0f172a 0%, #1e293b 55%, #24324a 100%);
+
+  /* Sidebar active nav item — same petrol cyan as the top header, for full
+   * visual continuity between the two. */
+  --gradient-sidebar-active-from: #0891b2;
+  --gradient-sidebar-active-to: #0e7490;
+  --gradient-sidebar-active: linear-gradient(135deg, var(--gradient-sidebar-active-from), var(--gradient-sidebar-active-to));
+
+  /* Top header banner gradient — same petrol cyan, matches the accent everywhere. */
+  --gradient-header-from: #0891b2;
+  --gradient-header-to: #0e7490;
+
+  --background: var(--color-surface);
+  --foreground: var(--color-body);
 }
 
 @theme inline {
@@ -61,6 +74,7 @@
   --color-navy-800: var(--color-navy-800);
   --color-accent: var(--color-accent);
   --color-accent-soft: var(--color-accent-soft);
+  --color-link-hover: var(--color-link-hover);
   --color-surface: var(--color-surface);
   --color-surface-card: var(--color-surface-card);
   --color-border: var(--color-border);
@@ -71,14 +85,44 @@
   --color-danger: var(--color-danger);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-nunito-sans);
+  --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-nunito-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/*
+ * Glass-card — the standard container surface for the whole app (stat cards,
+ * list rows, Admin Miller columns, Login form, dialogs). Translucent white +
+ * backdrop-blur is the single most distinctive element of the 9.1 look.
+ */
+.glass-card {
+  background: var(--color-surface-card);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  box-shadow:
+    0 20px 44px -18px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(8, 145, 178, 0.05);
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-up {
+  animation: fadeUp 0.4s ease both;
 }
 
 /* Browsers don't give <button>/<select> a pointer cursor by default — apply it

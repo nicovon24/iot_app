@@ -3,7 +3,13 @@ import { ThingsboardClientService } from '../thingsboard/thingsboard-client.serv
 import { EntityRef, TbPageData, TbUserProfile } from '../types';
 
 function toEntityRef(user: TbUserProfile): EntityRef {
-  return { id: user.id.id, type: 'CUSTOMER', name: user.email };
+  return {
+    id: user.id.id,
+    type: 'CUSTOMER',
+    name: user.email,
+    customerId: user.customerId ? { id: user.customerId.id } : undefined,
+    additionalInfo: { appRole: user.additionalInfo?.appRole ?? null },
+  };
 }
 
 @Injectable()
@@ -20,11 +26,8 @@ export class UsersService {
 
     // TB's real activation flow: fetch the activation link (contains a one-time token), then
     // activate with the chosen password — this is how a Customer User gets a usable password
-    // without emailing an activation link.
-    const { value: activationLink } = await this.tb.request<{ value: string }>(
-      'GET',
-      `/api/user/${created.id.id}/activationLink`,
-    );
+    // without emailing an activation link. TB returns this as a raw plain-text URL, not JSON.
+    const activationLink = await this.tb.requestText('GET', `/api/user/${created.id.id}/activationLink`);
     const activateToken = new URL(activationLink).searchParams.get('activateToken');
     if (!activateToken) {
       throw new BadRequestException('ThingsBoard did not return an activation token');
@@ -40,6 +43,12 @@ export class UsersService {
       'GET',
       `/api/customer/${customerId}/users?pageSize=100&page=0`,
     );
+    return page.data.map(toEntityRef);
+  }
+
+  /** All Customer Users across every Customer in the tenant (TB's `getAllCustomerUsers`, PE-only). */
+  async listAll(): Promise<EntityRef[]> {
+    const page = await this.tb.request<TbPageData<TbUserProfile>>('GET', '/api/customer/users?pageSize=1000&page=0');
     return page.data.map(toEntityRef);
   }
 
