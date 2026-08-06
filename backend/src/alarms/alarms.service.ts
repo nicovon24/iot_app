@@ -33,12 +33,15 @@ export class AlarmsService {
     pagination?: PaginationQueryDto,
     severity?: TbAlarmSeverity,
     status?: TbAlarmStatus,
+    entityType?: 'DEVICE' | 'ASSET',
   ): Promise<TbPageData<TbAlarm>> {
+    // Skipping a kind entirely (rather than filtering after the fan-out) also skips its
+    // per-entity alarm queries, which are the expensive part of this call.
     const [devices, assets] = await Promise.all([
-      this.entitiesService.list('DEVICE', session),
-      this.entitiesService.list('ASSET', session),
+      entityType === 'ASSET' ? null : this.entitiesService.list('DEVICE', session),
+      entityType === 'DEVICE' ? null : this.entitiesService.list('ASSET', session),
     ]);
-    const entities = [...devices.data, ...assets.data];
+    const entities = [...(devices?.data ?? []), ...(assets?.data ?? [])];
 
     const perEntity = await Promise.all(
       entities.map((e) => this.getForEntity(e.id, e.type, undefined).then((p) => p.data)),

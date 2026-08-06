@@ -40,3 +40,77 @@ model ImpersonationLog {
   startedAt      DateTime  @default(now())
   endedAt        DateTime?
 }
+
+// Phase 10 — user-editable dashboards. Metadata only, same pattern as
+// CustomerHierarchyLevels/AssetHierarchyAssignment: ThingsBoard Customers are referenced
+// by their real id, never duplicated. No single customerId column on Dashboard — see
+// DashboardCustomerAccess.
+enum DashboardVisibility {
+  PRIVATE // only createdBy can see it
+  SHARED  // visible per customerScope/customerAccess below, no ADMIN/READER distinction
+}
+
+enum DashboardCustomerScope {
+  ALL      // tenant-wide — only ever set on a sysadmin-created dashboard
+  SPECIFIC // scoped to the Customers listed in DashboardCustomerAccess
+}
+
+model Dashboard {
+  id            String                 @id @default(uuid())
+  title         String
+  createdBy     String // TB user id of the creator
+  createdAt     DateTime               @default(now())
+  visibility    DashboardVisibility    @default(SHARED)
+  customerScope DashboardCustomerScope @default(SPECIFIC)
+
+  // The range every timeseries widget on this dashboard reads over. Json rather than two
+  // columns because it is a tagged union — { kind: 'LAST', ms } | { kind: 'FIXED', startTs,
+  // endTs } — and a FIXED window's bounds are meaningless for a LAST one.
+  // Nullable on purpose: dashboards saved before this existed keep their previous behaviour
+  // (a rolling one hour) instead of being back-filled with a guess.
+  timeWindow Json?
+
+  // SCROLL: fixed row height, the page scrolls when widgets overflow (the original behaviour).
+  // FIT: row height is derived from the viewport so the whole grid fits with no scrollbar —
+  // ThingsBoard calls this "auto fill layout height". A wall-display dashboard wants FIT; a
+  // long analytical one wants SCROLL.
+  layoutMode DashboardLayoutMode @default(SCROLL)
+
+  widgets        DashboardWidget[]
+  customerAccess DashboardCustomerAccess[]
+}
+
+enum DashboardLayoutMode {
+  SCROLL
+  FIT
+}
+
+// One row per Customer a SPECIFIC-scoped dashboard is assigned to. Empty/unused when
+// customerScope = ALL. Each row still cascades to that Customer's descendant sub-customers
+// via the same hierarchy walk CustomerScopeGuard/isDescendantCustomer already implement.
+model DashboardCustomerAccess {
+  id          String @id @default(uuid())
+  dashboardId String
+  customerId  String // real TB customerId, not a local FK
+
+  dashboard Dashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+
+  @@unique([dashboardId, customerId])
+  @@index([customerId])
+}
+
+// One row per widget instance on a dashboard. config/layout are Json rather than typed
+// Prisma columns on purpose: validation lives in the backend widget-type registry, keyed by
+// widgetType (a registry, not a closed enum), so adding a new widget type never needs a
+// migration.
+model DashboardWidget {
+  id          String @id @default(uuid())
+  dashboardId String
+  widgetType  String // registry key, e.g. "value-tile" | "line-chart" | ...
+  config      Json   // shape depends on widgetType — see backend/src/dashboards/widget-registry.ts
+  layout      Json   // { x, y, w, h }
+
+  dashboard Dashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+
+  @@index([dashboardId])
+}

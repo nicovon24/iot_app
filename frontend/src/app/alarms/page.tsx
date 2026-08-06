@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Select, SelectItem } from '@heroui/react';
+import { Select } from '@/components/ui/Select';
 import { useGlobalAlarms } from '@/hooks/useEntityAlarms';
 import { AlarmsListWidget } from '@/widgets/entity/AlarmsListWidget';
 import type { AlarmSeverity, AlarmStatus } from '@/types';
@@ -9,13 +9,9 @@ import type { AlarmSeverity, AlarmStatus } from '@/types';
 const SEVERITIES: AlarmSeverity[] = ['CRITICAL', 'MAJOR', 'MINOR', 'WARNING', 'INDETERMINATE'];
 const STATUSES: AlarmStatus[] = ['ACTIVE_UNACK', 'ACTIVE_ACK', 'CLEARED_UNACK', 'CLEARED_ACK'];
 
-const SELECT_CLASSNAMES = {
-  label: 'text-sm font-medium text-body',
-  trigger:
-    'rounded-md border border-border bg-surface-card data-[hover=true]:bg-surface data-[open=true]:border-accent shadow-none',
-  value: 'text-sm text-heading',
-  popoverContent: 'rounded-md border border-border bg-surface-card shadow-lg',
-};
+/** Sentinel value for "no filter" — the shared Select always needs a real string, same pattern
+ * as /users' ALL_CLIENTS and DatasourcePicker's scope options. */
+const ALL = '__all__';
 
 export default function AlarmsPage() {
   const [severity, setSeverity] = useState<AlarmSeverity | undefined>(undefined);
@@ -26,41 +22,23 @@ export default function AlarmsPage() {
   return (
     <div className="flex h-full w-full flex-col gap-4">
       <div className="glass-card flex shrink-0 gap-4 p-4">
-        <Select
-          label="Severity"
-          placeholder="All severities"
-          labelPlacement="outside"
-          variant="bordered"
-          className="w-56"
-          classNames={SELECT_CLASSNAMES}
-          selectedKeys={severity ? [severity] : []}
-          onSelectionChange={(keys) => {
-            const [key] = Array.from(keys) as string[];
-            setSeverity((key as AlarmSeverity) ?? undefined);
-          }}
-        >
-          {SEVERITIES.map((s) => (
-            <SelectItem key={s}>{s}</SelectItem>
-          ))}
-        </Select>
+        <div className="w-56">
+          <Select
+            label="Severity"
+            value={severity ?? ALL}
+            onChange={(v) => setSeverity(v === ALL ? undefined : (v as AlarmSeverity))}
+            options={[{ value: ALL, label: 'All severities' }, ...SEVERITIES.map((s) => ({ value: s, label: s }))]}
+          />
+        </div>
 
-        <Select
-          label="Status"
-          placeholder="All statuses"
-          labelPlacement="outside"
-          variant="bordered"
-          className="w-56"
-          classNames={SELECT_CLASSNAMES}
-          selectedKeys={status ? [status] : []}
-          onSelectionChange={(keys) => {
-            const [key] = Array.from(keys) as string[];
-            setStatus((key as AlarmStatus) ?? undefined);
-          }}
-        >
-          {STATUSES.map((s) => (
-            <SelectItem key={s}>{s}</SelectItem>
-          ))}
-        </Select>
+        <div className="w-56">
+          <Select
+            label="Status"
+            value={status ?? ALL}
+            onChange={(v) => setStatus(v === ALL ? undefined : (v as AlarmStatus))}
+            options={[{ value: ALL, label: 'All statuses' }, ...STATUSES.map((s) => ({ value: s, label: s }))]}
+          />
+        </div>
       </div>
 
       <div className="min-h-0 flex-1">

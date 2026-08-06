@@ -9,7 +9,8 @@ import {
   TableHeader,
   TableRow,
 } from '@heroui/react';
-import { Building2, Cpu, Box, Pencil, Play, Trash2 } from 'lucide-react';
+import { Building2, Cpu, Box, Pencil, Play, Trash2, UserCog } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { EntityRowsSkeleton, TableRowsSkeleton } from '@/components/feedback/Skeleton';
 import { EditEntityDialog, type EditableField } from '@/widgets/forms/EditEntityDialog';
@@ -38,6 +39,14 @@ export interface EntityListWidgetProps {
   /** 'cards' (default) — the avatar/badge row layout. 'table' — the classic
    * NAME/TYPE/CUSTOMER/ACTIONS table, kept for the dashboard's compact widgets. */
   variant?: 'cards' | 'table';
+  /** Overrides the small caption under the name. Defaults to `entity.type` — Users pass the
+   * app role instead, since every user row would otherwise read the same literal "USER". */
+  subtitleOf?: (entity: EntityRef) => string;
+  /** Overrides the right-hand secondary text. Defaults to the entity's customer name. */
+  metaOf?: (entity: EntityRef) => string | undefined;
+  /** Extra action buttons rendered before Edit/Delete — e.g. Users' "Login as". Hidden with
+   * the rest of the actions when readOnly. */
+  extraActions?: (entity: EntityRef) => ReactNode;
 }
 
 const TYPE_ICONS: Record<EntityType, typeof Cpu> = {
@@ -47,7 +56,9 @@ const TYPE_ICONS: Record<EntityType, typeof Cpu> = {
 };
 
 function EntityAvatar({ type }: { type: EntityType }) {
-  const Icon = TYPE_ICONS[type];
+  // Fallback rather than an index crash: Users are EntityRefs whose `type` isn't one of the
+  // three entity kinds this map was built for.
+  const Icon = TYPE_ICONS[type] ?? UserCog;
   return (
     <span
       aria-hidden
@@ -82,6 +93,9 @@ export function EntityListWidget({
   editError,
   title,
   readOnly = false,
+  subtitleOf,
+  metaOf,
+  extraActions,
   variant = 'cards',
 }: EntityListWidgetProps) {
   const [editingEntity, setEditingEntity] = useState<EntityRef | null>(null);
@@ -119,11 +133,12 @@ export function EntityListWidget({
             {(entity) => (
               <TableRow key={entity.id} className="group">
                 <TableCell className="font-medium text-heading">{entity.name}</TableCell>
-                <TableCell>{entity.type}</TableCell>
-                <TableCell>{entity.customerId?.name ?? ''}</TableCell>
+                <TableCell>{subtitleOf ? subtitleOf(entity) : entity.type}</TableCell>
+                <TableCell>{(metaOf ? metaOf(entity) : entity.customerId?.name) ?? ''}</TableCell>
                 <TableCell>
-                  {(onRowClick || (!readOnly && (onDelete || editableFields))) && (
+                  {(onRowClick || (!readOnly && (onDelete || editableFields || extraActions))) && (
                     <div className="flex justify-center gap-3">
+                      {!readOnly && extraActions?.(entity)}
                       {onRowClick && (
                         <Tooltip label="Details">
                           <button
@@ -180,17 +195,20 @@ export function EntityListWidget({
                 <EntityAvatar type={entity.type} />
                 <div className="flex min-w-0 flex-col">
                   <span className="truncate text-sm font-semibold text-heading">{entity.name}</span>
-                  <span className="text-[11px] font-semibold tracking-wider text-muted">{entity.type}</span>
+                  <span className="text-[11px] font-semibold tracking-wider text-muted">{subtitleOf ? subtitleOf(entity) : entity.type}</span>
                 </div>
               </div>
 
               <div className="flex shrink-0 items-center gap-4">
-                {entity.customerId?.name && (
-                  <span className="hidden text-xs text-muted sm:inline">{entity.customerId.name}</span>
+                {(metaOf ? metaOf(entity) : entity.customerId?.name) && (
+                  <span className="hidden text-xs text-muted sm:inline">
+                    {metaOf ? metaOf(entity) : entity.customerId?.name}
+                  </span>
                 )}
 
-                {(onRowClick || (!readOnly && (editableFields || onDelete))) && (
+                {(onRowClick || (!readOnly && (editableFields || onDelete || extraActions))) && (
                   <div className="flex items-center gap-2">
+                    {!readOnly && extraActions?.(entity)}
                     {onRowClick && (
                       <Tooltip label="Details">
                         <button

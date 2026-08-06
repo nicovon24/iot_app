@@ -15,18 +15,30 @@ export interface SelectProps {
   value?: string;
   onChange: (value: string) => void;
   options: SelectOption[];
+  disabled?: boolean;
+  /** Matches Input's `compact` — same reduced height/text-size, for a Select sitting inline
+   * next to compact inputs rather than in its own form field. */
+  compact?: boolean;
 }
 
-/** Minimal Radix Select wrapper, styled to match the app theme, with an animated dropdown. */
-export function Select({ label, placeholder, value, onChange, options }: SelectProps) {
+/**
+ * Minimal Radix Select wrapper, styled to match the app theme, with an animated dropdown.
+ * Trigger shares its border/background/focus tokens with `Input` 1:1 — the two are meant to
+ * be visually interchangeable wherever a form mixes text fields and dropdowns.
+ */
+export function Select({ label, placeholder, value, onChange, options, disabled, compact = false }: SelectProps) {
   return (
-    <RadixSelect.Root value={value} onValueChange={onChange}>
+    <RadixSelect.Root value={value} onValueChange={onChange} disabled={disabled}>
       <div className="flex flex-col gap-1.5">
         {label && <span className="text-sm font-medium text-body">{label}</span>}
-        <RadixSelect.Trigger className="flex items-center justify-between gap-2 rounded-md border border-border bg-surface px-3 py-2 text-sm text-heading outline-none data-[placeholder]:text-muted data-[state=open]:border-accent">
+        <RadixSelect.Trigger
+          className={`flex items-center justify-between gap-2 rounded-md border border-border bg-surface text-heading outline-none transition-colors data-[placeholder]:text-muted data-[state=open]:border-accent disabled:cursor-not-allowed disabled:opacity-50 ${
+            compact ? 'px-2 py-1.5 text-xs' : 'px-3 py-2 text-sm'
+          }`}
+        >
           <RadixSelect.Value placeholder={placeholder} />
           <RadixSelect.Icon>
-            <ChevronDown size={14} className="text-muted" />
+            <ChevronDown size={compact ? 12 : 14} className="text-muted" />
           </RadixSelect.Icon>
         </RadixSelect.Trigger>
       </div>

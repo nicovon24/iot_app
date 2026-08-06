@@ -18,7 +18,7 @@ Phases: 7 of 7 complete (+6 inserted phases: 2.1, 2.2, 2.3, 4.3, 6.4, 6.5 — al
 
 **Version 2 — Admin hierarchy panel + Device linking** (v2.0, in progress)
 Status: In progress
-Phase 8 (Admin hierarchy management panel) complete 2026-08-04, first V2 phase shipped. Backend (08-01: sub-customer breadcrumbs, Contains-relation tree reads, Asset PATCH, Device assign/unassign) and frontend (08-02: the `/admin` panel itself) both applied and verified. **Phase 9.1 (Visual modernization) complete 2026-08-05** — all 3 plans (light glassmorphic redesign, skeleton loading system, restyled Admin/dialogs/entity-detail/Alarms) applied, plus further chat-driven dark-theme palette iterations after the initial light-glass ship (see STATE.md Decisions/Addenda) — maps deliberately excluded throughout. **Phase 9.2 (roles enforcement & user management) complete 2026-08-05** — all 3 plans (9.2-01 READER write-block guard, 9.2-02 Users management UI, 9.2-03 impersonation) applied, plus a substantial chat-driven follow-up (client-side role-based UI gating via a new `GET /auth/me`, an "All Clients" default view, a real activation-link bug fix, code-review fixes, and a Tooltip portal rewrite) — see `9.2-03-SUMMARY.md`'s Addendum. Phase 10 (dashboard builder) discussed (CONTEXT.md written) but not yet planned — next up, in a later session.
+Phase 8 (Admin hierarchy management panel) complete 2026-08-04, first V2 phase shipped. Backend (08-01: sub-customer breadcrumbs, Contains-relation tree reads, Asset PATCH, Device assign/unassign) and frontend (08-02: the `/admin` panel itself) both applied and verified. **Phase 9.1 (Visual modernization) complete 2026-08-05** — all 3 plans (light glassmorphic redesign, skeleton loading system, restyled Admin/dialogs/entity-detail/Alarms) applied, plus further chat-driven dark-theme palette iterations after the initial light-glass ship (see STATE.md Decisions/Addenda) — maps deliberately excluded throughout. **Phase 9.2 (roles enforcement & user management) complete 2026-08-05** — all 3 plans (9.2-01 READER write-block guard, 9.2-02 Users management UI, 9.2-03 impersonation) applied, plus a substantial chat-driven follow-up (client-side role-based UI gating via a new `GET /auth/me`, an "All Clients" default view, a real activation-link bug fix, code-review fixes, and a Tooltip portal rewrite) — see `9.2-03-SUMMARY.md`'s Addendum. **Phase 10 (dashboard builder) code-complete 2026-08-05** — all 3 plans (10-01 backend: Prisma schema + widget registry + scoped CRUD; 10-02 frontend base: canvas + one-by-one Add-widget panel + dynamic Sidebar selector; 10-03 bulk-add) applied, backend live-verified via curl, frontend verified via `tsc`/`next build` only — **a real browser click-through is the top outstanding item** before this phase is considered fully done, no browser tool available this session. Phase 11 (testing harness, backend + frontend) discussed (CONTEXT.md written) but not yet scheduled — see its CONTEXT.md's Recommendation (run after Phase 10's browser verification).
 
 ## Phases
 
@@ -42,6 +42,8 @@ Phase 8 (Admin hierarchy management panel) complete 2026-08-04, first V2 phase s
 | 8 | Admin hierarchy management panel (V2, first phase) | 2 | Complete | 2026-08-04 |
 | 9.1 | Visual modernization | 3 | Complete | 2026-08-05 |
 | 9.2 | Roles enforcement & user management | 3 | Complete | 2026-08-05 |
+| 10 | User-editable dashboards (builder) | 3 applied + 3 planned (10-04/05/06) | 10-01..03 code-complete, browser verification pending; 10-04 planned | 2026-08-05 |
+| 11 | Testing harness — backend + frontend (whole app) | TBD | Discussed (CONTEXT.md), **not scheduled** (see Recommendation in its CONTEXT.md) | — |
 
 ## Phase Details
 
@@ -313,6 +315,52 @@ Phase 8 (Admin hierarchy management panel) complete 2026-08-04, first V2 phase s
 - [x] 9.2-02: Users management UI (`/users` list/create/delete, `appRole` exposed on `GET /users`) — applied, then extended mid-session with an "All Clients" default view backed by TB's real `GET /api/customer/users` (confirmed live against this project's tenant)
 - [x] 9.2-03: Impersonation (`ImpersonationLog`, impersonate/end endpoints, banner + Login-as button) — applied; see its SUMMARY.md's substantial Addendum for the rest of this session's work (role-based UI gating, bug fixes, Tooltip rewrite) that closed out the phase
 
+### Phase 10: User-editable dashboards (builder)
+
+**Goal:** Admin/sysadmin users can create custom dashboards, drag/resize widgets on a grid, and add widgets one at a time or in bulk — materially simpler than ThingsBoard's own dashboard editor, targeting a ≤5-minute build time for a typical (~5-8 widget) dashboard. The fixed Main Dashboard (Phase 6.5) stays exactly as-is; custom dashboards are additional, reached via the Sidebar's dashboard selector.
+**Depends on:** Phase 6/6.4 (reuses `ValueTileWidget`/`LineChartWidget`/`AttributesTableWidget`/`AlarmsListWidget`/`MapWidget`/`FleetMapWidget` as-is), Phase 6.5 (extends its dashboard-selector seam), Phase 9.2 (`ReaderBlockGuard` already covers dashboard write-blocking for READER with no new guard needed)
+**Reason:** User-requested, discussed via `/paul:discuss` across several sessions (see `.paul/phases/10-dashboard-builder/CONTEXT.md` for the full trail: simplicity vs. ThingsBoard, AI/template/new-widget-type extensibility left as architectural readiness only, the `PRIVATE`/`SHARED` + `ALL`/`SPECIFIC` sharing model, and the ≤5-minute/bulk-add requirement).
+
+**Scope (see CONTEXT.md for full discussion):**
+- New Prisma models: `Dashboard` (title, `visibility: PRIVATE|SHARED`, `customerScope: ALL|SPECIFIC`), `DashboardCustomerAccess` (join table, one row per assigned Customer, cascades to descendants via the existing `isDescendantCustomer` hierarchy walk), `DashboardWidget` (`widgetType` + `config`/`layout` JSON)
+- Backend `dashboards` module: registry-based widget-type validation (Zod per type, `backend/src/dashboards/widget-registry.ts`), scoped list/get/create/save/delete, one atomic transaction for the whole-dashboard save (`PUT /dashboards/:id`) — no partial writes
+- Frontend: `react-grid-layout` canvas (`/dashboard/[id]`, `/dashboard/new`), a frontend widget registry mirroring the backend's, one-by-one Add-widget panel, bulk-add (pick one entity, check several telemetry keys, add them all as one batch), Sidebar's dashboard selector now populated from `GET /dashboards` instead of a hardcoded array
+- No new widget types, no templates, no AI generation built in this phase — all three left as registry/schema-level architectural readiness per explicit user direction
+
+**Plans:**
+- [x] 10-01: Backend foundation — Prisma schema, widget-type registry, `dashboards` module (list/get/create/save/delete, visibility+scope enforcement) — applied, `tsc --noEmit` clean, migrated against real local Postgres, AC-1/AC-2/AC-5 (schema, widget validation, atomic save) verified live via curl; AC-3/AC-4 (cross-customer 403, non-sysadmin ALL-scope block) verified by code review only, no working non-sysadmin test account this session (see `10-01-SUMMARY.md`)
+- [x] 10-02: Frontend base builder — `useDashboards` hooks, frontend widget registry + `DashboardWidgetRenderer` (with an "entity unavailable" fallback), `DashboardCanvas`/`AddWidgetPanel`, `/dashboard/[id]` page, dynamic Sidebar dashboard selector — applied, `tsc --noEmit`/`next build` clean; **not click-tested in a real browser** (see `10-02-SUMMARY.md`)
+- [x] 10-03: Bulk-add — `packWidgets` row-packing helper (shared with `AddWidgetPanel`), `BulkAddPanel` (entity → telemetry-key checklist → widget type → "Add N widgets"), wired into the dashboard page — applied, `tsc --noEmit`/`next build` clean, packing math verified directly; **not click-tested in a real browser** (see `10-03-SUMMARY.md`)
+
+**Outstanding before this phase is fully done:** a real browser session to click through create → add widget (one-by-one and bulk) → save → reload, for both `/dashboard/new` and an existing dashboard, plus a working non-sysadmin test account to verify AC-3/AC-4's cross-customer scoping live.
+
+#### Builder extensions (10-04 onward, planned 2026-08-05)
+
+A large chat-driven pass ran after 10-03 (see STATE.md Addendum 3) and surfaced a further set of
+builder gaps. Scoped interactively with the user, who explicitly **cut white-labeling/tenant
+theming and all react-grid-layout work (configurable column count + responsive breakpoints)** from
+this round. The remainder is split by data-model risk — three plans, not one, because states and
+aliases each change a different persisted shape:
+
+- [ ] 10-04: Widget titles (`config.title`), widget click actions (`config.action`, entity-details
+  navigation via a shared `widget-actions.ts` seam), and a dashboard-wide time window
+  (`Dashboard.timeWindow`, nullable for back-compat) that every timeseries widget inherits instead
+  of the hardcoded 1 hour in `defaultHistoryWindow()`. Carries a **blocking human-verify
+  checkpoint** — this is the first plan to force the browser click-through that Phase 10 has owed
+  since 10-01. See `10-04-PLAN.md`
+- [ ] 10-05: Dashboard states/tabs — several named views per dashboard (ThingsBoard's
+  "Overview / Live Monitor / History" shape) instead of N separate dashboards. Schema change:
+  widgets gain a state association. Unblocks `action: 'NAVIGATE_STATE'`, deliberately left out of
+  10-04's action enum so there is no dead option in the UI
+- [ ] 10-06: Reusable entity aliases — today `entityScope: 'ALL'` is effectively a single-filter
+  alias repeated inline in every widget's config. This defines an alias once at dashboard level
+  (filter by device type / relation / group) and references it from many widgets
+
+**Note:** the "More dashboard widget types (gauges, other chart/card variants)" row in the Version 2
+table below is now **stale** — a `gauge` and a `value-cards` widget were both built in the same
+chat-driven pass, along with configurable table columns (`dataKeys`), a dynamic `entityScope: 'ALL'`
+binding, and a widget context menu/edit flow. None of it has a SUMMARY yet.
+
 ## Version 2 (Not yet planned)
 
 Deferred scope, pulled from PROJECT.md "Planned (Next — Version 2)" and STATE.md Deferred Issues. Not phase-numbered or scheduled — surfaced here so it isn't lost, to be broken into real phases when V1 ships.
@@ -327,10 +375,13 @@ Deferred scope, pulled from PROJECT.md "Planned (Next — Version 2)" and STATE.
 | Device Profiles / Asset Profiles access (read, eventually manage) | IMPROVEMENTS.md | M | TB alarm rules are defined at profile level — natural pairing with the V1 Alarms module (Phase 3) once profiles are picked up |
 | Entity Groups for asset creation (set groups within owner) | IMPROVEMENTS.md | M | Only available while the current ThingsBoard Professional Edition trial (1 month, up to 5 sensors) is active — depends on that subscription continuing or a deliberate PE upgrade |
 | User edit: attributes + customer reassignment; email-based activation w/ double password confirmation as an alternative to the existing activation-link flow | IMPROVEMENTS.md | M | Extends Phase 2.2-02's `users` module (create/list/delete → add update + alternate activation flow). Note: user *management UI* (create/list/delete, all-Clients view) + impersonation shipped in Phase 9.2 (complete), not this row — this row is only the remaining edit/alt-activation gap |
-| User profile fields (first/last name, phone, description) + default dashboard / fullscreen preference via `additionalInfo` | IMPROVEMENTS.md | M | Dashboard preference depends on the Dashboard model Phase 10 will introduce |
+| User profile fields (first/last name, phone, description) + default dashboard / fullscreen preference via `additionalInfo` | IMPROVEMENTS.md | M | Dashboard preference now has a real `Dashboard` model to point at (Phase 10, complete) — not yet wired to user `additionalInfo` |
+| Dashboard templates (save-as-template / start-from-template) | Phase 10 CONTEXT.md, deferred by explicit user decision | M | Phase 10's `widgetType` registry + `Dashboard`/`DashboardWidget` split were deliberately shaped to make this additive later, not built |
+| More dashboard widget types (gauges, other chart/card variants) | Phase 10 CONTEXT.md, deferred by explicit user decision | M | Phase 10's registry (backend Zod schemas + frontend UI metadata) is designed so a new type is one entry, not a rework — none built yet |
+| AI-assisted dashboard generation (prompt → dashboard config) | Phase 10 CONTEXT.md, deferred by explicit user decision | L | Phase 10's typed per-widget-type `config` JSON is the schema-readiness groundwork — no generation endpoint/LLM call built |
 | Reporting module | IMPROVEMENTS.md | L | Explicitly deferred to the last stages of the project, lowest priority in this table |
 | Audit Logs | IMPROVEMENTS.md | S | Not v1, not yet scheduled for v2 either — revisit when picked up. Phase 9.2 (complete) added a narrow `ImpersonationLog`, not general audit logging |
 
 ---
 *Roadmap created: 2026-07-30*
-*Last updated: 2026-08-05 (after Phase 9.2 — roles enforcement & user management complete)*
+*Last updated: 2026-08-05 (after Phase 10 — dashboard builder, code-complete; browser verification pending)*

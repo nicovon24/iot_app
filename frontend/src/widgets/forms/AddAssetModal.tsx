@@ -94,6 +94,12 @@ export function AddAssetModal({ isOpen, onClose }: AddAssetModalProps) {
       }}
     >
       <ModalContent>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (canSubmit && !createAsset.isPending) onSubmit();
+          }}
+        >
         <ModalHeader className="border-b border-border px-6 py-4">
           <h2 className="text-lg font-semibold text-heading">Add Asset</h2>
         </ModalHeader>
@@ -234,9 +240,8 @@ export function AddAssetModal({ isOpen, onClose }: AddAssetModalProps) {
             Cancel
           </button>
           <motion.button
-            type="button"
+            type="submit"
             whileTap={{ scale: 0.97 }}
-            onClick={onSubmit}
             disabled={!canSubmit || createAsset.isPending}
             style={{ background: 'var(--gradient-accent)' }}
             className="rounded-md px-4 py-2 text-sm font-semibold text-white transition hover:brightness-95 disabled:opacity-60"
@@ -244,6 +249,7 @@ export function AddAssetModal({ isOpen, onClose }: AddAssetModalProps) {
             {createAsset.isPending ? 'Creating…' : 'Create Asset'}
           </motion.button>
         </ModalFooter>
+        </form>
       </ModalContent>
     </Modal>
   );

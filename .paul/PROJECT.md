@@ -21,7 +21,7 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 | Type | Application |
 | Version | v2.0 (in progress) — v1.0 complete |
 | Status | Prototype |
-| Last Updated | 2026-08-05 (after Phase 9.2 — roles enforcement & user management) |
+| Last Updated | 2026-08-05 (after Phase 10 — dashboard builder, code-complete) |
 
 ## Requirements
 
@@ -55,17 +55,22 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 - [x] Admin hierarchy management panel: `/admin` — Miller-column view (Clients → per-level Assets → Devices) with add/delete/edit/assign/unassign from one screen, backed by real TB "Contains" relations (no Postgres schema changes); creation moved out of `/clients`/`/assets` into this one place — 2026-08-04 (Phase 8, first V2 phase) — verified live against real ThingsBoard Cloud
 - [x] Visual modernization: light glassmorphic redesign (purple/indigo accents, `.glass-card` surfaces, Inter font, dark mode removed entirely), a reusable Skeleton loading system, and a full restyle of Sidebar/Login/Dashboard/Admin/dialogs/entity-detail/Alarms — every map-based screen explicitly excluded and confirmed untouched — 2026-08-05 (Phase 9.1) — further dark-theme palette iterations followed as chat-driven work after the initial light-glass ship (see STATE.md Decisions)
 - [x] Roles enforcement & user management: `ReaderBlockGuard` (global, blocks every mutating request from a READER session), `/users` page (create/list/delete `admin`/`reader` Customer Users, defaults to an "All Clients" tenant-wide view backed by TB's real `GET /api/customer/users`), sysadmin "Login as" impersonation with a durable `ImpersonationLog` audit trail (no live kill-switch, by design), and client-side role-based UI gating (`GET /auth/me` + `usePermissions()` — READER's write controls are hidden, not just backend-blocked) — 2026-08-05 (Phase 9.2) — live-tested interactively by the user through the session (found and fixed 2 real bugs: a ThingsBoard plain-text response crash, and a Tooltip portal/scroll-clipping bug)
+- [x] User-editable dashboards (builder): `Dashboard`/`DashboardCustomerAccess`/`DashboardWidget` Prisma models (`PRIVATE`/`SHARED` visibility, `ALL`/`SPECIFIC` customer scope), a registry-based `dashboards` module (5 widget types, Zod-validated per type, one atomic whole-dashboard save transaction), and a `react-grid-layout` canvas builder (`/dashboard/[id]`, `/dashboard/new`) with a one-by-one Add-widget panel plus a bulk-add flow (pick an entity, check several telemetry keys, add them all at once) built to hit the ≤5-minute dashboard-building target — 2026-08-05 (Phase 10, all 3 plans: 10-01 backend, 10-02 frontend base, 10-03 bulk-add) — backend verified live via curl (create/save/validation/atomicity all confirmed against real Postgres); frontend verified via `tsc`/`next build`/dev-server route checks only, **not yet click-tested in a real browser** (no browser tool this session — flagged as the top follow-up)
 
 ### Active (In Progress)
 
-- Phase 10 (dashboard builder) — discussed (`CONTEXT.md` written), not yet planned; next up, in a later session
+- Phase 10 (dashboard builder) — code-complete, needs a real browser click-through session to close out the deferred live-UI verification (see 10-01/10-02/10-03 SUMMARY.md files) before being considered fully done
+- Phase 11 (testing harness, backend + frontend) — discussed (`CONTEXT.md` written), not yet planned; recommended to run after Phase 10's browser verification closes out
 
 ### Planned (Next — Version 2)
 
 - [x] ~~Asset creation wizard~~ — shipped (Phase 7's "Add Asset" flow, Phase 8's `/admin` panel)
+- [x] ~~User-creatable/editable dashboards~~ — shipped (Phase 10), pending browser verification
 - [ ] Device creation + linking wizard (link Device to Customer + Asset, default structure from `CustomerHierarchyLevels` template)
 - [ ] Área/asset-level permission granularity (finer than customer hierarchy) — deferred, no design chosen yet since ThingsBoard CE has no Entity Groups to back it (see Constraints)
-- [ ] User-creatable/editable dashboards (`react-grid-layout`), full dashboard config persistence — Phase 10, discussed but not yet planned
+- [ ] Dashboard templates (save-as-template / start-from-template) — Phase 10 deliberately left the schema/registry shaped to allow this later, not built yet
+- [ ] More dashboard widget types (gauges, other chart/card variants) — Phase 10's widget-type registry is designed for this, no new types built yet
+- [ ] AI-assisted dashboard generation — Phase 10's typed per-widget-type config schema is designed to make this feasible later, no generation endpoint built
 
 ### Out of Scope (V1 and V2, per VISION.md)
 
@@ -130,6 +135,12 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 | No live kill-switch for impersonation — a sysadmin can't forcibly end another active impersonation session from elsewhere, only "Back to my session" on the impersonating browser itself | Explicit scope cut, confirmed with the user before planning Phase 9.2 | 2026-08-05 | Active |
 | Client-side role-based UI gating (READER's write controls hidden, not just backend-403'd) required adding `GET /auth/me` first | Superseded the Phase 7 decision to not build fake client-side role checks without a real endpoint backing them — that endpoint now exists | 2026-08-05 | Active |
 | READER's write controls are hidden entirely, not shown disabled | Initial implementation used disabled-with-tooltip; user explicitly asked to switch to fully hidden | 2026-08-05 | Active |
+| Dashboard sharing model is `visibility: PRIVATE\|SHARED` + `customerScope: ALL\|SPECIFIC` (+ `DashboardCustomerAccess` join table for one-or-more Customers), not a single `customerId` column | User asked mid-Phase-10-discussion whether a dashboard should target one, several, or all Customers, and whether a creator could keep one private | 2026-08-05 | Active |
+| No ADMIN-vs-READER distinction within a `SHARED` dashboard's visibility | Explicit user decision, consistent with the project's standing "no per-role/per-area granularity without a real design" stance (see Área/asset-level permission granularity row) | 2026-08-05 | Active |
+| Dashboard `widgetType` is a backend registry (Zod schema per type) + frontend registry (UI metadata per type), not a closed enum/switch — deliberately shaped so future gauges/templates/AI-generated configs are additive, not a rework | User asked to leave the door open for more widget types, templates, and AI-assisted generation without building any of them yet | 2026-08-05 | Active |
+| Whole-dashboard save is one Prisma transaction (`PUT /dashboards/:id` replaces all widgets + customerAccess rows together) | User's explicit "sin errores" requirement — a partial-failure mid-save must never leave the grid inconsistent with the DB | 2026-08-05 | Active |
+| Dashboard builder canvas uses `react-grid-layout@1.5.4` (classic API), not the current `2.x` rewrite | v2's hook-based API (`dragConfig`/`resizeConfig`, required numeric `width`) carried materially higher implementation risk than v1's well-documented `isDraggable`/`layout`/`onLayoutChange` shape, especially without a browser to click-test against this session | 2026-08-05 (Phase 10, 10-02) | Active |
+| Bulk-add (pick one entity, check several telemetry keys, add them all as `value-tile`/`line-chart` widgets in one action) is the mechanism for the user's explicit ≤5-minute dashboard-building target, one entity at a time in v1 | User set the 5-minute target after reviewing a save/render diagram together and found the one-by-one flow wouldn't reliably hit it | 2026-08-05 (Phase 10, 10-03) | Active |
 
 ## Success Metrics
 
@@ -147,7 +158,7 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 | Cache | Redis | ThingsBoard JWT cache + telemetry/attribute read cache (V1) |
 | Database | PostgreSQL via Prisma (v6) | Hierarchy-level metadata only (keyed by real TB `customerId`), no local Customer/Client table; local instance on port 15432 |
 | IoT Engine | ThingsBoard (Cloud dev / Docker local) | Devices, Assets, Telemetry, Attributes, Alarms, Rule Chains |
-| Frontend | Next.js (App Router) + TypeScript | Zustand (UI state), TanStack Query (server state), Recharts, react-leaflet (map) |
+| Frontend | Next.js (App Router) + TypeScript | Zustand (UI state), TanStack Query (server state), Recharts, react-leaflet (map), react-grid-layout v1 (dashboard builder grid) |
 | Package Manager | npm workspaces (root `package.json`) | `backend`, `frontend` |
 
 ## Links
@@ -158,4 +169,4 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 
 ---
 *PROJECT.md — Updated when requirements or context change*
-*Last updated: 2026-08-05 after Phase 9.2*
+*Last updated: 2026-08-05 after Phase 10 (dashboard builder, code-complete — see Active for pending browser verification)*

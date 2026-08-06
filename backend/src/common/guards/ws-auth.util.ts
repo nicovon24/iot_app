@@ -44,7 +44,7 @@ export async function isEntityInScope(
   return isDescendantCustomer(session.customerId, targetCustomerId, tb);
 }
 
-async function isDescendantCustomer(
+export async function isDescendantCustomer(
   ancestorCustomerId: string,
   targetCustomerId: string,
   tb: ThingsboardClientService,

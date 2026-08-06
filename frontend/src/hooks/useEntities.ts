@@ -28,9 +28,26 @@ function buildQueryString(params?: UseEntitiesParams): string {
   return qs ? `?${qs}` : '';
 }
 
-export function useEntities(type: Extract<EntityType, 'DEVICE' | 'ASSET' | 'CUSTOMER'>, params?: UseEntitiesParams) {
+export interface UseEntitiesOptions {
+  /** Skip the request entirely — e.g. a widget bound to one entity has no use for the list. */
+  enabled?: boolean;
+  /** Poll interval in ms. Used by "all entities" widgets so a newly registered device shows
+   * up on its own, without the user reopening the dashboard. */
+  refetchInterval?: number;
+}
+
+// Options are deliberately a separate argument from `params`: `params` is part of the query
+// key (it changes *what* is fetched), options only change *when*, so folding them together
+// would fragment the cache across callers that want the same data on different schedules.
+export function useEntities(
+  type: Extract<EntityType, 'DEVICE' | 'ASSET' | 'CUSTOMER'>,
+  params?: UseEntitiesParams,
+  options?: UseEntitiesOptions,
+) {
   return useQuery({
     queryKey: ['entities', type, params],
     queryFn: () => apiClient.get<PageData<EntityRef>>(`/${ENTITY_LIST_PATH[type]}${buildQueryString(params)}`),
+    enabled: options?.enabled ?? true,
+    refetchInterval: options?.refetchInterval,
   });
 }

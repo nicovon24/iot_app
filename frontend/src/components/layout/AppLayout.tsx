@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Menu, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { ChevronDown, Menu, PanelLeftClose, PanelLeftOpen, PanelTopClose } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { AuthGate } from './AuthGate';
 import { Tooltip } from '../ui/Tooltip';
@@ -13,11 +13,12 @@ import { getImpersonationMeta, type ImpersonationMeta } from '@/lib/session';
 import { endImpersonation } from '@/hooks/useImpersonation';
 
 const SIDEBAR_VISIBLE_STORAGE_KEY = 'iot_sidebar_visible';
+const HEADER_VISIBLE_STORAGE_KEY = 'iot_header_visible';
 
 // These pages render their own full-height/full-width card widgets (tables, map),
 // so they get an edge-to-edge main area instead of the centered max-w-6xl card
 // used by simpler settings-style pages.
-const FULL_BLEED_PATHS = ['/dashboard', '/devices', '/alarms', '/assets', '/map', '/admin'];
+const FULL_BLEED_PATHS = ['/', '/dashboard', '/devices', '/alarms', '/assets', '/map', '/admin'];
 
 // Full width but with natural page scroll, unlike FULL_BLEED_PATHS which own their
 // height/scroll internally (fixed-height list widgets).
@@ -25,7 +26,7 @@ const WIDE_SCROLL_PATHS = ['/entities'];
 
 function usePageTitle() {
   const pathname = usePathname();
-  if (pathname === '/') return 'Dashboard';
+  if (pathname === '/') return 'Overview';
   const match = NAV_ITEMS.find(
     (item) => pathname === item.href || pathname.startsWith(`${item.href}/`),
   );
@@ -36,12 +37,15 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const pageTitle = usePageTitle();
   const [sidebarVisible, setSidebarVisible] = useState(true);
+  const [headerVisible, setHeaderVisible] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [impersonation, setImpersonation] = useState<ImpersonationMeta | null>(null);
 
   useEffect(() => {
     const stored = window.localStorage.getItem(SIDEBAR_VISIBLE_STORAGE_KEY);
     if (stored) setSidebarVisible(stored === 'true');
+    const storedHeader = window.localStorage.getItem(HEADER_VISIBLE_STORAGE_KEY);
+    if (storedHeader) setHeaderVisible(storedHeader === 'true');
     setImpersonation(getImpersonationMeta());
   }, []);
 
@@ -54,6 +58,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     setSidebarVisible((prev) => {
       const next = !prev;
       window.localStorage.setItem(SIDEBAR_VISIBLE_STORAGE_KEY, String(next));
+      return next;
+    });
+  }
+
+  function toggleHeaderVisible() {
+    setHeaderVisible((prev) => {
+      const next = !prev;
+      window.localStorage.setItem(HEADER_VISIBLE_STORAGE_KEY, String(next));
       return next;
     });
   }
@@ -99,8 +111,37 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               </button>
             </div>
           )}
-          <header
-            className="flex h-20 shrink-0 items-center gap-3 px-8 text-white shadow-sm"
+          {/* Collapsing the header is what buys a dashboard its vertical space, so it animates
+            * height rather than unmounting — the widget grid below reflows smoothly instead of
+            * snapping 80px taller. */}
+          <AnimatePresence initial={false}>
+            {!headerVisible && (
+              <motion.button
+                type="button"
+                key="show-header"
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.15 }}
+                onClick={toggleHeaderVisible}
+                aria-label="Show header"
+                title="Show header"
+                className="fixed right-4 top-2 z-50 flex h-7 items-center gap-1 rounded-full px-3 text-xs font-semibold text-white shadow-lg"
+                style={{
+                  background: 'linear-gradient(90deg, var(--gradient-header-from), var(--gradient-header-to))',
+                }}
+              >
+                <ChevronDown size={14} strokeWidth={2.25} />
+                Header
+              </motion.button>
+            )}
+          </AnimatePresence>
+
+          <motion.header
+            initial={false}
+            animate={{ height: headerVisible ? 80 : 0, opacity: headerVisible ? 1 : 0 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="flex shrink-0 items-center gap-3 overflow-hidden px-8 text-white shadow-sm"
             style={{
               background: 'linear-gradient(90deg, var(--gradient-header-from), var(--gradient-header-to))',
             }}
@@ -124,7 +165,18 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <Menu size={20} strokeWidth={1.75} />
             </button>
             <span className="text-xl font-semibold tracking-tight">{pageTitle}</span>
-          </header>
+
+            <Tooltip label="Hide header" side="bottom">
+              <button
+                type="button"
+                aria-label="Hide header"
+                onClick={toggleHeaderVisible}
+                className="ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+              >
+                <PanelTopClose size={20} strokeWidth={1.75} />
+              </button>
+            </Tooltip>
+          </motion.header>
           {FULL_BLEED_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`)) ? (
             <main className="flex-1 overflow-hidden p-6">
               <div className="h-full w-full">{children}</div>
