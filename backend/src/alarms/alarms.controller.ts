@@ -44,12 +44,19 @@ export class GlobalAlarmsController {
   })
   @ApiQuery({ name: 'severity', required: false, enum: SEVERITIES })
   @ApiQuery({ name: 'status', required: false, enum: STATUSES })
+  @ApiQuery({
+    name: 'entityType',
+    required: false,
+    enum: ['DEVICE', 'ASSET'],
+    description: 'Restrict to alarms originating from devices or from assets. Omitted = both.',
+  })
   async getAll(
     @Query() pagination: PaginationQueryDto,
     @CurrentSession() session: AppSession | null,
     @Query('severity') severity?: TbAlarmSeverity,
     @Query('status') status?: TbAlarmStatus,
+    @Query('entityType') entityType?: 'DEVICE' | 'ASSET',
   ): Promise<TbPageData<TbAlarm>> {
-    return this.alarmsService.getAllScoped(session, pagination, severity, status);
+    return this.alarmsService.getAllScoped(session, pagination, severity, status, entityType);
   }
 }

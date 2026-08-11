@@ -117,8 +117,18 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
         ? 'Unknown error'
         : null;
 
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (step < 3) {
+      void goNext();
+    } else if (!createCustomer.isPending) {
+      onSubmit();
+    }
+  };
+
   return (
     <Dialog isOpen={isOpen} onClose={close}>
+      <form onSubmit={handleFormSubmit}>
       <DialogHeader>
         <div className="flex w-full flex-col gap-4 pt-1">
           <div className="flex items-center justify-between">
@@ -352,18 +362,16 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
           )}
           {step < 3 ? (
             <motion.button
-              type="button"
+              type="submit"
               whileTap={{ scale: 0.97 }}
-              onClick={goNext}
               className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90"
             >
               Next
             </motion.button>
           ) : (
             <motion.button
-              type="button"
+              type="submit"
               whileTap={{ scale: 0.97 }}
-              onClick={onSubmit}
               disabled={createCustomer.isPending}
               className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90 disabled:opacity-60"
             >
@@ -371,6 +379,7 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
             </motion.button>
           )}
       </DialogFooter>
+      </form>
     </Dialog>
   );
 }

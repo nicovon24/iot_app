@@ -1,19 +1,17 @@
 'use client';
 
-import { useEffect, useRef, useState, type ComponentType } from 'react';
+import { useEffect, useState, type ComponentType } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronDown, LogOut, PanelLeftClose, PanelLeftOpen, X, type LucideProps } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { LogOut, PanelLeftClose, PanelLeftOpen, X, type LucideProps } from 'lucide-react';
 import { NAV_ITEMS } from '@/lib/nav-items';
 import { logout } from '@/lib/auth';
 import { usePermissions } from '@/hooks/useCurrentUser';
 import { Tooltip } from '../ui/Tooltip';
 
 const SIDEBAR_STORAGE_KEY = 'iot_sidebar_expanded';
-
-const DASHBOARD_OPTIONS = [{ label: 'Main Dashboard', href: '/dashboard', comingSoon: false }];
 
 export function Sidebar({
   visible = true,
@@ -31,8 +29,6 @@ export function Sidebar({
   // everyone else rather than shown and then 403ing on every action.
   const visibleNavItems = NAV_ITEMS.filter((item) => item.href !== '/users' || isSysadmin);
   const [expanded, setExpanded] = useState(true);
-  const [dashboardMenuOpen, setDashboardMenuOpen] = useState(false);
-  const dashboardMenuRef = useRef<HTMLDivElement>(null);
   const isExpanded = mobile ? true : expanded;
 
   useEffect(() => {
@@ -40,17 +36,6 @@ export function Sidebar({
     const stored = window.localStorage.getItem(SIDEBAR_STORAGE_KEY);
     if (stored) setExpanded(stored === 'true');
   }, [mobile]);
-
-  useEffect(() => {
-    if (!dashboardMenuOpen) return;
-    function handleClickOutside(event: MouseEvent) {
-      if (dashboardMenuRef.current && !dashboardMenuRef.current.contains(event.target as Node)) {
-        setDashboardMenuOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [dashboardMenuOpen]);
 
   function toggleExpanded() {
     setExpanded((prev) => {
@@ -106,7 +91,6 @@ export function Sidebar({
         {visibleNavItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
-          const isDashboard = item.href === '/dashboard';
 
           const row = (
             <div
@@ -128,74 +112,10 @@ export function Sidebar({
               )}
               <Icon size={20} strokeWidth={1.75} className="relative z-10 shrink-0" />
               {isExpanded && <span className="relative z-10 flex-1 truncate text-sm font-medium">{item.label}</span>}
-              {isExpanded && isDashboard && DASHBOARD_OPTIONS.length > 1 && (
-                <ChevronDown
-                  size={14}
-                  strokeWidth={2}
-                  className={`relative z-10 shrink-0 transition-transform ${dashboardMenuOpen ? 'rotate-180' : ''}`}
-                />
-              )}
             </div>
           );
 
           const tooltipLabel = item.comingSoon ? `${item.label} — Coming soon` : item.label;
-
-          if (isDashboard) {
-            return (
-              <div key={item.href} ref={dashboardMenuRef} className="relative">
-                <button
-                  type="button"
-                  aria-label="Dashboards"
-                  onClick={() => {
-                    if (DASHBOARD_OPTIONS.length === 1) {
-                      router.push(DASHBOARD_OPTIONS[0].href);
-                      onClose?.();
-                      return;
-                    }
-                    setDashboardMenuOpen((prev) => !prev);
-                  }}
-                  className="w-full text-left"
-                >
-                  {isExpanded ? row : <Tooltip label="Dashboards">{row}</Tooltip>}
-                </button>
-                <AnimatePresence>
-                  {dashboardMenuOpen && DASHBOARD_OPTIONS.length > 1 && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -4 }}
-                      transition={{ duration: 0.12 }}
-                      className={`absolute z-50 min-w-45 overflow-hidden rounded-lg bg-navy-950 py-1 shadow-lg ${
-                        isExpanded ? 'left-0 top-full mt-1' : 'left-full top-0 ml-2'
-                      }`}
-                    >
-                      {DASHBOARD_OPTIONS.map((option) => (
-                        <button
-                          key={option.href}
-                          type="button"
-                          disabled={option.comingSoon}
-                          onClick={() => {
-                            setDashboardMenuOpen(false);
-                            router.push(option.href);
-                            onClose?.();
-                          }}
-                          className={`block w-full whitespace-nowrap px-3 py-2 text-left text-sm font-medium ${
-                            option.comingSoon
-                              ? 'cursor-not-allowed text-white/30'
-                              : pathname === option.href
-                                ? 'bg-white/10 text-white'
-                                : 'text-white/70 hover:bg-white/10 hover:text-white'
-                          }`}
-                        >
-                          {option.label}
-                        </button>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            );
-          }
 
           const inner = item.comingSoon ? (
             row

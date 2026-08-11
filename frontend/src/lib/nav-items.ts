@@ -1,4 +1,5 @@
 import {
+  Home,
   LayoutDashboard,
   Cpu,
   Boxes,
@@ -20,7 +21,10 @@ export interface NavItem {
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  // Two entries on purpose: Overview is the fixed fleet summary, Dashboards is the gallery of
+  // user-built ones. They were the same route until the gallery needed a home.
+  { label: 'Overview', href: '/', icon: Home },
+  { label: 'Dashboards', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Admin', href: '/admin', icon: ShieldCheck },
   { label: 'Devices', href: '/devices', icon: Cpu },
   { label: 'Assets', href: '/assets', icon: Boxes },

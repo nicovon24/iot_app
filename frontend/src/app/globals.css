@@ -137,51 +137,147 @@ select:disabled {
 }
 
 /*
- * Barely-visible scrollbar for the map popup's telemetry list — invisible at
- * rest, a faint thumb only appears on hover so the popup doesn't look "busy"
- * with a full-contrast scrollbar for a small, scannable list.
+ * Scrolling
+ * ---------
+ * Every scroll surface in the app draws from these three tokens, so a theme override
+ * (see the token block at the top) restyles scrollbars along with everything else
+ * instead of leaving hard-coded slate greys behind.
+ *
+ * The thumb is painted with a transparent border + background-clip: padding-box. That's
+ * what gives it the inset "floating pill" look — the border reserves gutter space the
+ * thumb can't paint into, so it never touches the container's edge, while the scrollbar
+ * itself keeps its full hit area for grabbing.
  */
-.map-popup-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
-}
-.map-popup-scroll:hover {
-  scrollbar-color: rgba(100, 116, 139, 0.35) transparent;
-}
-.map-popup-scroll::-webkit-scrollbar {
-  width: 4px;
-}
-.map-popup-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-.map-popup-scroll::-webkit-scrollbar-thumb {
-  background: transparent;
-  border-radius: 4px;
-}
-.map-popup-scroll:hover::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.35);
+:root {
+  --scrollbar-size: 10px;
+  --scrollbar-thumb: rgba(148, 163, 184, 0.26);
+  --scrollbar-thumb-hover: rgba(103, 232, 249, 0.45);
 }
 
 /*
- * Table scrollbar — unlike .map-popup-scroll this stays visible at rest so
- * cramped table widgets clearly signal there's more content to drag through,
- * while staying thin/light-gray so it doesn't compete with the table itself.
+ * The single highest-impact rule here. Without color-scheme, the browser renders every
+ * *native* control in its light theme — which on this dark app meant a white, chunky
+ * OS scrollbar on the page itself and on any container that hadn't opted into a
+ * .table-scroll style. It also darkens checkboxes, selects and the like for free.
  */
-.table-scroll {
+:root {
+  color-scheme: dark;
+}
+
+* {
   scrollbar-width: thin;
-  scrollbar-color: rgba(148, 163, 184, 0.5) transparent;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
 }
-.table-scroll::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+
+*::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
 }
-.table-scroll::-webkit-scrollbar-track {
+*::-webkit-scrollbar-track {
   background: transparent;
 }
-.table-scroll::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.5);
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border: 3px solid transparent;
+  background-clip: padding-box;
   border-radius: 9999px;
 }
-.table-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.8);
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+  background-clip: padding-box;
+}
+
+/*
+ * Inner scroll areas (widget tables, key pickers, the tile grid). Same look as the
+ * global default; the class exists for `overscroll-behavior: contain`, which stops a
+ * flick inside a widget from continuing into the page once the widget hits its end —
+ * the "scroll chaining" that makes a dashboard feel slippery.
+ */
+.table-scroll {
+  overscroll-behavior: contain;
+}
+
+/*
+ * Map popup telemetry list — ghost until hovered, so a short scrollable list inside a
+ * small popup doesn't advertise itself with a permanent bar.
+ */
+.map-popup-scroll {
+  overscroll-behavior: contain;
+  scrollbar-color: transparent transparent;
+}
+.map-popup-scroll:hover {
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+.map-popup-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.map-popup-scroll::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+.map-popup-scroll:hover::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  background-clip: padding-box;
+}
+
+/* Anchor jumps and programmatic scrollTo ease instead of teleporting — but honour a
+ * reduced-motion preference, where that easing is exactly what the user opted out of. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/*
+ * Dashboard grid (react-grid-layout). RGL ships a bare stylesheet: the drop placeholder is
+ * an opaque red block and items snap between cells with no transition. These rules replace
+ * the placeholder with an accent-tinted drop target and ease items into place, so dragging
+ * reads as "this is where it lands" instead of a flash of red.
+ */
+.react-grid-item.react-grid-placeholder {
+  background: var(--color-accent, #0891b2);
+  opacity: 0.15;
+  border: 2px dashed var(--color-accent, #0891b2);
+  border-radius: 20px;
+  transition-duration: 120ms;
+}
+
+/* Only animate position for items sitting still — the dragged item is transform-positioned
+ * by RGL on every pointer move, and transitioning that makes it lag behind the cursor. */
+.react-grid-item:not(.react-grid-placeholder):not(.react-draggable-dragging):not(.resizing) {
+  transition:
+    transform 200ms ease,
+    width 200ms ease,
+    height 200ms ease;
+}
+
+.react-grid-item.react-draggable-dragging {
+  transition: none;
+  will-change: transform;
+}
+
+/* The map's own style switcher sits in the same corner as the widget toolbar and would
+ * collide with it. Widget content is inert while editing anyway, so the switcher can't be
+ * used there — hide it rather than stack two controls on the same 40 pixels. Scoped to the
+ * dashboard grid, so the standalone /map page keeps its switcher. */
+.dashboard-grid--editing .map-style-toggle {
+  display: none;
+}
+
+/* RGL's resize corner is a low-contrast background image that all but disappears on the
+ * dark theme; make it a visible grabbable corner while editing. */
+.dashboard-grid--editing .react-grid-item > .react-resizable-handle {
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+.dashboard-grid--editing .react-grid-item:hover > .react-resizable-handle {
+  opacity: 0.7;
+}
+.dashboard-grid--editing .react-grid-item > .react-resizable-handle::after {
+  border-right-color: var(--color-accent, #0891b2);
+  border-bottom-color: var(--color-accent, #0891b2);
+  width: 8px;
+  height: 8px;
 }

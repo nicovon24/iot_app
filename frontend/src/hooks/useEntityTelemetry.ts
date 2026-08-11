@@ -5,10 +5,14 @@ import type { EntityType, TelemetryLatest, TelemetryValue } from '@/types';
 
 const ONE_HOUR_MS = 3600_000;
 
+// Callers commonly pass `entityId ?? ''` while the user hasn't picked an entity yet (widget
+// config panels, unscoped map/alarms widgets). Without this guard that fires a real request
+// to `/entities//telemetry/...`, which 404s and pollutes the query cache with a junk entry.
 export function useTelemetryKeys(id: string, type: EntityType) {
   return useQuery({
     queryKey: ['telemetry', 'keys', id],
     queryFn: () => apiClient.get<string[]>(`/entities/${id}/telemetry/keys?type=${type}`),
+    enabled: Boolean(id),
   });
 }
 
@@ -17,6 +21,7 @@ export function useTelemetryLatest(id: string, type: EntityType, keys?: string[]
   return useQuery({
     queryKey: ['telemetry', 'latest', id, keys],
     queryFn: () => apiClient.get<TelemetryLatest>(`/entities/${id}/telemetry/latest?type=${type}${keysParam}`),
+    enabled: Boolean(id),
   });
 }
 

@@ -11,6 +11,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <HeroUIProvider>
         <Toaster
           position="top-right"
+          closeButton
           toastOptions={{
             unstyled: true,
             classNames: {
@@ -22,7 +23,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
               success: 'border-l-4 border-l-emerald-500',
               error:
                 'border border-red-500/30 border-l-4 border-l-red-500 bg-red-500/10 [&_[data-title]]:text-red-400 [&_[data-icon]]:text-red-400',
-              closeButton: 'border-border bg-surface text-body hover:bg-surface-card',
+              closeButton:
+                '!static !order-last !ms-auto !me-0 !top-auto !start-auto !translate-x-0 !translate-y-0 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-muted transition-colors hover:border-accent/40 hover:bg-surface-card hover:text-heading',
             },
           }}
         />

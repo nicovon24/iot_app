@@ -52,6 +52,12 @@ export function EditEntityDialog({
 
   return (
     <Dialog isOpen={isOpen} onClose={onClose} widthClassName="max-w-sm">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!isPending && canSubmit) onSubmit(values);
+        }}
+      >
       <DialogHeader>
         <DialogTitle>{title}</DialogTitle>
         <DialogCloseButton />
@@ -93,15 +99,15 @@ export function EditEntityDialog({
           Cancel
         </button>
         <button
-          type="button"
+          type="submit"
           disabled={isPending || !canSubmit}
-          onClick={() => onSubmit(values)}
           style={{ background: 'var(--gradient-accent)' }}
           className="rounded-md px-4 py-2 text-sm font-semibold text-white transition hover:brightness-95 disabled:opacity-60"
         >
           {isPending ? 'Saving…' : 'Save'}
         </button>
       </DialogFooter>
+      </form>
     </Dialog>
   );
 }

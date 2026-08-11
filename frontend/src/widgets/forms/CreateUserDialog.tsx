@@ -61,6 +61,7 @@ export function CreateUserDialog({ isOpen, onClose, customerId }: CreateUserDial
 
   return (
     <Dialog isOpen={isOpen} onClose={close}>
+      <form onSubmit={onSubmit}>
       <DialogHeader>
         <DialogTitle>Add User</DialogTitle>
         <DialogCloseButton />
@@ -134,15 +135,15 @@ export function CreateUserDialog({ isOpen, onClose, customerId }: CreateUserDial
           Cancel
         </button>
         <motion.button
-          type="button"
+          type="submit"
           whileTap={{ scale: 0.97 }}
-          onClick={onSubmit}
           disabled={createUser.isPending}
           className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90 disabled:opacity-60"
         >
           {createUser.isPending ? 'Creating…' : 'Create User'}
         </motion.button>
       </DialogFooter>
+      </form>
     </Dialog>
   );
 }

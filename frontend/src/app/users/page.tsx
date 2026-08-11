@@ -1,13 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Trash2, LogIn } from 'lucide-react';
+import { Plus, LogIn } from 'lucide-react';
 import { useCustomers } from '@/hooks/useCustomers';
 import { useUsers, useDeleteUser } from '@/hooks/useUsers';
 import { useImpersonate } from '@/hooks/useImpersonation';
 import { usePermissions } from '@/hooks/useCurrentUser';
 import { Select } from '@/components/ui/Select';
 import { Tooltip } from '@/components/ui/Tooltip';
+import { EntityListWidget } from '@/widgets/entity/EntityListWidget';
 import { CreateUserDialog } from '@/widgets/forms/CreateUserDialog';
 import { ConfirmDialog } from '@/widgets/forms/ConfirmDialog';
 import type { EntityRef } from '@/types';
@@ -67,60 +68,35 @@ export default function UsersPage() {
         />
       </div>
 
-      <div className="glass-card min-h-0 flex-1 overflow-y-auto p-2">
-        {isUsersLoading ? (
-          <div className="flex h-full items-center justify-center text-sm text-muted">Loading…</div>
-        ) : isError ? (
-          <div className="flex h-full items-center justify-center text-sm text-red-400">
-            {error instanceof Error ? error.message : 'Failed to load users'}
-          </div>
-        ) : !users || users.length === 0 ? (
-          <div className="flex h-full items-center justify-center text-sm text-muted">No users found</div>
-        ) : (
-          <div className="flex flex-col gap-1.5">
-            {users.map((user) => (
-              <div
-                key={user.id}
-                className="flex items-center justify-between rounded-md border border-border bg-surface px-3 py-2.5"
+      {/* The same component Devices and Assets render, not a lookalike — so a future change to
+        * row styling lands on all three at once. Users differ only in what the generic slots
+        * are fed: role instead of entity type, client name instead of customer, and an extra
+        * "Login as" action alongside Delete. */}
+      <div className="min-h-0 flex-1">
+        <EntityListWidget
+          data={users ? { data: users, totalPages: 1, totalElements: users.length, hasNext: false } : undefined}
+          isLoading={isUsersLoading}
+          isError={isError}
+          error={error}
+          emptyLabel="No users found"
+          readOnly={!isSysadmin}
+          subtitleOf={roleOf}
+          metaOf={(user) => (user.customerId?.id ? customerNameById.get(user.customerId.id) : undefined)}
+          onDelete={(user) => setPendingDelete(user)}
+          extraActions={(user) => (
+            <Tooltip label="Login as">
+              <button
+                type="button"
+                onClick={() => impersonate.mutate({ id: user.id, label: user.name })}
+                disabled={impersonate.isPending}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-navy-800 text-muted transition-colors hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
+                aria-label={`Login as ${user.name}`}
               >
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-heading">{user.name}</span>
-                  <span className="rounded-full border border-border px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-muted">
-                    {roleOf(user)}
-                  </span>
-                  {!customerId && user.customerId?.id && (
-                    <span className="text-xs text-muted">{customerNameById.get(user.customerId.id) ?? ''}</span>
-                  )}
-                </div>
-                {isSysadmin && (
-                  <div className="flex items-center gap-1">
-                    <Tooltip label="Login as">
-                      <button
-                        type="button"
-                        onClick={() => impersonate.mutate({ id: user.id, label: user.name })}
-                        disabled={impersonate.isPending}
-                        className="rounded-full p-1.5 text-body transition hover:bg-accent/10 hover:text-accent disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
-                        aria-label={`Login as ${user.name}`}
-                      >
-                        <LogIn size={14} />
-                      </button>
-                    </Tooltip>
-                    <Tooltip label="Delete">
-                      <button
-                        type="button"
-                        onClick={() => setPendingDelete(user)}
-                        className="rounded-full p-1.5 text-body transition hover:bg-red-500/10 hover:text-red-400"
-                        aria-label={`Delete ${user.name}`}
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </Tooltip>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+                <LogIn size={14} />
+              </button>
+            </Tooltip>
+          )}
+        />
       </div>
 
       {customerId && (

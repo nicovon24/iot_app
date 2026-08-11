@@ -9,6 +9,7 @@ import { CustomerScopeGuard } from './common/guards/customer-scope.guard';
 import { ReaderBlockGuard } from './common/guards/reader-block.guard';
 import { SessionAuthGuard } from './common/guards/session-auth.guard';
 import { CustomersModule } from './customers/customers.module';
+import { DashboardsModule } from './dashboards/dashboards.module';
 import { DevicesModule } from './devices/devices.module';
 import { EntitiesModule } from './entities/entities.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -30,6 +31,7 @@ import { UsersModule } from './users/users.module';
     TelemetryModule,
     UsersModule,
     AlarmsModule,
+    DashboardsModule,
   ],
   providers: [
     // Order matters: all three are APP_GUARD in the SAME module's providers array, which Nest

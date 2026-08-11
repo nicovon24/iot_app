@@ -18,6 +18,11 @@ export interface LineChartPoint {
 export interface LineChartWidgetProps {
   data: LineChartPoint[];
   dataKey: string;
+  /** Optional header. Omitted on the entity-detail page, where the tab already names the chart. */
+  title?: string;
+  /** Tailwind height class. Defaults to the fixed height used on the entity-detail page;
+   * dashboard cells pass `h-full` so the chart fills whatever the grid cell is sized to. */
+  heightClassName?: string;
 }
 
 function formatTime(ts: number) {
@@ -28,18 +33,20 @@ function formatValue(value: number) {
   return String(Number(value.toFixed(2)));
 }
 
-export function LineChartWidget({ data, dataKey }: LineChartWidgetProps) {
+export function LineChartWidget({ data, dataKey, title, heightClassName = 'h-64' }: LineChartWidgetProps) {
   if (data.length === 0) {
     return (
-      <div className="glass-card flex h-64 items-center justify-center">
+      <div className={`glass-card flex ${heightClassName} items-center justify-center`}>
         <p className="text-sm text-muted">No historical data for this key yet</p>
       </div>
     );
   }
 
   return (
-    <div className="glass-card h-64 p-4">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className={`glass-card flex ${heightClassName} flex-col p-4`}>
+      {title && <h3 className="shrink-0 truncate pb-2 text-sm font-semibold text-heading">{title}</h3>}
+      <div className="min-h-0 flex-1">
+        <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
           <XAxis
@@ -67,8 +74,9 @@ export function LineChartWidget({ data, dataKey }: LineChartWidgetProps) {
             strokeWidth={2}
             dot={false}
           />
-        </LineChart>
-      </ResponsiveContainer>
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }
