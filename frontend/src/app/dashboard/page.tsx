@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { LayoutDashboard, Lock, Pencil, Plus, Trash2, Users } from 'lucide-react';
+import { Home, LayoutDashboard, Lock, Pencil, Plus, Trash2, Users } from 'lucide-react';
+import { Spinner } from '@heroui/react';
 import { useDashboards, useDeleteDashboard } from '@/hooks/useDashboards';
 import { usePermissions } from '@/hooks/useCurrentUser';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -53,7 +54,7 @@ export default function DashboardsPage() {
       <div className="table-scroll min-h-0 flex-1 overflow-y-auto">
         {isLoading ? (
           <div className="glass-card flex h-40 items-center justify-center">
-            <p className="text-sm text-muted">Loading dashboards…</p>
+            <Spinner label="Loading dashboards…" color="primary" />
           </div>
         ) : isError ? (
           <div className="glass-card flex h-40 items-center justify-center">
@@ -61,22 +62,52 @@ export default function DashboardsPage() {
               Failed to load: {error instanceof Error ? error.message : 'Unknown error'}
             </p>
           </div>
-        ) : dashboards.length === 0 ? (
-          <div className="glass-card flex h-40 flex-col items-center justify-center gap-3 text-center">
-            <span
-              aria-hidden
-              className="flex h-11 w-11 items-center justify-center rounded-full"
-              style={{ background: 'var(--gradient-accent)' }}
-            >
-              <LayoutDashboard size={20} className="text-white" strokeWidth={1.75} />
-            </span>
-            <p className="text-sm font-medium text-muted">
-              {canWrite ? 'No dashboards yet — create your first one.' : 'No dashboards shared with you yet.'}
-            </p>
-          </div>
         ) : (
           <div className="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-4">
-            {dashboards.map((dashboard) => (
+            {/* Overview is the fixed fleet-summary dashboard — always shown first, not part of
+                the user-built gallery, so it has no edit/delete actions. */}
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={() => router.push('/')}
+              onKeyDown={(e) => {
+                if (e.key !== 'Enter' && e.key !== ' ') return;
+                e.preventDefault();
+                router.push('/');
+              }}
+              className="group glass-card relative flex cursor-pointer flex-col gap-3 p-4 transition-colors hover:border-accent"
+            >
+              <span
+                aria-hidden
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+                style={{ background: 'var(--gradient-accent)' }}
+              >
+                <Home size={17} className="text-white" strokeWidth={1.75} />
+              </span>
+
+              <div className="flex flex-col gap-1">
+                <span className="truncate text-sm font-semibold text-heading">Overview</span>
+                <span className="text-xs text-muted">Fleet summary</span>
+              </div>
+
+              <div className="flex items-center gap-1.5 text-xs text-faint">Default dashboard</div>
+            </div>
+
+            {dashboards.length === 0 ? (
+              <div className="glass-card flex h-40 flex-col items-center justify-center gap-3 text-center">
+                <span
+                  aria-hidden
+                  className="flex h-11 w-11 items-center justify-center rounded-full"
+                  style={{ background: 'var(--gradient-accent)' }}
+                >
+                  <LayoutDashboard size={20} className="text-white" strokeWidth={1.75} />
+                </span>
+                <p className="text-sm font-medium text-muted">
+                  {canWrite ? 'No dashboards yet — create your first one.' : 'No dashboards shared with you yet.'}
+                </p>
+              </div>
+            ) : (
+              dashboards.map((dashboard) => (
               <div
                 key={dashboard.id}
                 role="button"
@@ -153,7 +184,8 @@ export default function DashboardsPage() {
                   )}
                 </div>
               </div>
-            ))}
+              ))
+            )}
           </div>
         )}
       </div>
