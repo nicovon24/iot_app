@@ -9,8 +9,8 @@ import { GripVertical, Pencil, Trash2, X } from 'lucide-react';
 import { ContextMenu } from '@/components/ui/ContextMenu';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { ConfirmDialog } from '@/widgets/forms/ConfirmDialog';
-import { DashboardWidgetRenderer } from './DashboardWidgetRenderer';
-import { WIDGET_REGISTRY, type WidgetType } from './widget-registry';
+import { DashboardWidgetRenderer } from '../renderer';
+import { WIDGET_REGISTRY, type WidgetType } from '../widget-config/widget-registry';
 import type { DashboardWidget } from '@/types';
 
 const GridLayout = WidthProvider(RGL);

@@ -10,12 +10,17 @@ const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
+/** Presets stop at 90 days rather than running to a year: beyond a quarter the raw-point ceiling
+ * on history queries starts truncating, and a range that long is a deliberate choice better made
+ * through Custom range than reached by accident from a dropdown. */
 export const TIME_WINDOW_PRESETS: Array<{ value: string; label: string; ms: number }> = [
   { value: '15m', label: 'Last 15 minutes', ms: 15 * MINUTE },
   { value: '1h', label: 'Last hour', ms: HOUR },
   { value: '6h', label: 'Last 6 hours', ms: 6 * HOUR },
   { value: '24h', label: 'Last 24 hours', ms: DAY },
   { value: '7d', label: 'Last 7 days', ms: 7 * DAY },
+  { value: '30d', label: 'Last 30 days', ms: 30 * DAY },
+  { value: '90d', label: 'Last 90 days', ms: 90 * DAY },
 ];
 
 const CUSTOM = 'custom';
@@ -64,7 +69,20 @@ export function TimeWindowPicker({
   value: DashboardTimeWindow | null;
   onChange: (next: DashboardTimeWindow) => void;
 }) {
-  const [selected, setSelected] = useState(() => presetValueFor(value));
+  /**
+   * Derived from the prop rather than held in state.
+   *
+   * A `useState(() => presetValueFor(value))` initialiser runs once, and this picker mounts
+   * before the dashboard query resolves — so it latched onto the default while `value` was
+   * still null and never caught up. A saved 30-day window came back showing "Last hour", which
+   * looked like the window hadn't saved at all, and re-saving from that state then wrote the
+   * stale selection over the stored one.
+   *
+   * The one piece of genuinely local state is whether the user has *chosen* Custom, since a
+   * FIXED window and a Custom selection aren't quite the same thing mid-edit.
+   */
+  const [customPicked, setCustomPicked] = useState(false);
+  const selected = customPicked || value?.kind === 'FIXED' ? CUSTOM : presetValueFor(value);
 
   const fixed = value?.kind === 'FIXED' ? value : undefined;
   const options = useMemo(
@@ -73,8 +91,8 @@ export function TimeWindowPicker({
   );
 
   function handleSelect(next: string) {
-    setSelected(next);
     if (next === CUSTOM) {
+      setCustomPicked(true);
       // Seed the custom range from the window currently in effect, so switching to Custom
       // doesn't blank the charts until both inputs are filled.
       const endTs = Date.now();
@@ -82,6 +100,7 @@ export function TimeWindowPicker({
       onChange({ kind: 'FIXED', startTs: endTs - ms, endTs });
       return;
     }
+    setCustomPicked(false);
     const preset = TIME_WINDOW_PRESETS.find((p) => p.value === next);
     if (preset) onChange({ kind: 'LAST', ms: preset.ms });
   }

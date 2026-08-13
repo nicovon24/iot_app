@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 import { Select } from '@/components/ui/Select';
-import { useEntities } from '@/hooks/useEntities';
+import { useEntities } from '@/hooks/entities/useEntities';
 import type { ConfigRequirement } from './widget-registry';
 
 /** What a widget's datasource resolves to. 'ALL' stores a filter, not ids, so entities

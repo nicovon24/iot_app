@@ -6,7 +6,7 @@ import {
   ATTRIBUTE_SCOPES,
   ATTRIBUTE_SCOPE_LABELS,
   type DataKey,
-} from './use-widget-datasource';
+} from '../use-widget-datasource';
 import type { AttributeScope } from '@/types';
 
 /**

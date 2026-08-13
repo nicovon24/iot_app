@@ -1,4 +1,22 @@
-import { AlertTriangle, Gauge, Hash, LayoutGrid, LineChart, Map as MapIcon, Table } from 'lucide-react';
+import {
+  AlertTriangle,
+  BarChart3,
+  BatteryMedium,
+  CalendarDays,
+  Flame,
+  Gauge,
+  Hash,
+  LayoutGrid,
+  LineChart,
+  Map as MapIcon,
+  MapPinned,
+  PieChart,
+  ScatterChart,
+  Signal,
+  Sigma,
+  Table,
+  TableProperties,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 /**
@@ -12,10 +30,20 @@ export const WIDGET_TYPES = [
   'value-tile',
   'value-cards',
   'gauge',
+  'battery',
+  'rssi',
   'line-chart',
+  'bar-chart',
+  'scatter',
+  'donut',
+  'calendar-heatmap',
   'attributes-table',
+  'timeseries-table',
   'alarms-list',
+  'alarm-count',
   'map',
+  'value-map',
+  'movement-heatmap',
 ] as const;
 
 export type WidgetType = (typeof WIDGET_TYPES)[number];
@@ -30,8 +58,21 @@ export type WidgetType = (typeof WIDGET_TYPES)[number];
 export type ConfigRequirement = 'required' | 'optional' | 'none';
 
 /** Gallery grouping — keeps the picker scannable as the widget count grows. */
-export const WIDGET_CATEGORIES = ['Cards', 'Charts', 'Tables', 'Alarms', 'Maps'] as const;
+export const WIDGET_CATEGORIES = ['Cards', 'Gauges', 'Charts', 'Tables', 'Alarms', 'Maps', 'Heatmaps'] as const;
 export type WidgetCategory = (typeof WIDGET_CATEGORIES)[number];
+
+/** Icon for the category step of the Add-widget dialog. Declared per category rather than
+ * borrowed from the first widget in the group, which made the whole category read as whatever
+ * happened to be declared first. */
+export const CATEGORY_ICONS: Record<WidgetCategory, LucideIcon> = {
+  Cards: Hash,
+  Gauges: Gauge,
+  Charts: LineChart,
+  Tables: Table,
+  Alarms: AlertTriangle,
+  Maps: MapIcon,
+  Heatmaps: Flame,
+};
 
 export interface WidgetTypeMeta {
   label: string;
@@ -96,7 +137,7 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetTypeMeta> = {
     label: 'Gauge',
     description: 'One value against a calibrated range',
     icon: Gauge,
-    category: 'Charts',
+    category: 'Gauges',
     entity: 'required',
     telemetryKey: 'required',
     multiTelemetryKeys: false,
@@ -106,6 +147,32 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetTypeMeta> = {
     supportsAllScope: false,
     supportsDataKeys: false,
     defaultLayout: { w: 3, h: 3 },
+  },
+  battery: {
+    label: 'Battery',
+    description: 'Charge level as a filling battery',
+    icon: BatteryMedium,
+    category: 'Gauges',
+    entity: 'required',
+    telemetryKey: 'required',
+    multiTelemetryKeys: false,
+    entityKinds: ['DEVICE', 'ASSET'],
+    supportsAllScope: false,
+    supportsDataKeys: false,
+    defaultLayout: { w: 2, h: 2 },
+  },
+  rssi: {
+    label: 'Signal Strength',
+    description: 'Radio signal as stepped bars',
+    icon: Signal,
+    category: 'Gauges',
+    entity: 'required',
+    telemetryKey: 'required',
+    multiTelemetryKeys: false,
+    entityKinds: ['DEVICE', 'ASSET'],
+    supportsAllScope: false,
+    supportsDataKeys: false,
+    defaultLayout: { w: 2, h: 2 },
   },
   'line-chart': {
     label: 'Line Chart',
@@ -120,8 +187,65 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetTypeMeta> = {
     supportsDataKeys: false,
     defaultLayout: { w: 4, h: 3 },
   },
+  'bar-chart': {
+    label: 'Bar Chart',
+    description: 'Time series as bars — one group per entity',
+    icon: BarChart3,
+    category: 'Charts',
+    entity: 'required',
+    telemetryKey: 'required',
+    multiTelemetryKeys: false,
+    entityKinds: ['DEVICE', 'ASSET'],
+    supportsAllScope: true,
+    supportsDataKeys: false,
+    defaultLayout: { w: 4, h: 3 },
+  },
+  scatter: {
+    label: 'Scatter Chart',
+    description: 'One value against another, or against time — rssi vs snr, power over time',
+    icon: ScatterChart,
+    category: 'Charts',
+    entity: 'required',
+    // The two axis keys have their own pickers in the config panel rather than going through
+    // the generic telemetryKey field, since which key goes on which axis is the whole point.
+    telemetryKey: 'none',
+    multiTelemetryKeys: false,
+    entityKinds: ['DEVICE', 'ASSET'],
+    supportsAllScope: true,
+    supportsDataKeys: false,
+    defaultLayout: { w: 4, h: 4 },
+  },
+  donut: {
+    label: 'Donut Chart',
+    description: 'How a total splits by category',
+    icon: PieChart,
+    category: 'Charts',
+    entity: 'optional',
+    telemetryKey: 'none',
+    multiTelemetryKeys: false,
+    entityKinds: ['DEVICE', 'ASSET'],
+    supportsAllScope: true,
+    supportsDataKeys: false,
+    unscopedLabel: 'Everything',
+    defaultLayout: { w: 4, h: 3 },
+  },
   // widgetType stays 'attributes-table' for back-compat with saved dashboards; the label
   // changed because the widget now carries telemetry columns too, not just attributes.
+  'calendar-heatmap': {
+    label: 'Calendar Heatmap',
+    description: 'A cell per day, coloured by that day’s value',
+    icon: CalendarDays,
+    category: 'Heatmaps',
+    entity: 'required',
+    telemetryKey: 'required',
+    multiTelemetryKeys: false,
+    entityKinds: ['DEVICE', 'ASSET'],
+    // One grid means one subject: overlaying several entities on the same cells would have to
+    // pick one of their values to show.
+    supportsAllScope: false,
+    supportsDataKeys: false,
+    defaultLayout: { w: 6, h: 3 },
+  },
   'attributes-table': {
     label: 'Entity Table',
     description: 'Pick attribute and telemetry columns',
@@ -134,6 +258,21 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetTypeMeta> = {
     supportsAllScope: true,
     supportsDataKeys: true,
     defaultLayout: { w: 5, h: 4 },
+  },
+  'timeseries-table': {
+    label: 'Timeseries Table',
+    description: 'History as a table — a row per timestamp',
+    icon: TableProperties,
+    category: 'Tables',
+    entity: 'required',
+    telemetryKey: 'required',
+    multiTelemetryKeys: true,
+    entityKinds: ['DEVICE', 'ASSET'],
+    // Rows are timestamps, so a second entity would need its own set of columns and the table
+    // stops being readable. One subject's history, like the gauge shows one subject's value.
+    supportsAllScope: false,
+    supportsDataKeys: false,
+    defaultLayout: { w: 6, h: 4 },
   },
   'alarms-list': {
     label: 'Alarms List',
@@ -151,6 +290,20 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetTypeMeta> = {
     unscopedLabel: 'All alarms',
     defaultLayout: { w: 4, h: 3 },
   },
+  'alarm-count': {
+    label: 'Alarm Count',
+    description: 'How many alarms match a severity/status filter',
+    icon: Sigma,
+    category: 'Alarms',
+    entity: 'optional',
+    telemetryKey: 'none',
+    multiTelemetryKeys: false,
+    entityKinds: ['DEVICE', 'ASSET'],
+    supportsAllScope: true,
+    supportsDataKeys: false,
+    unscopedLabel: 'All alarms',
+    defaultLayout: { w: 2, h: 2 },
+  },
   map: {
     label: 'Map',
     description: 'All devices or assets on a map, or just one',
@@ -163,6 +316,35 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetTypeMeta> = {
     supportsAllScope: true,
     supportsDataKeys: false,
     unscopedLabel: 'Whole fleet',
+    defaultLayout: { w: 6, h: 4 },
+  },
+  // widgetType stays 'value-map' for back-compat with saved dashboards; only the label changed.
+  'value-map': {
+    label: 'Telemetry Map',
+    description: 'Fleet markers coloured by a telemetry value',
+    icon: MapPinned,
+    category: 'Heatmaps',
+    entity: 'required',
+    telemetryKey: 'required',
+    multiTelemetryKeys: false,
+    entityKinds: ['DEVICE', 'ASSET'],
+    supportsAllScope: true,
+    supportsDataKeys: false,
+    defaultLayout: { w: 6, h: 4 },
+  },
+  'movement-heatmap': {
+    label: 'Movement Heatmap',
+    description: 'Where a sensor spent its time, from position history',
+    icon: Flame,
+    category: 'Heatmaps',
+    entity: 'required',
+    telemetryKey: 'none',
+    multiTelemetryKeys: false,
+    entityKinds: ['DEVICE', 'ASSET'],
+    // Several entities' trails pile onto one heat surface, which is exactly the fleet-coverage
+    // question ("where has anything of ours been"), so ALL scope is meaningful here.
+    supportsAllScope: true,
+    supportsDataKeys: false,
     defaultLayout: { w: 6, h: 4 },
   },
 };

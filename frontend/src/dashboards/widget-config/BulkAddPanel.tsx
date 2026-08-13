@@ -1,13 +1,13 @@
-'use client';
+﻿'use client';
 
 import { useMemo, useState } from 'react';
 import { Select } from '@/components/ui/Select';
 import { Dialog, DialogBody, DialogCloseButton, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
-import { useEntities } from '@/hooks/useEntities';
+import { useEntities } from '@/hooks/entities/useEntities';
 import { CheckboxList } from './CheckboxList';
 import { WIDGET_DIALOG_BODY_HEIGHT, WIDGET_DIALOG_WIDTH } from './AddWidgetPanel';
-import { useTelemetryKeyOptions } from './use-widget-datasource';
-import { packWidgets } from './layout-utils';
+import { useTelemetryKeyOptions } from '../use-widget-datasource';
+import { packWidgets } from '../canvas/layout-utils';
 import { BULK_WIDGET_TYPES, WIDGET_REGISTRY, type WidgetType } from './widget-registry';
 import type { NewWidgetInput } from './AddWidgetPanel';
 import type { DashboardWidgetLayout } from '@/types';
