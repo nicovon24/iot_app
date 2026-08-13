@@ -1,11 +1,11 @@
-'use client';
+﻿'use client';
 
 import { useMemo, useState } from 'react';
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@heroui/react';
 import { Plus, X, Cpu, UserPlus } from 'lucide-react';
-import { useCustomerChildren, useAssetChildren } from '@/hooks/useHierarchyChildren';
-import { useLinkDevice, useUnlinkDevice, useClaimDevice } from '@/hooks/useDeviceLink';
-import { useEntities } from '@/hooks/useEntities';
+import { useCustomerChildren, useAssetChildren } from '@/hooks/entities/useHierarchyChildren';
+import { useLinkDevice, useUnlinkDevice, useClaimDevice } from '@/hooks/entities/useDeviceLink';
+import { useEntities } from '@/hooks/entities/useEntities';
 import { Dialog, DialogHeader, DialogTitle, DialogCloseButton, DialogBody, DialogFooter } from '@/components/ui/Dialog';
 import { Select } from '@/components/ui/Select';
 import { TableRowsSkeleton } from '@/components/feedback/Skeleton';

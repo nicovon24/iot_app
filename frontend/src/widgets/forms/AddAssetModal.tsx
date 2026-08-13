@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useMemo, useState } from 'react';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Select, SelectItem } from '@heroui/react';
@@ -6,10 +6,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useCustomers } from '@/hooks/useCustomers';
-import { useCustomerHierarchy } from '@/hooks/useCustomerHierarchy';
-import { useEntities } from '@/hooks/useEntities';
-import { useCreateAsset } from '@/hooks/useCreateAsset';
+import { useCustomers } from '@/hooks/users/useCustomers';
+import { useCustomerHierarchy } from '@/hooks/users/useCustomerHierarchy';
+import { useEntities } from '@/hooks/entities/useEntities';
+import { useCreateAsset } from '@/hooks/assets/useCreateAsset';
 import { ApiError } from '@/lib/api-client';
 
 const schema = z.object({

@@ -1,9 +1,9 @@
-'use client';
+﻿'use client';
 
 import { useRouter } from 'next/navigation';
 import { Cpu, Box, AlertTriangle } from 'lucide-react';
-import { useEntities } from '@/hooks/useEntities';
-import { useGlobalAlarms } from '@/hooks/useEntityAlarms';
+import { useEntities } from '@/hooks/entities/useEntities';
+import { useGlobalAlarms } from '@/hooks/entities/useEntityAlarms';
 import { CountTileWidget } from '@/widgets/charts/CountTileWidget';
 import { FleetMapWidget } from '@/widgets/maps/FleetMapWidget';
 import { EntityListWidget } from '@/widgets/entity/EntityListWidget';

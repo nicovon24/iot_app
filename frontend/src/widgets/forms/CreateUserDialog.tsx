@@ -1,10 +1,10 @@
-'use client';
+﻿'use client';
 
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
-import { useCreateUser } from '@/hooks/useUsers';
+import { useCreateUser } from '@/hooks/users/useUsers';
 import { Dialog, DialogHeader, DialogTitle, DialogCloseButton, DialogBody, DialogFooter } from '@/components/ui/Dialog';
 import { Select } from '@/components/ui/Select';
 import { ApiError } from '@/lib/api-client';

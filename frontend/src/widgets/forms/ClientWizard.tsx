@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Plus, Trash2, ArrowUp, ArrowDown, GripVertical, Check } from 'lucide-react';
-import { useCreateCustomer } from '@/hooks/useCustomers';
+import { useCreateCustomer } from '@/hooks/users/useCustomers';
 import { Dialog, DialogHeader, DialogCloseButton, DialogBody, DialogFooter } from '@/components/ui/Dialog';
 import { ApiError } from '@/lib/api-client';
 import { toastSuccess } from '@/lib/toast';

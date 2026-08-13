@@ -201,6 +201,74 @@ select:disabled {
 }
 
 /*
+ * Leaflet popup chrome, retinted to the app's card surface.
+ *
+ * Leaflet ships an opaque white popup with a white tip. The popup's contents are written with
+ * this app's ink tokens (--color-heading, --color-muted…), which are tuned for the dark card
+ * surface — on white they render as pale grey on white and are effectively unreadable.
+ * Restyling the container is what makes those tokens correct again, rather than overriding
+ * every piece of text inside it to a second, light-surface palette.
+ *
+ * Every rule is scoped through `.leaflet-popup` (the class Leaflet puts on the popup root) so it
+ * wins on specificity rather than on order: leaflet.css is imported from the map components,
+ * which Next injects *after* this global sheet, so an equally-specific rule here loses and the
+ * popup stays white.
+ */
+.leaflet-popup .leaflet-popup-content-wrapper,
+.leaflet-popup .leaflet-popup-tip {
+  background: #131c2e;
+  color: var(--color-body);
+  /* Not --color-border: at 18% cyan it disappears against the dark popup, and this edge is the
+   * only thing separating the popup from an equally dark map tile beneath it. */
+  border: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.leaflet-popup .leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  padding: 0;
+  box-shadow: 0 12px 32px rgba(2, 6, 23, 0.55);
+}
+
+/* Leaflet's default 13px/1.4 sizing fights the utility classes used inside the popup. */
+.leaflet-popup .leaflet-popup-content {
+  margin: 0;
+  padding: 14px;
+  font: inherit;
+  line-height: inherit;
+  width: auto !important;
+}
+
+/* leaflet.css gives popup paragraphs a 1.3em vertical margin, which pushes the flex gaps the
+ * popup's own layout relies on into uneven double spacing. */
+.leaflet-popup .leaflet-popup-content p {
+  margin: 0;
+}
+
+/* The tip is a square rotated 45°, so it needs two corrections leaflet.css doesn't anticipate
+ * once the popup is dark: only the two outward-facing edges may carry the border (or the seam
+ * shows as a line across the popup's underside), and its shadow has to go — rotated, it casts
+ * back onto the popup body as a dark smudge under the point. */
+.leaflet-popup .leaflet-popup-tip {
+  border-top: none;
+  border-left: none;
+  box-shadow: none;
+}
+
+/* leaflet.css styles this button as `.leaflet-container a.leaflet-popup-close-button` and its
+ * hover state at the same specificity as anything written here. Since that sheet is injected
+ * after this one, ties go to Leaflet — `!important` is the only lever left short of a wrapper
+ * class on every map in the app. */
+.leaflet-container a.leaflet-popup-close-button {
+  color: var(--color-muted) !important;
+  padding: 10px 10px 0 0;
+  transition: color 0.15s ease;
+}
+.leaflet-container a.leaflet-popup-close-button:hover {
+  color: var(--color-heading) !important;
+  background: transparent;
+}
+
+/*
  * Map popup telemetry list — ghost until hovered, so a short scrollable list inside a
  * small popup doesn't advertise itself with a permanent bar.
  */

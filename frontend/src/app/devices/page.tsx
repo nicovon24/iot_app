@@ -1,9 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEntities } from '@/hooks/useEntities';
-import { usePatchDevice } from '@/hooks/usePatchDevice';
-import { usePermissions } from '@/hooks/useCurrentUser';
+import { useEntities } from '@/hooks/entities/useEntities';
+import { usePatchDevice } from '@/hooks/assets/usePatchDevice';
+import { usePermissions } from '@/hooks/users/useCurrentUser';
 import { EntityListWidget } from '@/widgets/entity/EntityListWidget';
 import { toastError } from '@/lib/toast';
 

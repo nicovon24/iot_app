@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
-import { useCustomers, useDeleteCustomer, usePatchCustomer } from '@/hooks/useCustomers';
-import { usePermissions } from '@/hooks/useCurrentUser';
+import { useCustomers, useDeleteCustomer, usePatchCustomer } from '@/hooks/users/useCustomers';
+import { usePermissions } from '@/hooks/users/useCurrentUser';
 import { EntityListWidget } from '@/widgets/entity/EntityListWidget';
 import { ConfirmDialog } from '@/widgets/forms/ConfirmDialog';
 import { toastError } from '@/lib/toast';

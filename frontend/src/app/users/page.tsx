@@ -1,11 +1,11 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { Plus, LogIn } from 'lucide-react';
-import { useCustomers } from '@/hooks/useCustomers';
-import { useUsers, useDeleteUser } from '@/hooks/useUsers';
-import { useImpersonate } from '@/hooks/useImpersonation';
-import { usePermissions } from '@/hooks/useCurrentUser';
+import { useCustomers } from '@/hooks/users/useCustomers';
+import { useUsers, useDeleteUser } from '@/hooks/users/useUsers';
+import { useImpersonate } from '@/hooks/users/useImpersonation';
+import { usePermissions } from '@/hooks/users/useCurrentUser';
 import { Select } from '@/components/ui/Select';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { EntityListWidget } from '@/widgets/entity/EntityListWidget';

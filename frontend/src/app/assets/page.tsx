@@ -1,11 +1,11 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useEntities } from '@/hooks/useEntities';
-import { useDeleteAsset } from '@/hooks/useCreateAsset';
-import { usePatchAsset } from '@/hooks/usePatchAsset';
-import { usePermissions } from '@/hooks/useCurrentUser';
+import { useEntities } from '@/hooks/entities/useEntities';
+import { useDeleteAsset } from '@/hooks/assets/useCreateAsset';
+import { usePatchAsset } from '@/hooks/assets/usePatchAsset';
+import { usePermissions } from '@/hooks/users/useCurrentUser';
 import { EntityListWidget } from '@/widgets/entity/EntityListWidget';
 import { ConfirmDialog } from '@/widgets/forms/ConfirmDialog';
 import { toastError } from '@/lib/toast';

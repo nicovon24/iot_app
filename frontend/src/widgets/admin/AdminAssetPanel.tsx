@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import {
@@ -11,9 +11,9 @@ import {
 } from '@heroui/react';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { TableRowsSkeleton } from '@/components/feedback/Skeleton';
-import { useCreateAsset, useDeleteAsset } from '@/hooks/useCreateAsset';
-import { usePatchAsset } from '@/hooks/usePatchAsset';
-import { useCustomerChildren, useAssetChildren, useInvalidateHierarchyChildren } from '@/hooks/useHierarchyChildren';
+import { useCreateAsset, useDeleteAsset } from '@/hooks/assets/useCreateAsset';
+import { usePatchAsset } from '@/hooks/assets/usePatchAsset';
+import { useCustomerChildren, useAssetChildren, useInvalidateHierarchyChildren } from '@/hooks/entities/useHierarchyChildren';
 import { ConfirmDialog } from '@/widgets/forms/ConfirmDialog';
 import { EditEntityDialog } from '@/widgets/forms/EditEntityDialog';
 import { Dialog, DialogHeader, DialogTitle, DialogCloseButton, DialogBody, DialogFooter } from '@/components/ui/Dialog';

@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { Select } from '@/components/ui/Select';
-import { useGlobalAlarms } from '@/hooks/useEntityAlarms';
+import { useGlobalAlarms } from '@/hooks/entities/useEntityAlarms';
 import { AlarmsListWidget } from '@/widgets/entity/AlarmsListWidget';
 import type { AlarmSeverity, AlarmStatus } from '@/types';
 

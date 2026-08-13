@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import {
@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@heroui/react';
 import { Plus, Trash2 } from 'lucide-react';
-import { useDeleteCustomer } from '@/hooks/useCustomers';
+import { useDeleteCustomer } from '@/hooks/users/useCustomers';
 import { AdminBreadcrumbs } from './AdminBreadcrumbs';
 import { ConfirmDialog } from '@/widgets/forms/ConfirmDialog';
 import { TableRowsSkeleton } from '@/components/feedback/Skeleton';

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
@@ -10,7 +10,7 @@ import { AuthGate } from './AuthGate';
 import { Tooltip } from '../ui/Tooltip';
 import { NAV_ITEMS } from '@/lib/nav-items';
 import { getImpersonationMeta, type ImpersonationMeta } from '@/lib/session';
-import { endImpersonation } from '@/hooks/useImpersonation';
+import { endImpersonation } from '@/hooks/users/useImpersonation';
 
 const SIDEBAR_VISIBLE_STORAGE_KEY = 'iot_sidebar_visible';
 const HEADER_VISIBLE_STORAGE_KEY = 'iot_header_visible';

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, type ComponentType } from 'react';
 import Image from 'next/image';
@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 import { LogOut, PanelLeftClose, PanelLeftOpen, X, type LucideProps } from 'lucide-react';
 import { NAV_ITEMS } from '@/lib/nav-items';
 import { logout } from '@/lib/auth';
-import { usePermissions } from '@/hooks/useCurrentUser';
+import { usePermissions } from '@/hooks/users/useCurrentUser';
 import { Tooltip } from '../ui/Tooltip';
 
 const SIDEBAR_STORAGE_KEY = 'iot_sidebar_expanded';

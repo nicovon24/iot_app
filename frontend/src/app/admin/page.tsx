@@ -1,9 +1,9 @@
-'use client';
+﻿'use client';
 
 import { useMemo, useState } from 'react';
-import { useCustomers } from '@/hooks/useCustomers';
-import { useCustomerHierarchy } from '@/hooks/useCustomerHierarchy';
-import { usePermissions } from '@/hooks/useCurrentUser';
+import { useCustomers } from '@/hooks/users/useCustomers';
+import { useCustomerHierarchy } from '@/hooks/users/useCustomerHierarchy';
+import { usePermissions } from '@/hooks/users/useCurrentUser';
 import { DEFAULT_HIERARCHY_LEVELS } from '@/lib/hierarchy-defaults';
 import { ClientWizard } from '@/widgets/forms/ClientWizard';
 import { AdminClientsColumn } from '@/widgets/admin/AdminClientsColumn';
@@ -36,7 +36,7 @@ export default function AdminPage() {
   // Asset columns are shown. Falls back to the default structure so the full set of columns
   // (Clients, Site, Area, Asset, Sensor) is always visible, even before a Client is selected.
   const hierarchyQuery = useCustomerHierarchy(selectedCustomer?.id);
-  const hierarchyLevels = hierarchyQuery.data ?? DEFAULT_HIERARCHY_LEVELS;
+  const hierarchyLevels = hierarchyQuery.data?.length ? hierarchyQuery.data : DEFAULT_HIERARCHY_LEVELS;
 
   const activeNode: { id: string; type: 'CUSTOMER' | 'ASSET'; name: string } | null =
     assetTrail.length > 0
