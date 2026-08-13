@@ -75,6 +75,14 @@ DISCUSS ──▶ PLAN ──▶ APPLY ──▶ UNIFY
 
 All project documentation, code comments, and commit messages are in **English**. The app UI itself remains in Spanish (targeting end users).
 
+## Imports & Exports (frontend)
+
+- Folder with **one relevant file**: no `index.ts`. File keeps its own name (`session.ts`, not `session/index.ts` + `session/session.ts`) and is imported directly. Never duplicate `index.ts` + a same-purpose named file in the same folder.
+- Folder with **2+ files**: gets an `index.ts` barrel (`export * from './File'` per file); the rest of the codebase imports from the folder's barrel, not from individual files inside it.
+- Exports: always named exports. Exception forced by Next.js App Router: `page.tsx`, `layout.tsx`, `not-found.tsx` under `app/` use `export default`.
+- Cross-folder imports use the `@/...` alias (see `tsconfig.json`), not long relative paths (`../../`). Relative imports only between sibling files in the same folder.
+- Backend (NestJS) does not follow the barrel rule — file-by-file relative imports are the standard Nest style there.
+
 ## Knowledge Graph (graphify)
 
 Project has a knowledge graph at `graphify-out/` (god nodes, community structure, cross-file relationships). Run `graphify query "<question>"` first when `graphify-out/graph.json` exists; `graphify path "<A>" "<B>"` for relationships, `graphify explain "<concept>"` for concepts. Run `graphify update .` after code changes to keep it current.

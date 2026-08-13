@@ -1,7 +1,7 @@
 'use client';
 
-import { formatTelemetryValue } from '@/lib/format';
-import type { CellValue, ResolvedColumn } from '@/dashboards/use-widget-datasource';
+import { formatMaybeTimestamp, formatTelemetryValue } from '@\/lib';
+import type { CellValue, ResolvedColumn } from '@/components';
 
 export interface EntityDataTableRow {
   id: string;
@@ -60,6 +60,10 @@ function Centered({ text }: { text: string }) {
 
 function formatCell(column: ResolvedColumn, cell: CellValue | undefined) {
   if (!cell || cell.value === undefined) return null;
+  // Epoch timestamps (lastActivityTime and friends) are unreadable as raw numbers and carry no
+  // type marker, so they're detected by value range before anything else.
+  const asDate = formatMaybeTimestamp(cell.value);
+  if (asDate) return asDate;
   // Telemetry is numeric-ish and gets the shared rounding/unit treatment; an attribute can be
   // any JSON scalar, so it's shown verbatim.
   return column.source === 'TELEMETRY' ? (formatTelemetryValue(cell.value) ?? cell.value) : cell.value;
@@ -77,7 +81,9 @@ export function EntityDataTableWidget({
 }: EntityDataTableWidgetProps) {
   if (isLoading && rows.length === 0) return <Centered text="Loading…" />;
   if (rows.length === 0) return <Centered text="No entities to show" />;
-  if (columns.length === 0) return <Centered text="No data keys selected for this table" />;
+  // Kept audience-neutral rather than "pick columns in the Columns tab": this renders for
+  // read-only dashboard viewers too, who have no edit panel to act on that instruction.
+  if (columns.length === 0) return <Centered text="No columns configured for this table" />;
 
   const note = omittedCount > 0 ? `Showing ${rows.length} of ${rows.length + omittedCount} entities` : undefined;
 

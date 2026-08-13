@@ -3,13 +3,13 @@
 import { useState } from 'react';
 import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer } from 'react-leaflet';
-import { useTelemetryLatest } from '@/hooks/useEntityTelemetry';
-import { useEntityAlarms } from '@/hooks/useEntityAlarms';
-import { entityDetailsHref } from '@/dashboards/widget-actions';
+import { useTelemetryLatest } from '@/hooks';
+import { useEntityAlarms } from '@/hooks';
+import { entityDetailsHref } from '@/components';
 import { EntityMapMarker } from './EntityMapMarker';
 import { MapAutoResize } from './MapAutoResize';
 import { MapStyleToggle } from './MapStyleToggle';
-import { MAP_TILE_CONFIG, type MapTileStyle } from '@/lib/map-tiles';
+import { MAP_TILE_CONFIG, type MapTileStyle } from '@\/lib';
 import type { EntityType } from '@/types';
 
 export interface MapWidgetProps {

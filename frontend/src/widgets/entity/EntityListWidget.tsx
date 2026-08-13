@@ -11,9 +11,9 @@ import {
 } from '@heroui/react';
 import { Building2, Cpu, Box, Pencil, Play, Trash2, UserCog } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { Tooltip } from '@/components/ui/Tooltip';
-import { EntityRowsSkeleton, TableRowsSkeleton } from '@/components/feedback/Skeleton';
-import { EditEntityDialog, type EditableField } from '@/widgets/forms/EditEntityDialog';
+import { Tooltip } from '@/components';
+import { EntityRowsSkeleton, TableRowsSkeleton } from '@/components';
+import { EditEntityDialog, type EditableField } from '../forms/EditEntityDialog';
 import type { EntityRef, EntityType, PageData } from '@/types';
 
 export type { EditableField };

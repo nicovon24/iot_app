@@ -10,12 +10,12 @@ import {
   TableRow,
 } from '@heroui/react';
 import { Plus, Trash2 } from 'lucide-react';
-import { useDeleteCustomer } from '@/hooks/useCustomers';
+import { useDeleteCustomer } from '@/hooks';
 import { AdminBreadcrumbs } from './AdminBreadcrumbs';
-import { ConfirmDialog } from '@/widgets/forms/ConfirmDialog';
-import { TableRowsSkeleton } from '@/components/feedback/Skeleton';
-import { Tooltip } from '@/components/ui/Tooltip';
-import { toastError, toastSuccess } from '@/lib/toast';
+import { ConfirmDialog } from '@/widgets';
+import { TableRowsSkeleton } from '@/components';
+import { Tooltip } from '@/components';
+import { toastError, toastSuccess } from '@\/lib';
 import type { EntityRef } from '@/types';
 
 const TABLE_CLASSNAMES = {

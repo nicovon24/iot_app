@@ -3,13 +3,13 @@
 import { useMemo, useState } from 'react';
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@heroui/react';
 import { Plus, X, Cpu, UserPlus } from 'lucide-react';
-import { useCustomerChildren, useAssetChildren } from '@/hooks/useHierarchyChildren';
-import { useLinkDevice, useUnlinkDevice, useClaimDevice } from '@/hooks/useDeviceLink';
-import { useEntities } from '@/hooks/useEntities';
-import { Dialog, DialogHeader, DialogTitle, DialogCloseButton, DialogBody, DialogFooter } from '@/components/ui/Dialog';
-import { Select } from '@/components/ui/Select';
-import { TableRowsSkeleton } from '@/components/feedback/Skeleton';
-import { toastError, toastSuccess } from '@/lib/toast';
+import { useCustomerChildren, useAssetChildren } from '@/hooks';
+import { useLinkDevice, useUnlinkDevice, useClaimDevice } from '@/hooks';
+import { useEntities } from '@/hooks';
+import { Dialog, DialogHeader, DialogTitle, DialogCloseButton, DialogBody, DialogFooter } from '@/components';
+import { Select } from '@/components';
+import { TableRowsSkeleton } from '@/components';
+import { toastError, toastSuccess } from '@\/lib';
 
 export interface AdminDevicePanelProps {
   title: string;
@@ -45,7 +45,7 @@ export function AdminDevicePanel({ title, activeNode, readOnly = false }: AdminD
     () => (devicesQuery.data?.data ?? []).filter((d) => !linkedIds.has(d.id)),
     [devicesQuery.data, linkedIds],
   );
-  // Devices ThingsBoard has never assigned to a real Customer — a Customer User must
+  // Devices ThingsBoard has never assigned to a real Customer � a Customer User must
   // claim one of these into their own customer before it can be linked to an Asset.
   const unclaimedDevices = useMemo(
     () => (devicesQuery.data?.data ?? []).filter((d) => !d.customerId),
@@ -199,7 +199,7 @@ export function AdminDevicePanel({ title, activeNode, readOnly = false }: AdminD
             style={{ background: 'var(--gradient-accent)' }}
             className="rounded-md px-4 py-2 text-sm font-semibold text-white transition hover:brightness-95 disabled:opacity-60"
           >
-            {linkDevice.isPending ? 'Assigning…' : 'Assign'}
+            {linkDevice.isPending ? 'Assigning�' : 'Assign'}
           </button>
         </DialogFooter>
       </Dialog>
@@ -242,7 +242,7 @@ export function AdminDevicePanel({ title, activeNode, readOnly = false }: AdminD
             style={{ background: 'var(--gradient-accent)' }}
             className="rounded-md px-4 py-2 text-sm font-semibold text-white transition hover:brightness-95 disabled:opacity-60"
           >
-            {claimDevice.isPending ? 'Claiming…' : 'Claim'}
+            {claimDevice.isPending ? 'Claiming�' : 'Claim'}
           </button>
         </DialogFooter>
       </Dialog>

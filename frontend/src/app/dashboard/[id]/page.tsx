@@ -4,16 +4,13 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Layers, Maximize2, Pencil, Plus, Save, ScrollText } from 'lucide-react';
 import type { Layout } from 'react-grid-layout';
-import { ApiError } from '@/lib/api-client';
-import { useCreateDashboard, useDashboard, useSaveDashboard } from '@/hooks/useDashboards';
-import { usePermissions } from '@/hooks/useCurrentUser';
-import { toastError, toastSuccess } from '@/lib/toast';
-import { DashboardCanvas } from '@/dashboards/DashboardCanvas';
-import { AddWidgetPanel, type NewWidgetInput } from '@/dashboards/AddWidgetPanel';
-import { BulkAddPanel } from '@/dashboards/BulkAddPanel';
-import { TimeWindowPicker, TimeWindowProvider } from '@/dashboards/TimeWindowPicker';
-import { Tooltip } from '@/components/ui/Tooltip';
-import { Input } from '@/components/ui/Input';
+import { ApiError } from '@/lib';
+import { useCreateDashboard, useDashboard, useSaveDashboard } from '@/hooks';
+import { usePermissions } from '@/hooks';
+import { toastError, toastSuccess } from '@/lib';
+import { DashboardCanvas, AddWidgetPanel, type NewWidgetInput, BulkAddPanel, TimeWindowPicker, TimeWindowProvider } from '@/components';
+import { Tooltip } from '@/components';
+import { Input } from '@/components';
 import type {
   Dashboard,
   DashboardLayoutMode,
@@ -49,13 +46,18 @@ export default function DashboardDetailPage() {
   const [loadedFrom, setLoadedFrom] = useState<Dashboard | null>(null);
 
   useEffect(() => {
-    if (dashboardQuery.data && dashboardQuery.data.id !== loadedFrom?.id) {
+    if (!dashboardQuery.data) return;
+    // Seeding the editable fields is keyed on the dashboard id so a refetch doesn't clobber
+    // edits in progress. `loadedFrom` is refreshed on every fetch regardless: it carries the
+    // non-editable fields (visibility, customer access) that each save sends back unchanged,
+    // and holding a stale copy would write yesterday's sharing settings on the next save.
+    if (dashboardQuery.data.id !== loadedFrom?.id) {
       setTitle(dashboardQuery.data.title);
       setTimeWindow(dashboardQuery.data.timeWindow ?? null);
       setLayoutMode(dashboardQuery.data.layoutMode ?? 'SCROLL');
       setStaged(toStaged(dashboardQuery.data.widgets ?? []));
-      setLoadedFrom(dashboardQuery.data);
     }
+    setLoadedFrom(dashboardQuery.data);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dashboardQuery.data]);
 

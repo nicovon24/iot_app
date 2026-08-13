@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { useCustomers, useDeleteCustomer, usePatchCustomer } from '@/hooks/useCustomers';
-import { usePermissions } from '@/hooks/useCurrentUser';
-import { EntityListWidget } from '@/widgets/entity/EntityListWidget';
-import { ConfirmDialog } from '@/widgets/forms/ConfirmDialog';
-import { toastError } from '@/lib/toast';
+import { useCustomers, useDeleteCustomer, usePatchCustomer } from '@/hooks';
+import { usePermissions } from '@/hooks';
+import { EntityListWidget } from '@/widgets';
+import { ConfirmDialog } from '@/widgets';
+import { toastError } from '@\/lib';
 import type { EntityRef } from '@/types';
 
 export default function ClientsPage() {

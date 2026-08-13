@@ -16,5 +16,8 @@
     "skipLibCheck": true,
     "strict": true,
     "strictNullChecks": true
-  }
+  },
+  // The server is src/ only. Without this, tsc also pulls in scripts/ (standalone tsx tools that
+  // are not part of the build) and fails on them for sitting outside rootDir.
+  "include": ["src/**/*"]
 }

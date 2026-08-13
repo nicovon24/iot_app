@@ -2,8 +2,8 @@
 
 import { motion } from 'framer-motion';
 import { AlertTriangle } from 'lucide-react';
-import { Dialog, DialogBody } from '@/components/ui/Dialog';
-import { ApiError } from '@/lib/api-client';
+import { Dialog, DialogBody } from '@/components';
+import { ApiError } from '@\/lib';
 
 export interface ConfirmDialogProps {
   isOpen: boolean;

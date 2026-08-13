@@ -10,15 +10,15 @@ import {
   TableRow,
 } from '@heroui/react';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
-import { TableRowsSkeleton } from '@/components/feedback/Skeleton';
-import { useCreateAsset, useDeleteAsset } from '@/hooks/useCreateAsset';
-import { usePatchAsset } from '@/hooks/usePatchAsset';
-import { useCustomerChildren, useAssetChildren, useInvalidateHierarchyChildren } from '@/hooks/useHierarchyChildren';
-import { ConfirmDialog } from '@/widgets/forms/ConfirmDialog';
-import { EditEntityDialog } from '@/widgets/forms/EditEntityDialog';
-import { Dialog, DialogHeader, DialogTitle, DialogCloseButton, DialogBody, DialogFooter } from '@/components/ui/Dialog';
-import { Tooltip } from '@/components/ui/Tooltip';
-import { toastError, toastSuccess } from '@/lib/toast';
+import { TableRowsSkeleton } from '@/components';
+import { useCreateAsset, useDeleteAsset } from '@/hooks';
+import { usePatchAsset } from '@/hooks';
+import { useCustomerChildren, useAssetChildren, useInvalidateHierarchyChildren } from '@/hooks';
+import { ConfirmDialog } from '@/widgets';
+import { EditEntityDialog } from '@/widgets';
+import { Dialog, DialogHeader, DialogTitle, DialogCloseButton, DialogBody, DialogFooter } from '@/components';
+import { Tooltip } from '@/components';
+import { toastError, toastSuccess } from '@\/lib';
 import type { EntityRef } from '@/types';
 
 const TABLE_CLASSNAMES = {
@@ -30,10 +30,10 @@ const TABLE_CLASSNAMES = {
 };
 
 export interface AdminAssetPanelProps {
-  /** Also doubles as the Asset's `type` on creation (e.g. "Site") — one level, one profile. */
+  /** Also doubles as the Asset's `type` on creation (e.g. "Site") � one level, one profile. */
   title: string;
   customerId?: string;
-  /** Undefined until the previous hierarchy level has a selection — the column then stays empty. */
+  /** Undefined until the previous hierarchy level has a selection � the column then stays empty. */
   parentId?: string;
   parentType: 'CUSTOMER' | 'ASSET';
   levelIndex: number;
@@ -246,7 +246,7 @@ export function AdminAssetPanel({
             onClick={submitCreate}
             className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90 disabled:opacity-60"
           >
-            {createAsset.isPending ? 'Creating…' : 'Create'}
+            {createAsset.isPending ? 'Creating�' : 'Create'}
           </button>
         </DialogFooter>
       </Dialog>

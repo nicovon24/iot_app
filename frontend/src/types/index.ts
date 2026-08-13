@@ -3,3 +3,7 @@ export * from './telemetry';
 export * from './attributes';
 export * from './alarm';
 export * from './dashboard';
+export * from './customer';
+export * from './asset';
+export * from './user';
+export * from './format';

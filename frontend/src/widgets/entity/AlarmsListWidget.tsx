@@ -2,7 +2,7 @@
 
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@heroui/react';
 import { BellOff } from 'lucide-react';
-import { TableRowsSkeleton } from '@/components/feedback/Skeleton';
+import { TableRowsSkeleton } from '@/components';
 import type { Alarm, AlarmSeverity } from '@/types';
 
 export interface AlarmsListWidgetProps {
