@@ -9,6 +9,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { TOOLTIP_STYLE, formatTime, formatValue } from './chart-shared';
 
 export interface LineChartPoint {
   ts: number;
@@ -23,17 +24,18 @@ export interface LineChartWidgetProps {
   /** Tailwind height class. Defaults to the fixed height used on the entity-detail page;
    * dashboard cells pass `h-full` so the chart fills whatever the grid cell is sized to. */
   heightClassName?: string;
+  /** 'step' holds each value until the next reading — the honest shape for discrete/state
+   * series, where a smoothed curve would invent values that never occurred. */
+  interpolation?: 'linear' | 'step';
 }
 
-function formatTime(ts: number) {
-  return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-}
-
-function formatValue(value: number) {
-  return String(Number(value.toFixed(2)));
-}
-
-export function LineChartWidget({ data, dataKey, title, heightClassName = 'h-64' }: LineChartWidgetProps) {
+export function LineChartWidget({
+  data,
+  dataKey,
+  title,
+  heightClassName = 'h-64',
+  interpolation,
+}: LineChartWidgetProps) {
   if (data.length === 0) {
     return (
       <div className={`glass-card flex ${heightClassName} items-center justify-center`}>
@@ -59,15 +61,10 @@ export function LineChartWidget({ data, dataKey, title, heightClassName = 'h-64'
           <RechartsTooltip
             labelFormatter={(label) => formatTime(Number(label))}
             formatter={(value) => formatValue(Number(value))}
-            contentStyle={{
-              background: 'var(--color-surface-card)',
-              border: '1px solid var(--color-border)',
-              borderRadius: 8,
-              fontSize: 12,
-            }}
+            contentStyle={TOOLTIP_STYLE}
           />
           <Line
-            type="monotone"
+            type={interpolation === 'step' ? 'stepAfter' : 'monotone'}
             dataKey="value"
             name={dataKey}
             stroke="var(--color-accent)"

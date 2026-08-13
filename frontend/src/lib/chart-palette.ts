@@ -35,3 +35,53 @@ export const MAX_SERIES = SERIES_COLORS.length;
 export function seriesColor(index: number): string {
   return SERIES_COLORS[index] ?? SERIES_COLORS[SERIES_COLORS.length - 1];
 }
+
+/**
+ * Sequential scale for magnitude — heatmap cells, density maps, anything where the question is
+ * "how much" rather than "which one".
+ *
+ * A separate concern from SERIES_COLORS: a categorical palette answers identity, and using it
+ * for magnitude would imply that orange and green are different *kinds* of value rather than
+ * different *amounts*.
+ *
+ * This is the YlOrRd ramp (ColorBrewer), the conventional "heat" scale. Lightness falls
+ * monotonically from step to step, which is what makes the order survive grayscale printing
+ * and every CVD type — hue alone never carries the ranking.
+ *
+ * Seven discrete steps rather than a continuous gradient: nobody can map a continuous color
+ * back to a value without a legend, and discrete bins make the legend honest.
+ */
+export const HEAT_COLORS = [
+  '#ffeda0', // coldest
+  '#fed976',
+  '#feb24c',
+  '#fd8d3c',
+  '#fc4e2a',
+  '#e31a1c',
+  '#b10026', // hottest
+] as const;
+
+/**
+ * Cells with no data at all. Distinct from the coldest step so "zero" and "never reported" are
+ * never confused — spotting gaps is half of what a heatmap is for.
+ *
+ * A translucent white rather than `--color-border`: it has to sit a step above the card in both
+ * themes, and the border token is nearly invisible against the dark surface, which made a sparse
+ * grid look like a handful of stray dots floating in an empty panel.
+ */
+export const HEAT_EMPTY = 'rgba(148, 163, 184, 0.14)';
+
+/**
+ * Bins `value` into a HEAT_COLORS step, given the range it sits in.
+ *
+ * `undefined` (no reading) returns HEAT_EMPTY rather than the coldest step. A flat range
+ * (min === max, every value identical) pins to the middle step: there's no variation to show,
+ * and painting everything "hottest" would overstate it.
+ */
+export function heatColor(value: number | undefined, min: number, max: number): string {
+  if (value === undefined || !Number.isFinite(value)) return HEAT_EMPTY;
+  if (max <= min) return HEAT_COLORS[Math.floor(HEAT_COLORS.length / 2)];
+  const ratio = Math.min(1, Math.max(0, (value - min) / (max - min)));
+  const index = Math.min(HEAT_COLORS.length - 1, Math.floor(ratio * HEAT_COLORS.length));
+  return HEAT_COLORS[index];
+}

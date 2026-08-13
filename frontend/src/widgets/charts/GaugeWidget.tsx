@@ -2,6 +2,8 @@
 
 import { formatTelemetryValue } from '@/lib/format';
 
+export type GaugeStyle = 'DIAL' | 'THERMOMETER' | 'RADIAL';
+
 export interface GaugeWidgetProps {
   label: string;
   value?: number;
@@ -9,6 +11,9 @@ export interface GaugeWidgetProps {
   max: number;
   unit?: string;
   ts?: number;
+  /** How the same value is drawn. A rendering choice, not a different measurement — see the
+   * `style` field on the gauge's config schema. */
+  style?: GaugeStyle;
 }
 
 /**
@@ -36,13 +41,11 @@ function arcPath(fromDeg: number, toDeg: number, radius: number) {
   return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArc} 1 ${end.x} ${end.y}`;
 }
 
-export function GaugeWidget({ label, value, min, max, unit, ts }: GaugeWidgetProps) {
+export function GaugeWidget({ label, value, min, max, unit, ts, style = 'DIAL' }: GaugeWidgetProps) {
   const hasValue = value !== undefined && Number.isFinite(value);
-  // Clamp so an out-of-range reading pins the needle at an end instead of spinning past the
-  // dial, which would read as a smaller value than it is.
+  // Clamp so an out-of-range reading pins at an end instead of running past the scale, which
+  // would read as a smaller value than it is.
   const ratio = hasValue && max > min ? Math.min(1, Math.max(0, (value - min) / (max - min))) : 0;
-  const needleAngle = START_ANGLE + SWEEP * ratio;
-  const needle = polar(needleAngle, RADIUS - 8);
 
   return (
     <div className="glass-card flex h-full flex-col items-center justify-center gap-1 p-4">
@@ -50,7 +53,41 @@ export function GaugeWidget({ label, value, min, max, unit, ts }: GaugeWidgetPro
         {label}
       </span>
 
-      <svg viewBox="0 0 100 78" className="min-h-0 w-full flex-1" role="img" aria-label={`${label}: ${value ?? 'no data'}`}>
+      {style === 'THERMOMETER' ? (
+        <Thermometer label={label} value={value} min={min} max={max} ratio={ratio} hasValue={hasValue} />
+      ) : style === 'RADIAL' ? (
+        <RadialBar label={label} value={value} ratio={ratio} hasValue={hasValue} />
+      ) : (
+        <Dial label={label} value={value} min={min} max={max} ratio={ratio} hasValue={hasValue} />
+      )}
+
+      <div className="flex shrink-0 flex-col items-center">
+        <span className="text-2xl font-semibold text-heading">
+          {hasValue ? (formatTelemetryValue(String(value)) ?? value) : '—'}
+          {hasValue && unit ? <span className="ml-1 text-base font-normal text-body">{unit}</span> : null}
+        </span>
+        <span className="text-xs text-faint">{ts ? new Date(ts).toLocaleTimeString() : 'Waiting for data…'}</span>
+      </div>
+    </div>
+  );
+}
+
+interface StyleProps {
+  label: string;
+  value?: number;
+  min: number;
+  max: number;
+  ratio: number;
+  hasValue: boolean;
+}
+
+/** The original 240° instrument dial with a needle. */
+function Dial({ label, value, min, max, ratio, hasValue }: StyleProps) {
+  const needleAngle = START_ANGLE + SWEEP * ratio;
+  const needle = polar(needleAngle, RADIUS - 8);
+
+  return (
+    <svg viewBox="0 0 100 78" className="min-h-0 w-full flex-1" role="img" aria-label={`${label}: ${value ?? 'no data'}`}>
         <path
           d={arcPath(START_ANGLE, START_ANGLE + SWEEP, RADIUS)}
           fill="none"
@@ -93,15 +130,73 @@ export function GaugeWidget({ label, value, min, max, unit, ts }: GaugeWidgetPro
         >
           {max}
         </text>
-      </svg>
+    </svg>
+  );
+}
 
-      <div className="flex shrink-0 flex-col items-center">
-        <span className="text-2xl font-semibold text-heading">
-          {hasValue ? (formatTelemetryValue(String(value)) ?? value) : '—'}
-          {hasValue && unit ? <span className="ml-1 text-base font-normal text-body">{unit}</span> : null}
-        </span>
-        <span className="text-xs text-faint">{ts ? new Date(ts).toLocaleTimeString() : 'Waiting for data…'}</span>
-      </div>
-    </div>
+/**
+ * A bulb-and-column thermometer.
+ *
+ * Worth having alongside the dial because a vertical column is the culturally loaded shape for
+ * temperature — people read "hot" off it without consulting the scale, which a needle at 2
+ * o'clock doesn't give you.
+ */
+function Thermometer({ label, value, min, max, ratio, hasValue }: StyleProps) {
+  const TOP = 8;
+  const BOTTOM = 62;
+  const height = (BOTTOM - TOP) * ratio;
+
+  return (
+    <svg viewBox="0 0 60 84" className="min-h-0 w-full flex-1" role="img" aria-label={`${label}: ${value ?? 'no data'}`}>
+      {/* Track and bulb are one continuous cavity, drawn as two shapes with matching fills. */}
+      <rect x={24} y={TOP} width={12} height={BOTTOM - TOP} rx={6} fill="var(--color-border)" />
+      <circle cx={30} cy={70} r={11} fill="var(--color-border)" />
+      {hasValue && (
+        <>
+          {/* Column grows upward from the bulb, so it's anchored at the bottom. */}
+          <rect x={24} y={BOTTOM - height} width={12} height={height} rx={6} fill="var(--color-accent)" />
+          <circle cx={30} cy={70} r={9} fill="var(--color-accent)" />
+        </>
+      )}
+      <text x={44} y={TOP + 4} fontSize={6} fill="var(--color-faint)" textAnchor="start">
+        {max}
+      </text>
+      <text x={44} y={BOTTOM} fontSize={6} fill="var(--color-faint)" textAnchor="start">
+        {min}
+      </text>
+    </svg>
+  );
+}
+
+/**
+ * A closed ring that fills clockwise from the top.
+ *
+ * The compact style: no needle, no scale labels, so it stays legible at tile size where the
+ * dial's markings would be unreadable anyway.
+ */
+function RadialBar({ label, value, ratio, hasValue }: Omit<StyleProps, 'min' | 'max'>) {
+  const RING_RADIUS = 34;
+  const circumference = 2 * Math.PI * RING_RADIUS;
+
+  return (
+    <svg viewBox="0 0 100 84" className="min-h-0 w-full flex-1" role="img" aria-label={`${label}: ${value ?? 'no data'}`}>
+      <g transform="rotate(-90 50 42)">
+        <circle cx={50} cy={42} r={RING_RADIUS} fill="none" stroke="var(--color-border)" strokeWidth={9} />
+        {hasValue && ratio > 0 && (
+          <circle
+            cx={50}
+            cy={42}
+            r={RING_RADIUS}
+            fill="none"
+            stroke="var(--color-accent)"
+            strokeWidth={9}
+            strokeLinecap="round"
+            // Dash array as a fill fraction: one dash the length of the filled arc, then a gap
+            // covering the rest of the circle.
+            strokeDasharray={`${circumference * ratio} ${circumference}`}
+          />
+        )}
+      </g>
+    </svg>
   );
 }

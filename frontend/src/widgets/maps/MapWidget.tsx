@@ -1,11 +1,11 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer } from 'react-leaflet';
-import { useTelemetryLatest } from '@/hooks/useEntityTelemetry';
-import { useEntityAlarms } from '@/hooks/useEntityAlarms';
-import { entityDetailsHref } from '@/dashboards/widget-actions';
+import { useTelemetryLatest } from '@/hooks/entities/useEntityTelemetry';
+import { useEntityAlarms } from '@/hooks/entities/useEntityAlarms';
+import { entityDetailsHref } from '@/dashboards/widget-config/widget-actions';
 import { EntityMapMarker } from './EntityMapMarker';
 import { MapAutoResize } from './MapAutoResize';
 import { MapStyleToggle } from './MapStyleToggle';

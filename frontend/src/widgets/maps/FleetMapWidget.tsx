@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
@@ -9,10 +9,10 @@ import { useQueries } from '@tanstack/react-query';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { apiClient } from '@/lib/api-client';
-import { useEntities } from '@/hooks/useEntities';
-import { useTelemetryKeys, useTelemetryLatest } from '@/hooks/useEntityTelemetry';
-import { useEntityAlarms } from '@/hooks/useEntityAlarms';
-import { entityDetailsHref } from '@/dashboards/widget-actions';
+import { useEntities } from '@/hooks/entities/useEntities';
+import { useTelemetryKeys, useTelemetryLatest } from '@/hooks/entities/useEntityTelemetry';
+import { useEntityAlarms } from '@/hooks/entities/useEntityAlarms';
+import { entityDetailsHref } from '@/dashboards/widget-config/widget-actions';
 import { EntityMapMarker } from './EntityMapMarker';
 import { MapAutoResize } from './MapAutoResize';
 import { MapStyleToggle } from './MapStyleToggle';

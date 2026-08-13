@@ -45,30 +45,55 @@ export function EntityMapMarker({
   return (
     <Marker position={[lat, lng]} icon={buildIcon(hasActiveAlarm)}>
       <Popup>
-        <div className="flex min-w-[200px] flex-col gap-2">
-          <p className="font-semibold text-heading">{name}</p>
-          <div className="map-popup-scroll flex max-h-48 flex-col gap-1 overflow-y-auto">
+        <div className="flex w-[232px] flex-col gap-3">
+          <div className="flex items-center gap-2 pr-4">
+            {/* The dot repeats the marker's own alarm colour, so the popup is visibly tied to
+              * the pin that opened it when several are close together. */}
+            <span
+              aria-hidden
+              className="h-2 w-2 shrink-0 rounded-full"
+              style={{ background: hasActiveAlarm ? ALARM_COLOR : OK_COLOR }}
+            />
+            <p className="truncate text-sm font-semibold text-heading" title={name}>
+              {name}
+            </p>
+          </div>
+
+          <div className="map-popup-scroll -mx-1 flex max-h-48 flex-col overflow-y-auto px-1">
             {entries.length === 0 ? (
               <p className="text-xs text-muted">No telemetry yet</p>
             ) : (
               entries.map(([key, value]) => (
-                <div key={key} className="flex justify-between gap-3 text-xs">
-                  <span className="text-muted">{key}</span>
-                  <span className="font-medium text-body">{formatTelemetryValue(value.value)}</span>
+                <div
+                  key={key}
+                  className="flex items-baseline justify-between gap-3 border-b border-border/60 py-1.5 text-xs last:border-b-0"
+                >
+                  <span className="truncate text-muted" title={key}>
+                    {key}
+                  </span>
+                  {/* Tabular figures so the values form a straight column instead of jittering
+                    * with each digit's width. */}
+                  <span className="shrink-0 font-medium tabular-nums text-heading">
+                    {formatTelemetryValue(value.value)}
+                  </span>
                 </div>
               ))
             )}
           </div>
-          <p className="text-xs text-faint">
-            {lastReportTs ? `Last report: ${new Date(lastReportTs).toLocaleString()}` : 'No data yet'}
-          </p>
-          <button
-            type="button"
-            onClick={() => router.push(detailsHref)}
-            className="mt-1 cursor-pointer rounded-md bg-navy-950 px-2 py-1 text-xs font-medium text-white transition-opacity hover:opacity-90"
-          >
-            Details
-          </button>
+
+          <div className="flex flex-col gap-2 border-t border-border pt-2.5">
+            <p className="text-[11px] text-faint">
+              {lastReportTs ? `Last report ${new Date(lastReportTs).toLocaleString()}` : 'No data yet'}
+            </p>
+            <button
+              type="button"
+              onClick={() => router.push(detailsHref)}
+              style={{ background: 'var(--gradient-accent)' }}
+              className="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+            >
+              Details
+            </button>
+          </div>
         </div>
       </Popup>
     </Marker>

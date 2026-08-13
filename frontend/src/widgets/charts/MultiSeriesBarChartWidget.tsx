@@ -2,10 +2,10 @@
 
 import { useMemo } from 'react';
 import {
+  Bar,
+  BarChart,
   CartesianGrid,
   Legend,
-  Line,
-  LineChart,
   ResponsiveContainer,
   Tooltip as RechartsTooltip,
   XAxis,
@@ -14,27 +14,21 @@ import {
 import { seriesColor } from '@/lib/chart-palette';
 import { TOOLTIP_STYLE, formatTime, formatValue, mergeByTimestamp, type ChartSeries } from './chart-shared';
 
-export type { ChartSeries };
-
-export interface MultiSeriesLineChartWidgetProps {
+export interface MultiSeriesBarChartWidgetProps {
   series: ChartSeries[];
-  /** Entities that exist but aren't plotted, so the chart can say so instead of pretending
-   * it shows the whole fleet. */
   omittedCount?: number;
   isLoading?: boolean;
   title?: string;
-  /** 'step' holds each value until the next reading — the honest shape for discrete/state
-   * series, where a smoothed curve would invent values that never occurred. */
-  interpolation?: 'linear' | 'step';
 }
 
-export function MultiSeriesLineChartWidget({
+/** Grouped bars, one group per timestamp bucket and one bar per entity — the fleet counterpart
+ * of BarChartWidget, sharing the merge and formatting rules of the line charts. */
+export function MultiSeriesBarChartWidget({
   series,
   omittedCount = 0,
   isLoading,
   title,
-  interpolation,
-}: MultiSeriesLineChartWidgetProps) {
+}: MultiSeriesBarChartWidgetProps) {
   const data = useMemo(() => mergeByTimestamp(series), [series]);
   const nameById = useMemo(() => Object.fromEntries(series.map((s) => [s.id, s.name])), [series]);
 
@@ -64,7 +58,7 @@ export function MultiSeriesLineChartWidget({
       )}
       <div className="min-h-0 flex-1">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
+          <BarChart data={data} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
             <XAxis dataKey="ts" tickFormatter={formatTime} stroke="var(--color-faint)" fontSize={12} />
             <YAxis stroke="var(--color-faint)" fontSize={12} tickFormatter={formatValue} />
@@ -72,29 +66,20 @@ export function MultiSeriesLineChartWidget({
               labelFormatter={(label) => formatTime(Number(label))}
               formatter={(value, key) => [formatValue(Number(value)), nameById[String(key)] ?? String(key)]}
               contentStyle={TOOLTIP_STYLE}
+              cursor={{ fill: 'var(--color-surface)' }}
             />
-            {/* A legend is mandatory past one series so identity never rests on hue alone.
-             * Its text stays in the muted ink token rather than taking the series color. */}
+            {/* Same rule as the line chart: past one series, identity never rests on hue alone. */}
             {series.length > 1 && (
               <Legend
                 formatter={(key) => <span className="text-xs text-muted">{nameById[String(key)] ?? String(key)}</span>}
-                iconType="plainline"
-                iconSize={14}
+                iconType="square"
+                iconSize={12}
               />
             )}
             {series.map((s, i) => (
-              <Line
-                key={s.id}
-                type={interpolation === 'step' ? 'stepAfter' : 'monotone'}
-                dataKey={s.id}
-                name={s.name}
-                stroke={seriesColor(i)}
-                strokeWidth={2}
-                dot={false}
-                connectNulls={false}
-              />
+              <Bar key={s.id} dataKey={s.id} name={s.name} fill={seriesColor(i)} radius={[2, 2, 0, 0]} />
             ))}
-          </LineChart>
+          </BarChart>
         </ResponsiveContainer>
       </div>
     </div>
