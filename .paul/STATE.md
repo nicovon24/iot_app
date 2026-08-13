@@ -11,7 +11,7 @@ about: "iot-app"
 See: .paul/PROJECT.md (updated 2026-07-30)
 
 **Core value:** Industrial operators can view live and historical telemetry/attributes/alarms for any entity, on a frontend far more flexible than ThingsBoard's native UI, without ThingsBoard credentials ever reaching the browser.
-**Current focus:** Version 2 — Phase 8, 9.1, 9.2 complete and unified 2026-08-05. **Phase 10 (dashboard builder) is now code-complete 2026-08-05** — all 3 plans (10-01 backend, 10-02 frontend base, 10-03 bulk-add) applied same session. Backend verified live via curl; frontend only verified via `tsc`/`next build`/dev-server route checks (no browser tool this session) — **a real browser click-through is the top outstanding item**. Phase 11 (testing harness) discussed but not yet scheduled.
+**Current focus:** Version 2 — Phase 8, 9.1, 9.2 complete and unified 2026-08-05. **Phase 10 (dashboard builder) is now code-complete 2026-08-05** — all 3 plans (10-01 backend, 10-02 frontend base, 10-03 bulk-add) applied same session. Backend verified live via curl; frontend only verified via `tsc`/`next build`/dev-server route checks (no browser tool this session) — **a real browser click-through is the top outstanding item**. Phase 11 (testing harness) discussed but not yet scheduled. Phase 12 (telemetry unit system + new widget types) added to the roadmap 2026-08-12 — discussed and designed in a Claude Code session, scheduled to run after Phase 11.
 
 ## Current Position
 
@@ -19,8 +19,8 @@ Milestone: Version 2 (v2.0) — In progress. Version 1 (v1.0) complete (see belo
 Phase: 10 (Dashboard builder) — 10-01..10-03 **code-complete**, applied 2026-08-05, not yet unified/browser-verified. Phase 9.1/9.2 — Complete, unified 2026-08-05.
 Plan: **10-04 created 2026-08-05, awaiting approval.** Prior: 10-01 (Prisma schema + widget registry + `dashboards` module), 10-02 (frontend canvas + one-by-one Add-widget panel + dynamic Sidebar selector), 10-03 (bulk-add + shared row-packing) — all applied, see each plan's SUMMARY.md.
 Status: PLAN created, ready for APPLY. **Two open risks carried into it** (see Blockers/Concerns): Phase 10 has still never been click-tested in a browser, and a large chat-driven pass (Addendum 3) is uncommitted with no SUMMARY.
-Last activity: 2026-08-05 — Created `.paul/phases/10-dashboard-builder/10-04-PLAN.md`
-Next action: Review and approve 10-04, then run `/paul:apply .paul/phases/10-dashboard-builder/10-04-PLAN.md`. Its blocking human-verify checkpoint is deliberately the vehicle for finally closing Phase 10's owed browser verification.
+Last activity: 2026-08-12 — Added Phase 12 (telemetry unit system + new widget types) to the roadmap, with a full 5-sub-phase design already discussed/approved in a Claude Code session, recorded in `.paul/phases/12-units-and-widgets/CONTEXT.md`. Prior: 2026-08-05 — Created `.paul/phases/10-dashboard-builder/10-04-PLAN.md`
+Next action: Review and approve 10-04, then run `/paul:apply .paul/phases/10-dashboard-builder/10-04-PLAN.md`. Its blocking human-verify checkpoint is deliberately the vehicle for finally closing Phase 10's owed browser verification. Phase 12 is queued behind Phase 11 (testing) — no immediate action needed on it until Phase 11 is scheduled.
 
 Progress:
 - Milestone: [███████░░░] ~70%
@@ -201,6 +201,9 @@ PLAN ──▶ APPLY ──▶ UNIFY
 | Multi-series charts cap at **8 entities** and say so ("Showing 8 of N") rather than cycling colors | Addendum 3 (chat-driven) | `frontend/src/lib/chart-palette.ts` holds 8 validated slots checked against the app's real composited surface (~#1a2436); a 9th series would have to invent or reuse a hue, breaking colorblind separation. Do not change the hexes or their **order** without re-running the validator |
 | Dashboard widget content is `pointer-events-none` in edit mode; the whole widget is the drag surface, with `draggableCancel` limited to widget chrome | Addendum 3 (chat-driven, bug fix) | Replaced a `draggableHandle` restricted to a 24px hover-only grip. A Leaflet map paints panes up to z-index 1000 and swallows the pointer, so selector-based exemptions could never make map widgets draggable. Widget click actions (10-04) therefore only fire in **view** mode — do not relax this rule to make them work while editing |
 | Grid uses `compactType={null}` + `preventCollision` | Addendum 3 (chat-driven) | RGL's default vertical compaction floated widgets upward on their own whenever one above them moved. Trade-off accepted: deleting a widget now leaves its gap |
+| Added Phase 12: Telemetry unit system + new widget types | Phase 10 (current) | Extends milestone scope — user asked "qué otros widgets puedo crear" after Phase 10's widget-gallery categorization work, which led into a units discussion. Scheduled to run after Phase 11 (testing) |
+| Phase 12's unit conversion (if ever built) happens frontend-side, not backend — stored unit is the catalog **symbol** (`'°C'`), not an id, so every already-saved `DashboardWidget.config` stays valid with zero migration | Phase 12 (design) | Diverges from `.paul/rules/api.md:9` ("conversion at read time in the API"), deliberately — that requires the `telemetry_definitions`/`unit_conversions` catalog (4 Postgres tables) marked V2 in `.paul/ARCHITECTURE.md`, which nothing currently populates |
+| Phase 12 explicitly excludes per-user unit preferences and an iframe/embed widget | Phase 12 (design) | No settings infra exists yet (no Prisma model, no `/settings` route) and preferences have no current requester — the catalog module needs no consumer to exist, so this is additive later, not deferred debt. Iframe dropped for clickjacking/exfiltration risk on dashboards shared via `DashboardCustomerAccess`, no concrete use case yet |
 
 ### Deferred Issues
 

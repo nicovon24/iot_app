@@ -44,6 +44,7 @@ Phase 8 (Admin hierarchy management panel) complete 2026-08-04, first V2 phase s
 | 9.2 | Roles enforcement & user management | 3 | Complete | 2026-08-05 |
 | 10 | User-editable dashboards (builder) | 3 applied + 3 planned (10-04/05/06) | 10-01..03 code-complete, browser verification pending; 10-04 planned | 2026-08-05 |
 | 11 | Testing harness — backend + frontend (whole app) | TBD | Discussed (CONTEXT.md), **not scheduled** (see Recommendation in its CONTEXT.md) | — |
+| 12 | Telemetry unit system + new widget types | TBD | Not started | — |
 
 ## Phase Details
 
@@ -360,6 +361,24 @@ aliases each change a different persisted shape:
 table below is now **stale** — a `gauge` and a `value-cards` widget were both built in the same
 chat-driven pass, along with configurable table columns (`dataKeys`), a dynamic `entityScope: 'ALL'`
 binding, and a widget context menu/edit flow. None of it has a SUMMARY yet.
+
+### Phase 12: Telemetry unit system + new widget types
+
+**Goal:** Every widget that renders a telemetry value can carry a real unit (catalog-backed, not free text limited to 5 of 17 types), rendered through one shared formatter instead of two duplicated ones — plus five new widgets (progress-bar gauge style, stacked bar, sparkline tile, a multi-key comparison chart, and a static label/text widget).
+**Depends on:** Phase 10 (extends `backend/src/dashboards/widget-registry.ts`, `frontend/src/dashboards/renderer/`, `frontend/src/dashboards/widget-config/`)
+**Reason:** User-requested, discussed interactively 2026-08-12 (dashboard widget-gallery categorization work led into "what other widgets can I add" and then into units). Plan explored via two Explore agents + a Plan agent, decisions locked via `AskUserQuestion` before planning.
+
+**Scope (see plan content below — this phase runs after Phase 11 testing harness, per explicit user sequencing):**
+- Unit catalog as a frontend-only code module (`frontend/src/lib/units.ts`) — no DB tables, no per-tenant catalog; stores the display **symbol** (`'°C'`), not an id, so every already-saved `DashboardWidget.config` stays valid with zero migration
+- `unit`/`decimals` promoted from a per-type field (5 of 17 widgets) to the shared `presentation` fragment in `backend/src/dashboards/widget-registry.ts` — all 17 types accept it
+- One formatter (`frontend/src/lib/format.ts`), replacing the two duplicates (`formatTelemetryValue` and `chart-shared.ts`'s `formatValue`)
+- Catalog-backed unit picker in the Add-widget config panel, with a free-text "Custom…" escape hatch and key-name auto-suggestion
+- Two widgets added as config flags, not new types: progress-bar (`gauge.style: 'BAR'`), stacked bar (`bar-chart.stacked`)
+- Three genuinely new widget types: sparkline tile (as a `value-tile.sparkline` flag per plan pushback — cheaper than a full new type), a multi-key comparison chart (dual-axis, grouped by resolved unit), and a static label/text widget (no datasource, plain text, no markdown dependency)
+- **Explicitly out of scope:** per-user/per-category unit preferences (no Prisma model, no settings UI — the catalog module needs no consumer to exist yet, additive later), unit conversion (`factor`/`offset`, would ride along with preferences when built), and an iframe/embed widget (clickjacking/exfiltration risk on customer-shared dashboards, no concrete use case yet)
+
+**Plans:**
+- [ ] 12-01: TBD — to be broken into concrete plan(s) at `/paul:plan` time. Full phased design (5 sub-phases: catalog+formatter, config-panel picker, cheap widget flags, multi-key units + comparison chart, label widget) recorded in the approved Claude Code plan file from the 2026-08-12 session — bring that content into the formal PLAN.md at planning time rather than re-discussing from scratch.
 
 ## Version 2 (Not yet planned)
 
