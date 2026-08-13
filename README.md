@@ -35,8 +35,34 @@ iot_app/
 
 ## Getting started
 
-Not runnable yet — backend and frontend are scaffolding-only. See `.paul/rules/infrastructure.md` once set up.
+Requires PostgreSQL and Redis running locally (or reachable), plus a ThingsBoard instance (cloud or Docker).
+
+```bash
+# backend
+cd backend
+cp .env.example .env   # fill in THINGSBOARD_URL/USERNAME/PASSWORD, REDIS_URL, DATABASE_URL
+npm install             # runs `prisma generate` via postinstall
+npx prisma migrate deploy
+npm run start:dev       # http://localhost:3001
+
+# frontend (separate terminal)
+cd frontend
+npm install
+npm run dev              # http://localhost:3000
+```
+
+Frontend env vars (optional, default to `localhost:3001`): `NEXT_PUBLIC_API_BASE_URL`, `NEXT_PUBLIC_WS_BASE_URL`.
 
 ## Repo commands
 
-TODO: repo commands go here once defined.
+| Command | Where | What |
+| :--- | :--- | :--- |
+| `npm run start:dev` | `backend/` | Dev server, watch mode |
+| `npm run build` | `backend/` | Compile (`nest build`) |
+| `npm run start:prod` | `backend/` | Run compiled build (`dist/main.js`) |
+| `npx prisma migrate deploy` | `backend/` | Apply DB migrations |
+| `npx prisma studio` | `backend/` | Browse the DB |
+| `npm run dev` | `frontend/` | Dev server (Next.js, Turbopack) |
+| `npm run build` | `frontend/` | Production build |
+| `npm run start` | `frontend/` | Run production build |
+| `npx tsc --noEmit` | either | Type-check without emitting |
