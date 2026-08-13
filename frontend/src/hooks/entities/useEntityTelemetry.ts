@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
+import { intervalForWindow } from '@/dashboards/use-widget-datasource';
 import type { EntityType, TelemetryLatest, TelemetryValue } from '@/types';
 
 const ONE_HOUR_MS = 3600_000;
@@ -39,7 +40,6 @@ export function useTelemetryHistory(
   options?: UseTelemetryHistoryOptions,
 ) {
   const agg = options?.agg ?? 'AVG';
-  const interval = options?.interval ?? 300_000;
   const optEndTs = options?.endTs;
   const optStartTs = options?.startTs;
 
@@ -53,6 +53,10 @@ export function useTelemetryHistory(
     return { startTs: start, endTs: end };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, optStartTs, optEndTs]);
+
+  // Scaled to the window unless the caller pins it: a fixed five-minute bucket over a long
+  // range asks ThingsBoard for tens of thousands of buckets and is rejected with a 400.
+  const interval = options?.interval ?? intervalForWindow({ startTs, endTs });
 
   return useQuery({
     queryKey: ['telemetry', 'history', id, key, startTs, endTs, agg, interval],
