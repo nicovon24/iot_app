@@ -16,8 +16,8 @@ import {
   Wifi,
   Zap,
 } from 'lucide-react';
-import { login } from '@/lib/auth';
-import { ApiError } from '@/lib/api-client';
+import { login } from '@\/lib';
+import { ApiError } from '@\/lib';
 
 const PANEL_ICONS = [Activity, Wifi, Lock, Satellite, Laptop, RefreshCw, Brain, Zap, Cpu];
 

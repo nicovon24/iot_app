@@ -1,14 +1,14 @@
-﻿'use client';
+'use client';
 
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
-import { useCreateUser } from '@/hooks/users/useUsers';
-import { Dialog, DialogHeader, DialogTitle, DialogCloseButton, DialogBody, DialogFooter } from '@/components/ui/Dialog';
-import { Select } from '@/components/ui/Select';
-import { ApiError } from '@/lib/api-client';
-import { toastSuccess } from '@/lib/toast';
+import { useCreateUser } from '@/hooks';
+import { Dialog, DialogHeader, DialogTitle, DialogCloseButton, DialogBody, DialogFooter } from '@/components';
+import { Select } from '@/components';
+import { ApiError } from '@\/lib';
+import { toastSuccess } from '@\/lib';
 
 const schema = z.object({
   email: z.string().email('Enter a valid email'),
@@ -140,7 +140,7 @@ export function CreateUserDialog({ isOpen, onClose, customerId }: CreateUserDial
           disabled={createUser.isPending}
           className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90 disabled:opacity-60"
         >
-          {createUser.isPending ? 'Creating…' : 'Create User'}
+          {createUser.isPending ? 'Creating�' : 'Create User'}
         </motion.button>
       </DialogFooter>
       </form>

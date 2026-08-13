@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from '@\/lib';
 import type { EntityRef } from '@/types';
-import type { CreateAssetRequest } from '@/types/asset';
+import type { CreateAssetRequest } from '@/types';
 
 export function useCreateAsset() {
   const queryClient = useQueryClient();

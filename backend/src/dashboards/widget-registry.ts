@@ -26,6 +26,8 @@ export const WIDGET_TYPES = [
   'map',
   'value-map',
   'movement-heatmap',
+  'label',
+  'multi-key-chart',
 ] as const;
 
 export type WidgetType = (typeof WIDGET_TYPES)[number];
@@ -49,6 +51,12 @@ const entityTypeEnum = z.enum(['DEVICE', 'ASSET']);
 const presentation = {
   title: z.string().trim().min(1).max(120).optional(),
   action: z.enum(['NONE', 'ENTITY_DETAILS']).optional(),
+  // Property of the measure, not of the rendering — declared here (not per-type) so every widget
+  // type carries it, not just the 5 that used to have their own `unit` field. Free-text rather
+  // than an enum: the catalog lives frontend-side (frontend/src/lib/units.ts), and saved configs
+  // already hold arbitrary strings from before that catalog existed.
+  unit: z.string().trim().min(1).max(24).optional(),
+  decimals: z.number().int().min(0).max(6).optional(),
 };
 
 /**
@@ -120,12 +128,12 @@ function optionalDatasource<T extends z.ZodRawShape>(extra: T = {} as T) {
   });
 }
 
-/** The scale a dial-style widget (gauge, battery, rssi) is read against. Optional throughout:
- * without them each widget falls back to a range that suits its own unit. */
+/** The min/max a dial-style widget (gauge, battery, rssi) is read against. Optional: without
+ * them each widget falls back to a range that suits its own unit. `unit` itself now lives on
+ * `presentation`, spread into every schema — not duplicated here. */
 const scale = {
   min: z.number().optional(),
   max: z.number().optional(),
-  unit: z.string().optional(),
 };
 
 const MIN_BELOW_MAX = {
@@ -143,17 +151,26 @@ const interpolation = z.enum(['linear', 'step']).optional();
 
 const aggregation = z.enum(['AVG', 'MIN', 'MAX', 'SUM', 'COUNT']).optional();
 
+/** Per-key unit map for multi-key widgets — a single `presentation.unit` string can't describe
+ * `[temperature, pressure]`. Keys are telemetry key names, values resolve the same way
+ * presentation.unit does (frontend/src/lib/units.ts's resolveUnit). */
+const perKeyUnits = z.record(z.string().min(1), z.string().trim().min(1).max(24)).optional();
+
 const alarmSeverity = z.enum(['CRITICAL', 'MAJOR', 'MINOR', 'WARNING', 'INDETERMINATE']);
 const alarmStatus = z.enum(['ACTIVE_UNACK', 'ACTIVE_ACK', 'CLEARED_UNACK', 'CLEARED_ACK']);
 
 const widgetConfigSchemas: Record<WidgetType, z.ZodTypeAny> = {
   'value-tile': datasource({
     telemetryKey: z.string().min(1),
+    // SINGLE scope only — enforced in the frontend config panel, not here. ALL-scope would fire
+    // up to MAX_TILES history requests per render just for the trend line.
+    sparkline: z.boolean().optional(),
   }),
   // One card per entity, each showing the same set of measures — so `telemetryKeys` is a list,
   // not the single `telemetryKey` the tile/chart/gauge take.
   'value-cards': datasource({
     telemetryKeys: z.array(z.string().min(1)).min(1),
+    units: perKeyUnits,
   }),
   // min/max bound the dial's sweep. Optional: without them the gauge falls back to a range
   // derived from the value itself, which is still readable, just not calibrated.
@@ -162,7 +179,7 @@ const widgetConfigSchemas: Record<WidgetType, z.ZodTypeAny> = {
   // in its range", and splitting them would triple the gallery for one config field.
   gauge: datasource({
     telemetryKey: z.string().min(1),
-    style: z.enum(['DIAL', 'THERMOMETER', 'RADIAL']).optional(),
+    style: z.enum(['DIAL', 'THERMOMETER', 'RADIAL', 'BAR']).optional(),
     ...scale,
   }).refine(minBelowMax, MIN_BELOW_MAX),
   // Same config shape as the gauge — the difference is entirely in how it's drawn. Separate
@@ -186,6 +203,9 @@ const widgetConfigSchemas: Record<WidgetType, z.ZodTypeAny> = {
     telemetryKey: z.string().min(1),
     agg: aggregation,
     interval: z.number().int().positive().optional(),
+    // Grouped vs stacked bars, meaningful only under entityScope: 'ALL' — enforced in the
+    // frontend config panel, not here (the schema doesn't know about scope-conditional fields).
+    stacked: z.boolean().optional(),
   }),
   'attributes-table': datasource({
     scope: z.enum(['CLIENT_SCOPE', 'SERVER_SCOPE', 'SHARED_SCOPE']).optional(),
@@ -197,6 +217,7 @@ const widgetConfigSchemas: Record<WidgetType, z.ZodTypeAny> = {
     telemetryKeys: z.array(z.string().min(1)).min(1),
     agg: aggregation,
     interval: z.number().int().positive().optional(),
+    units: perKeyUnits,
   }),
   // No `interval`: the grid is one cell per day, so the bucket size is the widget's premise
   // rather than something to configure. `agg` still matters — a day's "value" can be its
@@ -204,7 +225,6 @@ const widgetConfigSchemas: Record<WidgetType, z.ZodTypeAny> = {
   'calendar-heatmap': datasource({
     telemetryKey: z.string().min(1),
     agg: aggregation,
-    unit: z.string().optional(),
   }),
   /**
    * Correlation between two quantities. Either axis takes a telemetry key or the literal
@@ -242,13 +262,32 @@ const widgetConfigSchemas: Record<WidgetType, z.ZodTypeAny> = {
   // by and this is just the fleet map.
   'value-map': datasource({
     telemetryKey: z.string().min(1),
-    unit: z.string().optional(),
   }),
   // No telemetryKey: the heat is built from position density (where the sensor spent time),
   // and the positions come from the latitude/longitude series every mapped entity already
   // reports. Weighting the heat by another key would answer a different question than the one
   // this widget exists for.
   'movement-heatmap': datasource(),
+  // Deliberately its own bare object, not datasource()/optionalDatasource() — a label widget
+  // structurally cannot use an entity, so accepting entityId/entityScope here would be a
+  // confusing dead field rather than a rejected one.
+  label: z.object({
+    text: z.string().trim().min(1).max(2000),
+    align: z.enum(['left', 'center']).optional(),
+    ...presentation,
+  }),
+  // Two or more telemetry keys on one chart for a single entity — the real gap none of the
+  // other chart types close (line-chart's entityScope: 'ALL' plots one entity PER series, never
+  // two different KEYS together). No entityScope: 'ALL' support — N entities x M keys isn't a
+  // chart anyone can read, enforced via supportsAllScope: false in the frontend registry since
+  // datasource() itself has no notion of "scope not allowed for this type".
+  'multi-key-chart': datasource({
+    telemetryKeys: z.array(z.string().min(1)).min(2).max(8),
+    units: perKeyUnits,
+    agg: aggregation,
+    interval: z.number().int().positive().optional(),
+    interpolation,
+  }),
 };
 
 /**

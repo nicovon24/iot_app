@@ -1,11 +1,11 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEntities } from '@/hooks/entities/useEntities';
-import { usePatchDevice } from '@/hooks/assets/usePatchDevice';
-import { usePermissions } from '@/hooks/users/useCurrentUser';
-import { EntityListWidget } from '@/widgets/entity/EntityListWidget';
-import { toastError } from '@/lib/toast';
+import { useEntities } from '@/hooks';
+import { usePatchDevice } from '@/hooks';
+import { usePermissions } from '@/hooks';
+import { EntityListWidget } from '@/widgets';
+import { toastError } from '@\/lib';
 
 export default function DevicesPage() {
   const router = useRouter();

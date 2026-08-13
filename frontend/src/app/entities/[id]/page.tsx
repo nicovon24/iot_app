@@ -1,21 +1,24 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { Tab, Tabs } from '@heroui/react';
-import { apiClient } from '@/lib/api-client';
-import { useEntityAttributes } from '@/hooks/entities/useEntityAttributes';
-import { useTelemetryKeys, useTelemetryHistory, useTelemetryLatest } from '@/hooks/entities/useEntityTelemetry';
-import { useLiveTelemetry } from '@/hooks/entities/useLiveTelemetry';
-import { useEntityAlarms } from '@/hooks/entities/useEntityAlarms';
-import { useLiveAlarms } from '@/hooks/entities/useLiveAlarms';
-import { AttributesTableWidget } from '@/widgets/entity/AttributesTableWidget';
-import { ValueTileWidget } from '@/widgets/charts/ValueTileWidget';
-import { LineChartWidget } from '@/widgets/charts/LineChartWidget';
-import { AlarmsListWidget } from '@/widgets/entity/AlarmsListWidget';
-import { MapWidget } from '@/widgets/maps/MapWidget';
+import { apiClient } from '@/lib';
+import { useEntityAttributes } from '@/hooks';
+import { useTelemetryKeys, useTelemetryHistory, useTelemetryLatest } from '@/hooks';
+import { useLiveTelemetry } from '@/hooks';
+import { useEntityAlarms } from '@/hooks';
+import { useLiveAlarms } from '@/hooks';
+import { AttributesTableWidget } from '@/widgets';
+import { ValueTileWidget } from '@/widgets';
+import { LineChartWidget } from '@/widgets';
+import { AlarmsListWidget } from '@/widgets';
 import type { Alarm, EntityRef, EntityType } from '@/types';
+
+// Leaflet touches `window` at module scope, so this widget must never load during SSR.
+const MapWidget = dynamic(() => import('@/widgets/maps').then((m) => m.MapWidget), { ssr: false });
 
 const ENTITY_TYPES: EntityType[] = ['DEVICE', 'ASSET', 'CUSTOMER'];
 const LIST_PATH: Record<'DEVICE' | 'ASSET', string> = { DEVICE: 'devices', ASSET: 'assets' };

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
@@ -8,16 +8,16 @@ import L from 'leaflet';
 import { useQueries } from '@tanstack/react-query';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
-import { apiClient } from '@/lib/api-client';
-import { useEntities } from '@/hooks/entities/useEntities';
-import { useTelemetryKeys, useTelemetryLatest } from '@/hooks/entities/useEntityTelemetry';
-import { useEntityAlarms } from '@/hooks/entities/useEntityAlarms';
-import { entityDetailsHref } from '@/dashboards/widget-config/widget-actions';
+import { apiClient } from '@\/lib';
+import { useEntities } from '@/hooks';
+import { useTelemetryKeys, useTelemetryLatest } from '@/hooks';
+import { useEntityAlarms } from '@/hooks';
+import { entityDetailsHref } from '@/components';
 import { EntityMapMarker } from './EntityMapMarker';
 import { MapAutoResize } from './MapAutoResize';
 import { MapStyleToggle } from './MapStyleToggle';
-import { MAP_TILE_CONFIG, type MapTileStyle } from '@/lib/map-tiles';
-import { MapSkeleton } from '@/components/feedback/Skeleton';
+import { MAP_TILE_CONFIG, type MapTileStyle } from '@\/lib';
+import { MapSkeleton } from '@/components';
 import type { EntityRef, TelemetryLatest } from '@/types';
 
 const DEFAULT_CENTER: [number, number] = [20, 0];
@@ -152,7 +152,7 @@ function FleetMarker({
 export interface FleetMapWidgetProps {
   /** Tailwind height class for the map container. Defaults to /map's own fixed height. */
   heightClassName?: string;
-  /** Which entity kind to plot. Defaults to devices — /map's existing behaviour. */
+  /** Which entity kind to plot. Defaults to devices � /map's existing behaviour. */
   entityType?: FleetEntityType;
   /** Poll interval for the entity list, so entities registered later appear on their own. */
   refetchInterval?: number;

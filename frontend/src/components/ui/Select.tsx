@@ -7,6 +7,10 @@ import { Check, ChevronDown } from 'lucide-react';
 export interface SelectOption {
   value: string;
   label: string;
+  /** When any option in the list has a group, options are rendered under a Radix Select.Group
+   * per distinct group value (first-seen order), with ungrouped options rendered after, outside
+   * any group. Zero visual difference for lists where no option sets this. */
+  group?: string;
 }
 
 export interface SelectProps {
@@ -26,7 +30,26 @@ export interface SelectProps {
  * Trigger shares its border/background/focus tokens with `Input` 1:1 — the two are meant to
  * be visually interchangeable wherever a form mixes text fields and dropdowns.
  */
+function renderOption(option: SelectOption) {
+  return (
+    <RadixSelect.Item
+      key={option.value}
+      value={option.value}
+      className="flex cursor-pointer items-center justify-between rounded px-3 py-2 text-sm text-body outline-none data-[highlighted]:bg-surface data-[highlighted]:text-heading"
+    >
+      <RadixSelect.ItemText>{option.label}</RadixSelect.ItemText>
+      <RadixSelect.ItemIndicator>
+        <Check size={14} className="text-accent" />
+      </RadixSelect.ItemIndicator>
+    </RadixSelect.Item>
+  );
+}
+
 export function Select({ label, placeholder, value, onChange, options, disabled, compact = false }: SelectProps) {
+  const hasGroups = options.some((o) => o.group);
+  const groupNames = hasGroups ? Array.from(new Set(options.filter((o) => o.group).map((o) => o.group!))) : [];
+  const ungrouped = hasGroups ? options.filter((o) => !o.group) : [];
+
   return (
     <RadixSelect.Root value={value} onValueChange={onChange} disabled={disabled}>
       <div className="flex flex-col gap-1.5">
@@ -55,19 +78,20 @@ export function Select({ label, placeholder, value, onChange, options, disabled,
               <AnimatePresence>
                 {options.length === 0 ? (
                   <div className="px-3 py-2 text-sm text-muted">No options</div>
+                ) : hasGroups ? (
+                  <>
+                    {groupNames.map((groupName) => (
+                      <RadixSelect.Group key={groupName}>
+                        <RadixSelect.Label className="px-3 pt-2 pb-1 text-xs font-semibold uppercase tracking-wider text-muted">
+                          {groupName}
+                        </RadixSelect.Label>
+                        {options.filter((o) => o.group === groupName).map(renderOption)}
+                      </RadixSelect.Group>
+                    ))}
+                    {ungrouped.map(renderOption)}
+                  </>
                 ) : (
-                  options.map((option) => (
-                    <RadixSelect.Item
-                      key={option.value}
-                      value={option.value}
-                      className="flex cursor-pointer items-center justify-between rounded px-3 py-2 text-sm text-body outline-none data-[highlighted]:bg-surface data-[highlighted]:text-heading"
-                    >
-                      <RadixSelect.ItemText>{option.label}</RadixSelect.ItemText>
-                      <RadixSelect.ItemIndicator>
-                        <Check size={14} className="text-accent" />
-                      </RadixSelect.ItemIndicator>
-                    </RadixSelect.Item>
-                  ))
+                  options.map(renderOption)
                 )}
               </AnimatePresence>
             </RadixSelect.Viewport>

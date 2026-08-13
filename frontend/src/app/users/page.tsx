@@ -1,19 +1,19 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import { Plus, LogIn } from 'lucide-react';
-import { useCustomers } from '@/hooks/users/useCustomers';
-import { useUsers, useDeleteUser } from '@/hooks/users/useUsers';
-import { useImpersonate } from '@/hooks/users/useImpersonation';
-import { usePermissions } from '@/hooks/users/useCurrentUser';
-import { Select } from '@/components/ui/Select';
-import { Tooltip } from '@/components/ui/Tooltip';
-import { EntityListWidget } from '@/widgets/entity/EntityListWidget';
-import { CreateUserDialog } from '@/widgets/forms/CreateUserDialog';
-import { ConfirmDialog } from '@/widgets/forms/ConfirmDialog';
+import { useCustomers } from '@/hooks';
+import { useUsers, useDeleteUser } from '@/hooks';
+import { useImpersonate } from '@/hooks';
+import { usePermissions } from '@/hooks';
+import { Select } from '@/components';
+import { Tooltip } from '@/components';
+import { EntityListWidget } from '@/widgets';
+import { CreateUserDialog } from '@/widgets';
+import { ConfirmDialog } from '@/widgets';
 import type { EntityRef } from '@/types';
 
-/** Sentinel Select value for "All Clients" (undefined `customerId`) — Radix Select needs a real string value. */
+/** Sentinel Select value for "All Clients" (undefined `customerId`) � Radix Select needs a real string value. */
 const ALL_CLIENTS = '__all__';
 
 function roleOf(user: EntityRef): string {
@@ -58,7 +58,7 @@ export default function UsersPage() {
       <div className="w-full max-w-xs shrink-0">
         <Select
           label="Client"
-          placeholder={isCustomersLoading ? 'Loading…' : undefined}
+          placeholder={isCustomersLoading ? 'Loading�' : undefined}
           value={customerId ?? ALL_CLIENTS}
           onChange={(value) => setCustomerId(value === ALL_CLIENTS ? undefined : value)}
           options={[
@@ -68,7 +68,7 @@ export default function UsersPage() {
         />
       </div>
 
-      {/* The same component Devices and Assets render, not a lookalike — so a future change to
+      {/* The same component Devices and Assets render, not a lookalike � so a future change to
         * row styling lands on all three at once. Users differ only in what the generic slots
         * are fed: role instead of entity type, client name instead of customer, and an extra
         * "Login as" action alongside Delete. */}

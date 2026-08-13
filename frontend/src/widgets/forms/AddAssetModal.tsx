@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useMemo, useState } from 'react';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Select, SelectItem } from '@heroui/react';
@@ -6,11 +6,11 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useCustomers } from '@/hooks/users/useCustomers';
-import { useCustomerHierarchy } from '@/hooks/users/useCustomerHierarchy';
-import { useEntities } from '@/hooks/entities/useEntities';
-import { useCreateAsset } from '@/hooks/assets/useCreateAsset';
-import { ApiError } from '@/lib/api-client';
+import { useCustomers } from '@/hooks';
+import { useCustomerHierarchy } from '@/hooks';
+import { useEntities } from '@/hooks';
+import { useCreateAsset } from '@/hooks';
+import { ApiError } from '@\/lib';
 
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -246,7 +246,7 @@ export function AddAssetModal({ isOpen, onClose }: AddAssetModalProps) {
             style={{ background: 'var(--gradient-accent)' }}
             className="rounded-md px-4 py-2 text-sm font-semibold text-white transition hover:brightness-95 disabled:opacity-60"
           >
-            {createAsset.isPending ? 'Creating…' : 'Create Asset'}
+            {createAsset.isPending ? 'Creating�' : 'Create Asset'}
           </motion.button>
         </ModalFooter>
         </form>

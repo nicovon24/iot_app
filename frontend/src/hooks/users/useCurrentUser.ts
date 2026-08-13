@@ -1,13 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api-client';
-import { getSessionToken } from '@/lib/session';
+import { apiClient } from '@\/lib';
+import { getSessionToken } from '@\/lib';
+import type { CurrentUser } from '@/types';
 
-export interface CurrentUser {
-  email: string;
-  authority: 'SYS_ADMIN' | 'TENANT_ADMIN' | 'CUSTOMER_USER';
-  appRole: 'ADMIN' | 'READER' | null;
-  customerId: string | null;
-}
+export type { CurrentUser } from '@/types';
 
 export function useCurrentUser() {
   return useQuery({

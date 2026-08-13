@@ -1,13 +1,16 @@
-﻿'use client';
+'use client';
 
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { Cpu, Box, AlertTriangle } from 'lucide-react';
-import { useEntities } from '@/hooks/entities/useEntities';
-import { useGlobalAlarms } from '@/hooks/entities/useEntityAlarms';
-import { CountTileWidget } from '@/widgets/charts/CountTileWidget';
-import { FleetMapWidget } from '@/widgets/maps/FleetMapWidget';
-import { EntityListWidget } from '@/widgets/entity/EntityListWidget';
-import { AlarmsListWidget } from '@/widgets/entity/AlarmsListWidget';
+import { useEntities } from '@/hooks';
+import { useGlobalAlarms } from '@/hooks';
+import { CountTileWidget } from '@/widgets';
+import { EntityListWidget } from '@/widgets';
+import { AlarmsListWidget } from '@/widgets';
+
+// Leaflet touches `window` at module scope, so this widget must never load during SSR.
+const FleetMapWidget = dynamic(() => import('@/widgets/maps').then((m) => m.FleetMapWidget), { ssr: false });
 
 export default function OverviewPage() {
   const router = useRouter();

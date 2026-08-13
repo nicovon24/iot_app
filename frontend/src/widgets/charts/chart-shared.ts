@@ -1,4 +1,5 @@
 import type { TelemetryValue } from '@/types';
+import { formatTelemetryValue } from '@\/lib';
 
 export interface ChartSeries {
   /** Stable dataKey — the entity id, not its name, so a rename doesn't orphan the series. */
@@ -11,9 +12,13 @@ export function formatTime(ts: number) {
   return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-export function formatValue(value: number) {
-  return String(Number(value.toFixed(2)));
-}
+/** Axis ticks stay unit-less — repeating a unit down every Y-axis tick is chartjunk and wastes
+ * plot width; the unit belongs on the axis label instead (see YAxis usage in each chart). */
+export const axisTick = (v: number) => formatTelemetryValue(v) ?? '';
+
+/** Tooltip values carry the unit — a hovered number is read out of the surrounding context, so
+ * repeating the unit there (unlike on every axis tick) is the useful place for it. */
+export const withUnit = (unit?: string) => (v: number | string) => formatTelemetryValue(v, { unit }) ?? '';
 
 /** Tooltip chrome, identical across every chart so they read as one system. */
 export const TOOLTIP_STYLE = {

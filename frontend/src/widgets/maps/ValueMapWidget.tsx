@@ -6,9 +6,9 @@ import L from 'leaflet';
 import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
 import { MapAutoResize } from './MapAutoResize';
 import { MapStyleToggle } from './MapStyleToggle';
-import { MAP_TILE_CONFIG, type MapTileStyle } from '@/lib/map-tiles';
-import { HEAT_COLORS, HEAT_EMPTY, heatColor } from '@/lib/chart-palette';
-import { formatTelemetryValue } from '@/lib/format';
+import { MAP_TILE_CONFIG, type MapTileStyle } from '@\/lib';
+import { HEAT_COLORS, HEAT_EMPTY, heatColor } from '@\/lib';
+import { formatTelemetryValue } from '@\/lib';
 
 export interface ValueMapEntry {
   id: string;

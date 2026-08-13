@@ -4,11 +4,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Home, LayoutDashboard, Lock, Pencil, Plus, Trash2, Users } from 'lucide-react';
 import { Spinner } from '@heroui/react';
-import { useDashboards, useDeleteDashboard } from '@/hooks/dashboards/useDashboards';
-import { usePermissions } from '@/hooks/users/useCurrentUser';
-import { Tooltip } from '@/components/ui/Tooltip';
-import { ConfirmDialog } from '@/widgets/forms/ConfirmDialog';
-import { toastError, toastSuccess } from '@/lib/toast';
+import { useDashboards, useDeleteDashboard } from '@/hooks';
+import { usePermissions } from '@/hooks';
+import { Tooltip } from '@/components';
+import { ConfirmDialog } from '@/widgets';
+import { toastError, toastSuccess } from '@\/lib';
 import type { Dashboard } from '@/types';
 
 /**

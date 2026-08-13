@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
-import { AppLayout } from "@/components/layout/AppLayout";
+import { AppLayout } from '@/components';
 
 const inter = Inter({
   variable: "--font-sans",

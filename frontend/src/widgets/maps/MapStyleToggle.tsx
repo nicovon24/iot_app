@@ -1,6 +1,6 @@
 'use client';
 
-import type { MapTileStyle } from '@/lib/map-tiles';
+import type { MapTileStyle } from '@\/lib';
 
 export interface MapStyleToggleProps {
   value: MapTileStyle;

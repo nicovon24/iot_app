@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
@@ -6,11 +6,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Plus, Trash2, ArrowUp, ArrowDown, GripVertical, Check } from 'lucide-react';
-import { useCreateCustomer } from '@/hooks/users/useCustomers';
-import { Dialog, DialogHeader, DialogCloseButton, DialogBody, DialogFooter } from '@/components/ui/Dialog';
-import { ApiError } from '@/lib/api-client';
-import { toastSuccess } from '@/lib/toast';
-import { DEFAULT_HIERARCHY_LEVEL_NAMES } from '@/lib/hierarchy-defaults';
+import { useCreateCustomer } from '@/hooks';
+import { Dialog, DialogHeader, DialogCloseButton, DialogBody, DialogFooter } from '@/components';
+import { ApiError } from '@\/lib';
+import { toastSuccess } from '@\/lib';
+import { DEFAULT_HIERARCHY_LEVEL_NAMES } from '@\/lib';
 
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -222,7 +222,7 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
                   transition={{ duration: 0.2 }}
                   className="flex flex-col gap-3"
                 >
-                  <p className="text-sm text-muted">Ordered hierarchy levels (e.g. Site → Area → Asset → Sensor).</p>
+                  <p className="text-sm text-muted">Ordered hierarchy levels (e.g. Site ? Area ? Asset ? Sensor).</p>
 
                   <div className="flex flex-col gap-2">
                     <AnimatePresence initial={false}>
@@ -375,7 +375,7 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
               disabled={createCustomer.isPending}
               className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90 disabled:opacity-60"
             >
-              {createCustomer.isPending ? 'Creating…' : 'Create Client'}
+              {createCustomer.isPending ? 'Creating�' : 'Create Client'}
             </motion.button>
           )}
       </DialogFooter>

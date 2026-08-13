@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from '@\/lib';
 import { useEntities } from '../entities/useEntities';
 import type { EntityRef } from '@/types';
-import type { CreateCustomerRequest } from '@/types/customer';
+import type { CreateCustomerRequest } from '@/types';
 
 export function useCustomers() {
   return useEntities('CUSTOMER');

@@ -1,7 +1,7 @@
 'use client';
 
-import { formatMaybeTimestamp, formatTelemetryValue } from '@/lib/format';
-import type { CellValue, ResolvedColumn } from '@/dashboards/use-widget-datasource';
+import { formatMaybeTimestamp, formatTelemetryValue } from '@\/lib';
+import type { CellValue, ResolvedColumn } from '@/components';
 
 export interface EntityDataTableRow {
   id: string;

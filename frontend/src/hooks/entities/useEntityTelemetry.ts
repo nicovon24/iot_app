@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api-client';
-import { intervalForWindow } from '@/dashboards/use-widget-datasource';
+import { apiClient } from '@\/lib';
+import { intervalForWindow } from '@/components';
 import type { EntityType, TelemetryLatest, TelemetryValue } from '@/types';
 
 const ONE_HOUR_MS = 3600_000;

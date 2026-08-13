@@ -4,16 +4,13 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Layers, Maximize2, Pencil, Plus, Save, ScrollText } from 'lucide-react';
 import type { Layout } from 'react-grid-layout';
-import { ApiError } from '@/lib/api-client';
-import { useCreateDashboard, useDashboard, useSaveDashboard } from '@/hooks/dashboards/useDashboards';
-import { usePermissions } from '@/hooks/users/useCurrentUser';
-import { toastError, toastSuccess } from '@/lib/toast';
-import { DashboardCanvas } from '@/dashboards/canvas/DashboardCanvas';
-import { AddWidgetPanel, type NewWidgetInput } from '@/dashboards/widget-config/AddWidgetPanel';
-import { BulkAddPanel } from '@/dashboards/widget-config/BulkAddPanel';
-import { TimeWindowPicker, TimeWindowProvider } from '@/dashboards/canvas/TimeWindowPicker';
-import { Tooltip } from '@/components/ui/Tooltip';
-import { Input } from '@/components/ui/Input';
+import { ApiError } from '@/lib';
+import { useCreateDashboard, useDashboard, useSaveDashboard } from '@/hooks';
+import { usePermissions } from '@/hooks';
+import { toastError, toastSuccess } from '@/lib';
+import { DashboardCanvas, AddWidgetPanel, type NewWidgetInput, BulkAddPanel, TimeWindowPicker, TimeWindowProvider } from '@/components';
+import { Tooltip } from '@/components';
+import { Input } from '@/components';
 import type {
   Dashboard,
   DashboardLayoutMode,

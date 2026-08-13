@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from '@\/lib';
 import type { Attribute, AttributeScope, AttributesByScope, EntityType } from '@/types';
 
 const SCOPES: AttributeScope[] = ['CLIENT_SCOPE', 'SERVER_SCOPE', 'SHARED_SCOPE'];

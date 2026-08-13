@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
@@ -8,9 +8,9 @@ import { ChevronDown, Menu, PanelLeftClose, PanelLeftOpen, PanelTopClose } from 
 import { Sidebar } from './Sidebar';
 import { AuthGate } from './AuthGate';
 import { Tooltip } from '../ui/Tooltip';
-import { NAV_ITEMS } from '@/lib/nav-items';
-import { getImpersonationMeta, type ImpersonationMeta } from '@/lib/session';
-import { endImpersonation } from '@/hooks/users/useImpersonation';
+import { NAV_ITEMS } from '@\/lib';
+import { getImpersonationMeta, type ImpersonationMeta } from '@\/lib';
+import { endImpersonation } from '@/hooks';
 
 const SIDEBAR_VISIBLE_STORAGE_KEY = 'iot_sidebar_visible';
 const HEADER_VISIBLE_STORAGE_KEY = 'iot_header_visible';
@@ -70,7 +70,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     });
   }
 
-  // /login renders its own minimal layout — no sidebar/header, and not gated by AuthGate
+  // /login renders its own minimal layout � no sidebar/header, and not gated by AuthGate
   // (a logged-out user must be able to reach this page without being redirected to itself).
   if (pathname === '/login') return <>{children}</>;
 
@@ -112,7 +112,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
           )}
           {/* Collapsing the header is what buys a dashboard its vertical space, so it animates
-            * height rather than unmounting — the widget grid below reflows smoothly instead of
+            * height rather than unmounting � the widget grid below reflows smoothly instead of
             * snapping 80px taller. */}
           <AnimatePresence initial={false}>
             {!headerVisible && (

@@ -1,6 +1,6 @@
 'use client';
 
-import { formatTelemetryValue } from '@/lib/format';
+import { formatTelemetryValue } from '@\/lib';
 import type { TelemetryValue } from '@/types';
 
 export interface TimeseriesTableWidgetProps {
@@ -10,6 +10,8 @@ export interface TimeseriesTableWidgetProps {
   byKey: Record<string, TelemetryValue[]>;
   isLoading?: boolean;
   title?: string;
+  /** Per-key unit, shown once in the column header — not repeated per cell/row. */
+  units?: Record<string, string>;
 }
 
 /**
@@ -34,7 +36,7 @@ function buildRows(keys: string[], byKey: Record<string, TelemetryValue[]>) {
     .map(([ts, values]) => ({ ts, values }));
 }
 
-export function TimeseriesTableWidget({ keys, byKey, isLoading, title }: TimeseriesTableWidgetProps) {
+export function TimeseriesTableWidget({ keys, byKey, isLoading, title, units }: TimeseriesTableWidgetProps) {
   const rows = buildRows(keys, byKey);
 
   if (isLoading && rows.length === 0) return <Centered text="Loading…" />;
@@ -54,7 +56,7 @@ export function TimeseriesTableWidget({ keys, byKey, isLoading, title }: Timeser
             <tr>
               <Th sticky>Timestamp</Th>
               {keys.map((key) => (
-                <Th key={key}>{key}</Th>
+                <Th key={key}>{units?.[key] ? `${key} (${units[key]})` : key}</Th>
               ))}
             </tr>
           </thead>

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from '@\/lib';
 import type { Alarm, AlarmSeverity, AlarmStatus, EntityType, PageData } from '@/types';
 
 export function useEntityAlarms(id: string, type: EntityType) {

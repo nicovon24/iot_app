@@ -1,12 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api-client';
-import type { EntityRef } from '@/types';
+import { apiClient } from '@\/lib';
+import type { EntityRef, PatchAssetRequest } from '@/types';
 
-export interface PatchAssetRequest {
-  name?: string;
-  type?: string;
-  label?: string;
-}
+export type { PatchAssetRequest } from '@/types';
 
 export function usePatchAsset() {
   const queryClient = useQueryClient();

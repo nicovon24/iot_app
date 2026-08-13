@@ -1,14 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api-client';
-import type { EntityRef, EntityType, PageData } from '@/types';
+import { apiClient } from '@\/lib';
+import type { EntityRef, EntityType, PageData, UseEntitiesParams, UseEntitiesOptions } from '@/types';
 
-export interface UseEntitiesParams {
-  page?: number;
-  pageSize?: number;
-  textSearch?: string;
-  sortProperty?: string;
-  sortOrder?: 'ASC' | 'DESC';
-}
+export type { UseEntitiesParams, UseEntitiesOptions } from '@/types';
 
 const ENTITY_LIST_PATH: Record<'DEVICE' | 'ASSET' | 'CUSTOMER', string> = {
   DEVICE: 'devices',
@@ -26,14 +20,6 @@ function buildQueryString(params?: UseEntitiesParams): string {
   if (params.sortOrder) search.set('sortOrder', params.sortOrder);
   const qs = search.toString();
   return qs ? `?${qs}` : '';
-}
-
-export interface UseEntitiesOptions {
-  /** Skip the request entirely — e.g. a widget bound to one entity has no use for the list. */
-  enabled?: boolean;
-  /** Poll interval in ms. Used by "all entities" widgets so a newly registered device shows
-   * up on its own, without the user reopening the dashboard. */
-  refetchInterval?: number;
 }
 
 // Options are deliberately a separate argument from `params`: `params` is part of the query

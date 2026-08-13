@@ -1,13 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api-client';
-import type { EntityRef } from '@/types';
+import { apiClient } from '@\/lib';
+import type { EntityRef, CreateUserRequest } from '@/types';
 
-export interface CreateUserRequest {
-  email: string;
-  password: string;
-  role: 'ADMIN' | 'READER';
-  customerId: string;
-}
+export type { CreateUserRequest } from '@/types';
 
 /** `customerId` undefined means "every Customer User in the tenant" — the page's default view. */
 export function useUsers(customerId: string | undefined) {

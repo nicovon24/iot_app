@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { createWsClient, type SubscribeTarget } from '@/lib/ws-client';
+import { createWsClient, type SubscribeTarget } from '@\/lib';
 import type { Alarm } from '@/types';
 
 export function useLiveAlarms(target: SubscribeTarget | undefined, onAlarm: (alarm: Alarm) => void) {
