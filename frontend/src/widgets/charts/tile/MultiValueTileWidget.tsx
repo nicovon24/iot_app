@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { formatTelemetryValue } from '@\/lib';
+import { formatTelemetryValue } from '@/lib';
 
 export interface MultiValueTileEntry {
   id: string;

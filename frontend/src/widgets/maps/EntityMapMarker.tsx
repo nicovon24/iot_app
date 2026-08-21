@@ -3,7 +3,7 @@
 import L from 'leaflet';
 import { Marker, Popup } from 'react-leaflet';
 import { useRouter } from 'next/navigation';
-import { formatTelemetryValue } from '@\/lib';
+import { formatTelemetryValue } from '@/lib';
 import type { TelemetryLatest } from '@/types';
 
 export interface EntityMapMarkerProps {

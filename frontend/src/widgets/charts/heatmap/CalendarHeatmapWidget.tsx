@@ -1,8 +1,8 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { HEAT_COLORS, HEAT_EMPTY, heatColor } from '@\/lib';
-import { formatTelemetryValue } from '@\/lib';
+import { HEAT_COLORS, HEAT_EMPTY, heatColor } from '@/lib';
+import { formatTelemetryValue } from '@/lib';
 
 export interface CalendarHeatmapPoint {
   /** Start-of-day epoch ms. */

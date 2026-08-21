@@ -8,7 +8,7 @@ import { useDashboards, useDeleteDashboard } from '@/hooks';
 import { usePermissions } from '@/hooks';
 import { Tooltip } from '@/components';
 import { ConfirmDialog } from '@/widgets';
-import { toastError, toastSuccess } from '@\/lib';
+import { toastError, toastSuccess } from '@/lib';
 import type { Dashboard } from '@/types';
 
 /**
@@ -153,7 +153,7 @@ export default function DashboardsPage() {
                             e.stopPropagation();
                             setPendingRemoval(dashboard);
                           }}
-                          className="flex h-7 w-7 items-center justify-center rounded text-muted transition-colors hover:bg-danger hover:text-white"
+                          className="flex h-7 w-7 items-center justify-center rounded text-muted transition-colors hover:bg-danger-strong hover:text-white"
                         >
                           <Trash2 size={13} />
                         </button>

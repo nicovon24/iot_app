@@ -7,8 +7,8 @@ import 'leaflet.heat';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { MapAutoResize } from './MapAutoResize';
 import { MapStyleToggle } from './MapStyleToggle';
-import { MAP_TILE_CONFIG, type MapTileStyle } from '@\/lib';
-import { HEAT_COLORS } from '@\/lib';
+import { MAP_TILE_CONFIG, type MapTileStyle } from '@/lib';
+import { HEAT_COLORS } from '@/lib';
 
 export interface HeatPoint {
   lat: number;

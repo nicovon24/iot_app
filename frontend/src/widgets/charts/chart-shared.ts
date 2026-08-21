@@ -1,5 +1,5 @@
 import type { TelemetryValue } from '@/types';
-import { formatTelemetryValue } from '@\/lib';
+import { formatTelemetryValue } from '@/lib';
 
 export interface ChartSeries {
   /** Stable dataKey — the entity id, not its name, so a rename doesn't orphan the series. */

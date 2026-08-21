@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { useCustomers } from '@/hooks';
 import { useCustomerHierarchy } from '@/hooks';
 import { usePermissions } from '@/hooks';
-import { DEFAULT_HIERARCHY_LEVELS } from '@\/lib';
+import { DEFAULT_HIERARCHY_LEVELS } from '@/lib';
 import { ClientWizard } from '@/widgets';
 import { AdminClientsColumn } from '@/widgets';
 import { AdminAssetPanel } from '@/widgets';
@@ -66,13 +66,13 @@ export default function AdminPage() {
     }
   };
 
-  // One column per hierarchy level except the last � the last level (e.g. "Sensor") isn't
+  // One column per hierarchy level except the last — the last level (e.g. "Sensor") isn't
   // an Asset column, it's where real Devices get linked, shown by AdminDevicePanel instead.
   const assetHierarchyLevels = hierarchyLevels.slice(0, -1);
   const deviceLevelName = hierarchyLevels.at(-1)?.name ?? 'Sensor';
 
   // A level's column only has a parentId (and therefore data) once the level before it
-  // has a selection � otherwise it renders empty.
+  // has a selection — otherwise it renders empty.
   const assetLevels = assetHierarchyLevels.map((level) => {
     const parent = level.levelIndex === 0 ? selectedCustomer : assetTrail[level.levelIndex - 1];
     return {
@@ -84,7 +84,7 @@ export default function AdminPage() {
   });
 
   // Total number of Miller columns on screen right now (Clients + one per Asset
-  // hierarchy level + the trailing Devices column) � drives the grid below so all
+  // hierarchy level + the trailing Devices column) — drives the grid below so all
   // columns share the available width evenly instead of a fixed-width horizontal
   // scroll that clips the last column off-screen.
   const totalColumns = 1 + assetLevels.length + 1;

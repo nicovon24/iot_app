@@ -1,6 +1,6 @@
 'use client';
 
-import { formatTelemetryValue } from '@\/lib';
+import { formatTelemetryValue } from '@/lib';
 import type { TelemetryValue } from '@/types';
 
 export interface TimeseriesTableWidgetProps {

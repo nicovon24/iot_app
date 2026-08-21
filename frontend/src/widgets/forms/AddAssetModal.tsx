@@ -10,7 +10,7 @@ import { useCustomers } from '@/hooks';
 import { useCustomerHierarchy } from '@/hooks';
 import { useEntities } from '@/hooks';
 import { useCreateAsset } from '@/hooks';
-import { ApiError } from '@\/lib';
+import { ApiError } from '@/lib';
 
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -246,7 +246,7 @@ export function AddAssetModal({ isOpen, onClose }: AddAssetModalProps) {
             style={{ background: 'var(--gradient-accent)' }}
             className="rounded-md px-4 py-2 text-sm font-semibold text-white transition hover:brightness-95 disabled:opacity-60"
           >
-            {createAsset.isPending ? 'Creating�' : 'Create Asset'}
+            {createAsset.isPending ? 'Creating…' : 'Create Asset'}
           </motion.button>
         </ModalFooter>
         </form>

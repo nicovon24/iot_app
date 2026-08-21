@@ -16,8 +16,8 @@ import {
   Wifi,
   Zap,
 } from 'lucide-react';
-import { login } from '@\/lib';
-import { ApiError } from '@\/lib';
+import { login } from '@/lib';
+import { ApiError } from '@/lib';
 
 const PANEL_ICONS = [Activity, Wifi, Lock, Satellite, Laptop, RefreshCw, Brain, Zap, Cpu];
 
@@ -76,7 +76,7 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoFocus
-                className="w-full rounded-md border border-border bg-white/5 px-3 py-2.5 text-sm text-heading placeholder:text-faint focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                className="w-full rounded-md border border-border-strong bg-white/5 px-3 py-2.5 text-sm text-heading placeholder:text-faint focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
               />
             </div>
 
@@ -92,7 +92,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full rounded-md border border-border bg-white/5 px-3 py-2.5 pr-10 text-sm text-heading placeholder:text-faint focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                  className="w-full rounded-md border border-border-strong bg-white/5 px-3 py-2.5 pr-10 text-sm text-heading placeholder:text-faint focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
                 />
                 <button
                   type="button"

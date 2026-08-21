@@ -9,7 +9,7 @@ import type { AlarmSeverity, AlarmStatus } from '@/types';
 const SEVERITIES: AlarmSeverity[] = ['CRITICAL', 'MAJOR', 'MINOR', 'WARNING', 'INDETERMINATE'];
 const STATUSES: AlarmStatus[] = ['ACTIVE_UNACK', 'ACTIVE_ACK', 'CLEARED_UNACK', 'CLEARED_ACK'];
 
-/** Sentinel value for "no filter" � the shared Select always needs a real string, same pattern
+/** Sentinel value for "no filter" — the shared Select always needs a real string, same pattern
  * as /users' ALL_CLIENTS and DatasourcePicker's scope options. */
 const ALL = '__all__';
 

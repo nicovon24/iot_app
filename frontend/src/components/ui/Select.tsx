@@ -55,7 +55,7 @@ export function Select({ label, placeholder, value, onChange, options, disabled,
       <div className="flex flex-col gap-1.5">
         {label && <span className="text-sm font-medium text-body">{label}</span>}
         <RadixSelect.Trigger
-          className={`flex items-center justify-between gap-2 rounded-md border border-border bg-surface text-heading outline-none transition-colors data-[placeholder]:text-muted data-[state=open]:border-accent disabled:cursor-not-allowed disabled:opacity-50 ${
+          className={`flex items-center justify-between gap-2 rounded-md border border-border-strong bg-surface text-heading outline-none transition-colors data-[placeholder]:text-muted data-[state=open]:border-accent disabled:cursor-not-allowed disabled:opacity-50 ${
             compact ? 'px-2 py-1.5 text-xs' : 'px-3 py-2 text-sm'
           }`}
         >

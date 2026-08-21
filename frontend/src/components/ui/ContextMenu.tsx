@@ -65,7 +65,7 @@ function MenuItem({ item }: { item: ContextMenuItem }) {
       onSelect={item.onSelect}
       className={`flex cursor-pointer items-center gap-2 rounded px-3 py-2 text-sm outline-none ${
         item.danger
-          ? 'text-danger data-[highlighted]:bg-danger data-[highlighted]:text-white'
+          ? 'text-danger data-[highlighted]:bg-danger-strong data-[highlighted]:text-white'
           : 'text-body data-[highlighted]:bg-surface data-[highlighted]:text-heading'
       }`}
     >

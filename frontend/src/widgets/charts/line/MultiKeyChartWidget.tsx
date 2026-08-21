@@ -10,8 +10,8 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { seriesColor } from '@\/lib';
-import type { AxisGroup } from '@\/lib';
+import { seriesColor } from '@/lib';
+import type { AxisGroup } from '@/lib';
 import { TOOLTIP_STYLE, axisTick, formatTime, withUnit, mergeByTimestamp, type ChartSeries } from '../chart-shared';
 
 export interface MultiKeyChartWidgetProps {

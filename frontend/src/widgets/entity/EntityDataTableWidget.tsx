@@ -1,6 +1,6 @@
 'use client';
 
-import { formatMaybeTimestamp, formatTelemetryValue } from '@\/lib';
+import { formatMaybeTimestamp, formatTelemetryValue } from '@/lib';
 import type { CellValue, ResolvedColumn } from '@/components';
 
 export interface EntityDataTableRow {

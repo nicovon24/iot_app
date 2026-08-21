@@ -5,7 +5,7 @@ import { useEntities } from '@/hooks';
 import { usePatchDevice } from '@/hooks';
 import { usePermissions } from '@/hooks';
 import { EntityListWidget } from '@/widgets';
-import { toastError } from '@\/lib';
+import { toastError } from '@/lib';
 
 export default function DevicesPage() {
   const router = useRouter();

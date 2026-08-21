@@ -1,6 +1,6 @@
 'use client';
 
-import { formatTelemetryValue } from '@\/lib';
+import { formatTelemetryValue } from '@/lib';
 
 export interface GaugeShellProps {
   label: string;

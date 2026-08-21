@@ -9,7 +9,7 @@ import type { DatasourceScope } from '../pickers';
 import type { WidgetAction } from '../widget-actions';
 import { packWidgets } from '../../canvas/layout-utils';
 import { WIDGET_REGISTRY, SCALE_TYPES, type WidgetCategory, type WidgetType } from '../widget-registry';
-import { suggestUnit } from '@\/lib';
+import { suggestUnit } from '@/lib';
 import { CategoryStep } from './CategoryStep';
 import { GalleryStep } from './GalleryStep';
 import { ConfigureStep } from './ConfigureStep';

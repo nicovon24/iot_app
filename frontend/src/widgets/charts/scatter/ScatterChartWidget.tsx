@@ -11,7 +11,7 @@ import {
   YAxis,
   ZAxis,
 } from 'recharts';
-import { seriesColor } from '@\/lib';
+import { seriesColor } from '@/lib';
 import { TOOLTIP_STYLE, axisTick, formatTime, withUnit } from '../chart-shared';
 
 export interface ScatterPoint {

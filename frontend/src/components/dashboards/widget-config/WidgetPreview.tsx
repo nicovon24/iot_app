@@ -3,7 +3,7 @@
 import { AlertTriangle, Flame, MapPin, MapPinned } from 'lucide-react';
 import { LabelWidget } from '@/widgets';
 import { MultiKeyChartWidget } from '@/widgets';
-import { groupKeysByUnit } from '@\/lib';
+import { groupKeysByUnit } from '@/lib';
 import { CalendarHeatmapWidget } from '@/widgets';
 import { ValueTileWidget } from '@/widgets';
 import { ValueCardsWidget } from '@/widgets';

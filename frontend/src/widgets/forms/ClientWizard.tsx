@@ -8,9 +8,9 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Plus, Trash2, ArrowUp, ArrowDown, GripVertical, Check } from 'lucide-react';
 import { useCreateCustomer } from '@/hooks';
 import { Dialog, DialogHeader, DialogCloseButton, DialogBody, DialogFooter } from '@/components';
-import { ApiError } from '@\/lib';
-import { toastSuccess } from '@\/lib';
-import { DEFAULT_HIERARCHY_LEVEL_NAMES } from '@\/lib';
+import { ApiError } from '@/lib';
+import { toastSuccess } from '@/lib';
+import { DEFAULT_HIERARCHY_LEVEL_NAMES } from '@/lib';
 
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -159,7 +159,7 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
                 {i < STEPS.length - 1 && (
                   <div className="relative mb-4 h-px flex-1 bg-border">
                     <motion.div
-                      className="absolute inset-y-0 left-0 bg-accent"
+                      className="absolute inset-y-0 left-0 bg-accent-strong"
                       initial={false}
                       animate={{ width: step > s.n ? '100%' : '0%' }}
                       transition={{ duration: 0.3 }}
@@ -364,7 +364,7 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
             <motion.button
               type="submit"
               whileTap={{ scale: 0.97 }}
-              className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90"
+              className="rounded-md bg-accent-strong px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90"
             >
               Next
             </motion.button>
@@ -373,9 +373,9 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
               type="submit"
               whileTap={{ scale: 0.97 }}
               disabled={createCustomer.isPending}
-              className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90 disabled:opacity-60"
+              className="rounded-md bg-accent-strong px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90 disabled:opacity-60"
             >
-              {createCustomer.isPending ? 'Creating�' : 'Create Client'}
+              {createCustomer.isPending ? 'Creating…' : 'Create Client'}
             </motion.button>
           )}
       </DialogFooter>

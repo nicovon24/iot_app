@@ -1,6 +1,6 @@
 'use client';
 
-import type { MapTileStyle } from '@\/lib';
+import type { MapTileStyle } from '@/lib';
 
 export interface MapStyleToggleProps {
   value: MapTileStyle;
@@ -19,7 +19,7 @@ export function MapStyleToggle({ value, onChange }: MapStyleToggleProps) {
         type="button"
         onClick={() => onChange('light')}
         className={`cursor-pointer px-2 py-1 text-xs font-medium transition-colors ${
-          value === 'light' ? 'bg-accent text-white' : 'text-body hover:bg-surface'
+          value === 'light' ? 'bg-accent-strong text-white' : 'text-body hover:bg-surface'
         }`}
       >
         Minimal
@@ -28,7 +28,7 @@ export function MapStyleToggle({ value, onChange }: MapStyleToggleProps) {
         type="button"
         onClick={() => onChange('color')}
         className={`cursor-pointer px-2 py-1 text-xs font-medium transition-colors ${
-          value === 'color' ? 'bg-accent text-white' : 'text-body hover:bg-surface'
+          value === 'color' ? 'bg-accent-strong text-white' : 'text-body hover:bg-surface'
         }`}
       >
         Streets

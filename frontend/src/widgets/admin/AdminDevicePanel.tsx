@@ -9,7 +9,7 @@ import { useEntities } from '@/hooks';
 import { Dialog, DialogHeader, DialogTitle, DialogCloseButton, DialogBody, DialogFooter } from '@/components';
 import { Select } from '@/components';
 import { TableRowsSkeleton } from '@/components';
-import { toastError, toastSuccess } from '@\/lib';
+import { toastError, toastSuccess } from '@/lib';
 
 export interface AdminDevicePanelProps {
   title: string;
@@ -45,7 +45,7 @@ export function AdminDevicePanel({ title, activeNode, readOnly = false }: AdminD
     () => (devicesQuery.data?.data ?? []).filter((d) => !linkedIds.has(d.id)),
     [devicesQuery.data, linkedIds],
   );
-  // Devices ThingsBoard has never assigned to a real Customer � a Customer User must
+  // Devices ThingsBoard has never assigned to a real Customer — a Customer User must
   // claim one of these into their own customer before it can be linked to an Asset.
   const unclaimedDevices = useMemo(
     () => (devicesQuery.data?.data ?? []).filter((d) => !d.customerId),
@@ -199,7 +199,7 @@ export function AdminDevicePanel({ title, activeNode, readOnly = false }: AdminD
             style={{ background: 'var(--gradient-accent)' }}
             className="rounded-md px-4 py-2 text-sm font-semibold text-white transition hover:brightness-95 disabled:opacity-60"
           >
-            {linkDevice.isPending ? 'Assigning�' : 'Assign'}
+            {linkDevice.isPending ? 'Assigning…' : 'Assign'}
           </button>
         </DialogFooter>
       </Dialog>
@@ -242,7 +242,7 @@ export function AdminDevicePanel({ title, activeNode, readOnly = false }: AdminD
             style={{ background: 'var(--gradient-accent)' }}
             className="rounded-md px-4 py-2 text-sm font-semibold text-white transition hover:brightness-95 disabled:opacity-60"
           >
-            {claimDevice.isPending ? 'Claiming�' : 'Claim'}
+            {claimDevice.isPending ? 'Claiming…' : 'Claim'}
           </button>
         </DialogFooter>
       </Dialog>

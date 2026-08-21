@@ -1,7 +1,7 @@
 'use client';
 
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
-import { seriesColor } from '@\/lib';
+import { seriesColor } from '@/lib';
 import { TOOLTIP_STYLE } from '../chart-shared';
 
 export interface DonutSlice {

@@ -131,7 +131,7 @@ export default function EntityDetailPage() {
                 value={selectedKey ?? ''}
                 onChange={(e) => setSelectedKey(e.target.value || undefined)}
                 disabled={keysQuery.isLoading || (keysQuery.data?.length ?? 0) === 0}
-                className="w-full rounded-md border border-border bg-white/5 px-3 py-2.5 text-sm text-heading focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-60"
+                className="w-full rounded-md border border-border-strong bg-white/5 px-3 py-2.5 text-sm text-heading focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-60"
               >
                 {(keysQuery.data ?? []).map((key) => (
                   <option key={key} value={key}>

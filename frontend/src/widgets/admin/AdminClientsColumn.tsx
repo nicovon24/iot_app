@@ -15,7 +15,7 @@ import { AdminBreadcrumbs } from './AdminBreadcrumbs';
 import { ConfirmDialog } from '@/widgets';
 import { TableRowsSkeleton } from '@/components';
 import { Tooltip } from '@/components';
-import { toastError, toastSuccess } from '@\/lib';
+import { toastError, toastSuccess } from '@/lib';
 import type { EntityRef } from '@/types';
 
 const TABLE_CLASSNAMES = {

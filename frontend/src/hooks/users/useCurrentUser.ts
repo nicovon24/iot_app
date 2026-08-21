@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '@\/lib';
-import { getSessionToken } from '@\/lib';
+import { apiClient } from '@/lib';
+import { getSessionToken } from '@/lib';
 import type { CurrentUser } from '@/types';
 
 export type { CurrentUser } from '@/types';

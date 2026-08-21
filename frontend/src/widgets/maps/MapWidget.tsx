@@ -9,7 +9,7 @@ import { entityDetailsHref } from '@/components';
 import { EntityMapMarker } from './EntityMapMarker';
 import { MapAutoResize } from './MapAutoResize';
 import { MapStyleToggle } from './MapStyleToggle';
-import { MAP_TILE_CONFIG, type MapTileStyle } from '@\/lib';
+import { MAP_TILE_CONFIG, type MapTileStyle } from '@/lib';
 import type { EntityType } from '@/types';
 
 export interface MapWidgetProps {

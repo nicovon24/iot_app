@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Dialog, DialogHeader, DialogTitle, DialogCloseButton, DialogBody, DialogFooter } from '@/components';
-import { ApiError } from '@\/lib';
+import { ApiError } from '@/lib';
 import type { EntityRef } from '@/types';
 
 export type EditableField = 'name' | 'label';

@@ -13,7 +13,7 @@ import { CreateUserDialog } from '@/widgets';
 import { ConfirmDialog } from '@/widgets';
 import type { EntityRef } from '@/types';
 
-/** Sentinel Select value for "All Clients" (undefined `customerId`) � Radix Select needs a real string value. */
+/** Sentinel Select value for "All Clients" (undefined `customerId`) — Radix Select needs a real string value. */
 const ALL_CLIENTS = '__all__';
 
 function roleOf(user: EntityRef): string {
@@ -48,7 +48,7 @@ export default function UsersPage() {
             type="button"
             onClick={() => setIsCreateOpen(true)}
             disabled={!customerId}
-            className="flex items-center gap-1.5 rounded-md bg-accent px-3 py-2 text-sm font-semibold text-white transition hover:brightness-90 disabled:opacity-40"
+            className="flex items-center gap-1.5 rounded-md bg-accent-strong px-3 py-2 text-sm font-semibold text-white transition hover:brightness-90 disabled:opacity-40"
           >
             <Plus size={14} /> Add
           </button>
@@ -58,7 +58,7 @@ export default function UsersPage() {
       <div className="w-full max-w-xs shrink-0">
         <Select
           label="Client"
-          placeholder={isCustomersLoading ? 'Loading�' : undefined}
+          placeholder={isCustomersLoading ? 'Loading…' : undefined}
           value={customerId ?? ALL_CLIENTS}
           onChange={(value) => setCustomerId(value === ALL_CLIENTS ? undefined : value)}
           options={[
@@ -68,7 +68,7 @@ export default function UsersPage() {
         />
       </div>
 
-      {/* The same component Devices and Assets render, not a lookalike � so a future change to
+      {/* The same component Devices and Assets render, not a lookalike — so a future change to
         * row styling lands on all three at once. Users differ only in what the generic slots
         * are fed: role instead of entity type, client name instead of customer, and an extra
         * "Login as" action alongside Delete. */}

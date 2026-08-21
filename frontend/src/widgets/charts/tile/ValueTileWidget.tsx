@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Line, LineChart, ResponsiveContainer } from 'recharts';
-import { formatTelemetryValue } from '@\/lib';
+import { formatTelemetryValue } from '@/lib';
 
 export interface ValueTileWidgetProps {
   label: string;

@@ -5,11 +5,11 @@ import { useEntities } from '@/hooks';
 import type { ConfigRequirement } from '../widget-registry';
 
 /** What a widget's datasource resolves to. 'ALL' stores a filter, not ids, so entities
- * created later are picked up automatically � see use-widget-datasource.ts. */
+ * created later are picked up automatically — see use-widget-datasource.ts. */
 export type DatasourceScope = 'ALL' | 'SINGLE';
 
 /**
- * The "datasource" step of the widget config wizard � shared by every panel so entity picking
+ * The "datasource" step of the widget config wizard — shared by every panel so entity picking
  * behaves identically wherever it appears.
  *
  * The scope choice is the important part: "All devices" is a *live binding*, not a shortcut
@@ -44,8 +44,8 @@ export function DatasourcePicker({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* An entity type still has to be picked in ALL scope � "all devices" and "all assets"
-       * are different datasources � so this select sits above the scope choice, not inside it. */}
+      {/* An entity type still has to be picked in ALL scope — "all devices" and "all assets"
+       * are different datasources — so this select sits above the scope choice, not inside it. */}
       {entityKinds.length > 1 && (
         <Select
           label="Entity type"
@@ -78,7 +78,7 @@ export function DatasourcePicker({
       {scope === 'SINGLE' && (
         <Select
           label={entityKind === 'DEVICE' ? 'Device' : 'Asset'}
-          placeholder={entitiesQuery.isLoading ? 'Loading�' : `Select ${kindNoun}`}
+          placeholder={entitiesQuery.isLoading ? 'Loading…' : `Select ${kindNoun}`}
           value={entityId}
           onChange={onEntityIdChange}
           options={entities.map((e) => ({ value: e.id, label: e.name }))}
@@ -89,7 +89,7 @@ export function DatasourcePicker({
         <p className="rounded-md border border-border px-3 py-2 text-xs text-muted">
           {requirement === 'optional' && !supportsAllScope
             ? 'This widget covers everything by default.'
-            : `Live binding to every ${kindNoun}. ${entities.length} right now � new ones appear on their own.`}
+            : `Live binding to every ${kindNoun}. ${entities.length} right now — new ones appear on their own.`}
         </p>
       )}
     </div>

@@ -108,8 +108,8 @@ export function BulkAddPanel({
               setSelectedKeys(new Set());
             }}
             searchable
-            searchPlaceholder={`Search ${entityKind === 'DEVICE' ? 'devices' : 'assets'}�`}
-            emptyLabel={entitiesQuery.isLoading ? 'Loading�' : 'No entities found'}
+            searchPlaceholder={`Search ${entityKind === 'DEVICE' ? 'devices' : 'assets'}…`}
+            emptyLabel={entitiesQuery.isLoading ? 'Loading…' : 'No entities found'}
           />
 
           {selectedEntities.size > 0 && (
@@ -120,8 +120,8 @@ export function BulkAddPanel({
                 selected={selectedKeys}
                 onChange={setSelectedKeys}
                 searchable
-                searchPlaceholder="Search keys�"
-                emptyLabel={keysLoading ? 'Loading keys�' : 'No telemetry keys reported yet'}
+                searchPlaceholder="Search keys…"
+                emptyLabel={keysLoading ? 'Loading keys…' : 'No telemetry keys reported yet'}
                 maxHeightClassName="max-h-44"
               />
 
@@ -139,7 +139,7 @@ export function BulkAddPanel({
       <DialogFooter className="min-h-17 items-center justify-between">
         <span className="text-xs text-muted">
           {pairs.length > 0
-            ? `${selectedEntities.size} ${entityKind === 'DEVICE' ? 'device' : 'asset'}${selectedEntities.size > 1 ? 's' : ''} � ${selectedKeys.size} key${selectedKeys.size > 1 ? 's' : ''}`
+            ? `${selectedEntities.size} ${entityKind === 'DEVICE' ? 'device' : 'asset'}${selectedEntities.size > 1 ? 's' : ''} — ${selectedKeys.size} key${selectedKeys.size > 1 ? 's' : ''}`
             : 'Pick entities and keys to continue'}
         </span>
         <button

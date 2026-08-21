@@ -21,17 +21,25 @@ const config: Config = {
         accent: {
           DEFAULT: 'var(--color-accent)',
           soft: 'var(--color-accent-soft)',
+          strong: 'var(--color-accent-strong)',
         },
         surface: {
           DEFAULT: 'var(--color-surface)',
           card: 'var(--color-surface-card)',
         },
-        border: 'var(--color-border)',
+        border: {
+          DEFAULT: 'var(--color-border)',
+          strong: 'var(--color-border-strong)',
+        },
         muted: 'var(--color-muted)',
         heading: 'var(--color-heading)',
         body: 'var(--color-body)',
         faint: 'var(--color-faint)',
-        danger: 'var(--color-danger)',
+        danger: {
+          DEFAULT: 'var(--color-danger)',
+          strong: 'var(--color-danger-strong)',
+        },
+        focus: 'var(--color-focus)',
       },
     },
   },

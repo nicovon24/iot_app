@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { MAX_SERIES } from '@\/lib';
+import { MAX_SERIES } from '@/lib';
 import { useEntityAlarms, useGlobalAlarms } from '@/hooks';
 import { useEntities } from '@/hooks';
 import { LineChartWidget } from '@/widgets';
@@ -12,7 +12,7 @@ import { ScatterChartWidget } from '@/widgets';
 import { DonutChartWidget } from '@/widgets';
 import { CalendarHeatmapWidget } from '@/widgets';
 import { MultiKeyChartWidget } from '@/widgets';
-import { groupKeysByUnit } from '@\/lib';
+import { groupKeysByUnit } from '@/lib';
 import { useDashboardTimeWindow } from '../canvas/TimeWindowPicker';
 import { pairSeries } from '../datasource/pair-coordinates';
 import {
@@ -33,7 +33,7 @@ export function LineChartCell({ config }: { config: EntityWidgetConfig }) {
   const timeWindow = useDashboardTimeWindow();
   const shown = all ? entities.slice(0, MAX_SERIES) : entities;
   // Recomputing the window every render would make a fresh query key each time and the query
-  // would never settle � same reasoning as useTelemetryHistory's own memo. Re-resolving when
+  // would never settle — same reasoning as useTelemetryHistory's own memo. Re-resolving when
   // the dashboard's window changes is exactly the intent, hence it being in the dep list.
   const window = useMemo(
     () => resolveHistoryWindow(timeWindow),
@@ -52,7 +52,7 @@ export function LineChartCell({ config }: { config: EntityWidgetConfig }) {
   if (notFound) return <WidgetUnavailable />;
 
   if (all) {
-    if (isLoading && entities.length === 0) return <WidgetUnavailable reason="Loading�" />;
+    if (isLoading && entities.length === 0) return <WidgetUnavailable reason="Loading…" />;
     return (
       <MultiSeriesLineChartWidget
         title={config.title}
@@ -66,7 +66,7 @@ export function LineChartCell({ config }: { config: EntityWidgetConfig }) {
   }
 
   // Routed through the same multi-entity hook as the ALL case (with a one-element list) rather
-  // than useTelemetryHistory, whose window is hardcoded to one hour internally � a single-entity
+  // than useTelemetryHistory, whose window is hardcoded to one hour internally — a single-entity
   // chart has to honour the dashboard's window too.
   const points = entities[0] ? (single.byEntity[entities[0].id] ?? []) : [];
   const data = points.map((v) => ({ ts: v.ts, value: Number(v.value) }));
@@ -82,7 +82,7 @@ export function LineChartCell({ config }: { config: EntityWidgetConfig }) {
   );
 }
 
-/** Same data path as LineChartCell � only the presentation component differs. Kept as its own
+/** Same data path as LineChartCell — only the presentation component differs. Kept as its own
  * cell rather than a `chartKind` prop on LineChartCell because the ALL-scope and single-entity
  * branches already differ per chart type, and threading a kind through both reads worse than
  * the duplication it saves. */
@@ -110,7 +110,7 @@ export function BarChartCell({ config }: { config: EntityWidgetConfig }) {
   if (notFound) return <WidgetUnavailable />;
 
   if (all) {
-    if (isLoading && entities.length === 0) return <WidgetUnavailable reason="Loading�" />;
+    if (isLoading && entities.length === 0) return <WidgetUnavailable reason="Loading…" />;
     return (
       <MultiSeriesBarChartWidget
         title={config.title}
@@ -136,7 +136,7 @@ export function BarChartCell({ config }: { config: EntityWidgetConfig }) {
   );
 }
 
-/** Single-entity-only (supportsAllScope: false in the registry) � N entities x M keys isn't a
+/** Single-entity-only (supportsAllScope: false in the registry) — N entities x M keys isn't a
  * chart anyone can read, so this cell only ever fetches for the first resolved entity. */
 export function MultiKeyChartCell({ config }: { config: EntityWidgetConfig }) {
   const entityType = config.entityType ?? 'DEVICE';
@@ -156,7 +156,7 @@ export function MultiKeyChartCell({ config }: { config: EntityWidgetConfig }) {
   });
 
   if (notFound) return <WidgetUnavailable />;
-  if (isLoading && entities.length === 0) return <WidgetUnavailable reason="Loading�" />;
+  if (isLoading && entities.length === 0) return <WidgetUnavailable reason="Loading…" />;
   if (keys.length < 2) return <WidgetUnavailable reason="Pick at least two telemetry keys" />;
 
   const entity = shown[0];
@@ -199,7 +199,7 @@ export function ScatterCell({ config }: { config: EntityWidgetConfig }) {
   const historyKeys = [xKey, yKey].filter((k) => k && k !== TIME_AXIS);
 
   // FLEET plots one dot per entity from its current readings; HISTORY plots every selected
-  // entity's samples across the window, one coloured series each � the same "show them all,
+  // entity's samples across the window, one coloured series each — the same "show them all,
   // capped and labelled" rule the line and bar charts follow, rather than a picker that would
   // defeat the comparison the chart exists for. Both hooks always run (hooks can't be
   // conditional) but the inactive one is handed an empty list, so only one actually fetches.
@@ -212,7 +212,7 @@ export function ScatterCell({ config }: { config: EntityWidgetConfig }) {
   );
   const latest = useMultiKeyLatestForEntities(fleetMode ? shown : [], entityType, historyKeys);
 
-  // pairSeries sorts and walks every entity's series � expensive enough (up to MAX_SERIES
+  // pairSeries sorts and walks every entity's series — expensive enough (up to MAX_SERIES
   // entities x TARGET_BUCKETS points) that it shouldn't re-run on renders the underlying data
   // didn't cause, e.g. a sibling widget's poll tick re-rendering this one along with it.
   const series = useMemo(() => {
@@ -245,7 +245,7 @@ export function ScatterCell({ config }: { config: EntityWidgetConfig }) {
         };
       }
       // Two keys against each other: a dot exists only where both were sampled at about the
-      // same moment. Joined with the shared tolerant pairing rather than on exact timestamps �
+      // same moment. Joined with the shared tolerant pairing rather than on exact timestamps —
       // ThingsBoard stamps each key as it writes it, so equal-timestamp matching finds nothing
       // even when the device sent both in one payload.
       return {
@@ -258,7 +258,7 @@ export function ScatterCell({ config }: { config: EntityWidgetConfig }) {
   }, [fleetMode, shown, history.byEntity, latest.byEntity, xKey, yKey]);
 
   if (notFound) return <WidgetUnavailable />;
-  if (isLoading && entities.length === 0) return <WidgetUnavailable reason="Loading�" />;
+  if (isLoading && entities.length === 0) return <WidgetUnavailable reason="Loading…" />;
   if (!config.yKey) return <WidgetUnavailable reason="Pick the two keys to plot against each other" />;
 
   return (
@@ -270,7 +270,7 @@ export function ScatterCell({ config }: { config: EntityWidgetConfig }) {
       xIsTime={xKey === TIME_AXIS}
       xUnit={config.xUnit}
       yUnit={config.yUnit}
-      // Reported in both modes now that HISTORY plots every selected entity too � silently
+      // Reported in both modes now that HISTORY plots every selected entity too — silently
       // dropping the 9th sensor would misrepresent the comparison.
       omittedCount={entities.length - shown.length}
       isLoading={fleetMode ? latest.isLoading : history.isLoading}
@@ -278,7 +278,7 @@ export function ScatterCell({ config }: { config: EntityWidgetConfig }) {
   );
 }
 
-/** Severity keeps its established colours � the same red/amber the alarm chips use, so a slice
+/** Severity keeps its established colours — the same red/amber the alarm chips use, so a slice
  * means the same thing here as everywhere else in the app. */
 const SEVERITY_COLORS: Record<string, string> = {
   CRITICAL: '#dc2626',
@@ -295,7 +295,7 @@ export function DonutCell({ config }: { config: EntityWidgetConfig }) {
   const countsEntities = groupBy === 'ENTITY_TYPE';
 
   // Donut's entity is optional (whole tenant by default), but when the user did pin one, its
-  // alarms have to come from the entity-scoped endpoint � the global one has no entityId filter
+  // alarms have to come from the entity-scoped endpoint — the global one has no entityId filter
   // and would otherwise silently render tenant-wide counts under a title that names one device.
   const entityAlarms = useEntityAlarms(config.entityId ?? '', config.entityType ?? 'DEVICE');
   const globalAlarms = useGlobalAlarms(
@@ -353,7 +353,7 @@ export function CalendarHeatmapCell({ config }: { config: EntityWidgetConfig }) 
 
   const timeWindow = useDashboardTimeWindow();
   const shown = entities.slice(0, 1);
-  // One bucket per day is the widget's premise, not a setting � a calendar cell *is* a day.
+  // One bucket per day is the widget's premise, not a setting — a calendar cell *is* a day.
   const window = useMemo(
     () => resolveHistoryWindow(timeWindow),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -365,7 +365,7 @@ export function CalendarHeatmapCell({ config }: { config: EntityWidgetConfig }) 
   });
 
   if (notFound) return <WidgetUnavailable />;
-  if (isLoading && entities.length === 0) return <WidgetUnavailable reason="Loading�" />;
+  if (isLoading && entities.length === 0) return <WidgetUnavailable reason="Loading…" />;
 
   const entity = shown[0];
   const points = (entity ? (history.byEntity[entity.id] ?? []) : [])
@@ -374,7 +374,7 @@ export function CalendarHeatmapCell({ config }: { config: EntityWidgetConfig }) 
 
   return (
     <CalendarHeatmapWidget
-      title={config.title ?? `${entity?.name ?? ''} � ${config.telemetryKey ?? ''}`}
+      title={config.title ?? `${entity?.name ?? ''} — ${config.telemetryKey ?? ''}`}
       points={points}
       unit={config.unit}
       window={window}

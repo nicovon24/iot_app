@@ -6,8 +6,8 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { LogOut, PanelLeftClose, PanelLeftOpen, X, type LucideProps } from 'lucide-react';
-import { NAV_ITEMS } from '@\/lib';
-import { logout } from '@\/lib';
+import { NAV_ITEMS } from '@/lib';
+import { logout } from '@/lib';
 import { usePermissions } from '@/hooks';
 import { Tooltip } from '../ui/Tooltip';
 
@@ -25,7 +25,7 @@ export function Sidebar({
   const pathname = usePathname();
   const router = useRouter();
   const { isSysadmin } = usePermissions();
-  // Users management is sysadmin-only on the backend (RolesGuard) � hidden from the nav for
+  // Users management is sysadmin-only on the backend (RolesGuard) — hidden from the nav for
   // everyone else rather than shown and then 403ing on every action.
   const visibleNavItems = NAV_ITEMS.filter((item) => item.href !== '/users' || isSysadmin);
   const [expanded, setExpanded] = useState(true);
@@ -115,7 +115,7 @@ export function Sidebar({
             </div>
           );
 
-          const tooltipLabel = item.comingSoon ? `${item.label} � Coming soon` : item.label;
+          const tooltipLabel = item.comingSoon ? `${item.label} — Coming soon` : item.label;
 
           const inner = item.comingSoon ? (
             row

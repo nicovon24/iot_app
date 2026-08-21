@@ -1,7 +1,7 @@
 'use client';
 
 import { useQueries } from '@tanstack/react-query';
-import { apiClient } from '@\/lib';
+import { apiClient } from '@/lib';
 import type { DashboardTimeWindow, EntityRef, TelemetryValue } from '@/types';
 
 const ONE_HOUR_MS = 3_600_000;

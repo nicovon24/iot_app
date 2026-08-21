@@ -21,7 +21,7 @@ import {
   useMultiKeyLatestForEntities,
   useRawHistoryForEntities,
 } from '../use-widget-datasource';
-import { MAX_SERIES } from '@\/lib';
+import { MAX_SERIES } from '@/lib';
 import { ENTITY_POLL_MS, MAX_TILES, WidgetUnavailable, type EntityWidgetConfig } from './shared';
 
 export function ValueMapCell({ config }: { config: EntityWidgetConfig }) {
@@ -39,7 +39,7 @@ export function ValueMapCell({ config }: { config: EntityWidgetConfig }) {
   ]);
 
   if (notFound) return <WidgetUnavailable />;
-  if (isLoading && entities.length === 0) return <WidgetUnavailable reason="Loading�" />;
+  if (isLoading && entities.length === 0) return <WidgetUnavailable reason="Loading…" />;
 
   const entries = shown
     .map((e) => {
@@ -74,7 +74,7 @@ export function ValueMapCell({ config }: { config: EntityWidgetConfig }) {
 /**
  * Formats a fix's timestamp for the empty-state message: a named month plus how long ago.
  *
- * Not toLocaleString() � that renders "8/3/2026", which reads as 8 March or 3 August depending
+ * Not toLocaleString() — that renders "8/3/2026", which reads as 8 March or 3 August depending
  * on the locale, and the whole point of this message is telling the user how far back to widen
  * the range. Spelling the month out removes the ambiguity, and the relative part is what
  * actually answers "which preset do I need".
@@ -109,7 +109,7 @@ export function MovementHeatmapCell({ config }: { config: EntityWidgetConfig }) 
   // the window comes back empty: does this entity report location at all, and how long ago?
   const latest = useMultiKeyLatestForEntities(shown, entityType, ['latitude', 'longitude']);
 
-  // pairCoordinates sorts up to RAW_POINT_LIMIT (5,000) points per key per entity � worth
+  // pairCoordinates sorts up to RAW_POINT_LIMIT (5,000) points per key per entity — worth
   // memoizing so an unrelated re-render (e.g. a sibling widget's poll tick) doesn't re-sort
   // and re-walk the whole trail, which also feeds MovementHeatmapWidget's effect and would
   // otherwise tear down and rebuild the Leaflet heat layer on every such render too.
@@ -124,7 +124,7 @@ export function MovementHeatmapCell({ config }: { config: EntityWidgetConfig }) 
   );
 
   if (notFound) return <WidgetUnavailable />;
-  if (isLoading && entities.length === 0) return <WidgetUnavailable reason="Loading�" />;
+  if (isLoading && entities.length === 0) return <WidgetUnavailable reason="Loading…" />;
 
   // "Nothing to draw" has several causes with different fixes, so the widget names the one it
   // hit instead of leaving the user to guess which.
@@ -144,10 +144,10 @@ export function MovementHeatmapCell({ config }: { config: EntityWidgetConfig }) 
     if (rawCounts.lat > 0 && rawCounts.lng > 0) {
       emptyReason = 'Latitude and longitude were reported but never within 10s of each other';
     } else if (rawCounts.lat > 0 || rawCounts.lng > 0) {
-      emptyReason = `Only ${rawCounts.lat === 0 ? 'longitude' : 'latitude'} was reported � a position needs both`;
+      emptyReason = `Only ${rawCounts.lat === 0 ? 'longitude' : 'latitude'} was reported — a position needs both`;
     } else {
       // Nothing in the window. The latest reading tells us whether that's "never reports
-      // location" or "reports it, just not lately" � a completely different fix for the user.
+      // location" or "reports it, just not lately" — a completely different fix for the user.
       const lastTs = shown.reduce((newest, e) => {
         const readings = latest.byEntity[e.id] ?? {};
         return Math.max(newest, readings.latitude?.ts ?? 0, readings.longitude?.ts ?? 0);
@@ -159,7 +159,7 @@ export function MovementHeatmapCell({ config }: { config: EntityWidgetConfig }) 
         // A reading stamped ahead of the window's end can never be reached by widening the range
         // backwards, which is what the generic "widen the time range" advice would wrongly
         // suggest. Usually a device clock that's wrong.
-        emptyReason = `Position data is stamped ${formatFix(lastTs)}, after this window ends � check the device clock.`;
+        emptyReason = `Position data is stamped ${formatFix(lastTs)}, after this window ends — check the device clock.`;
       } else {
         emptyReason = `No position in this window. Last fix was ${formatFix(lastTs)}; widen the range past that to see it.`;
       }
@@ -178,7 +178,7 @@ export function MovementHeatmapCell({ config }: { config: EntityWidgetConfig }) 
 
 export function MapCell({ config }: { config: EntityWidgetConfig }) {
   const entityType = config.entityType ?? 'DEVICE';
-  // A legacy config saved before entityScope existed is `{}` � no id and no scope � and has
+  // A legacy config saved before entityScope existed is `{}` — no id and no scope — and has
   // always meant the fleet map, so anything without an explicit entityId renders as fleet.
   const single = Boolean(config.entityId) && !isAllScope(config);
 
@@ -189,7 +189,7 @@ export function MapCell({ config }: { config: EntityWidgetConfig }) {
     return <FleetMapWidget heightClassName="h-full" entityType={entityType} refetchInterval={ENTITY_POLL_MS} />;
   }
   if (notFound) return <WidgetUnavailable />;
-  if (location.isLoading) return <WidgetUnavailable reason="Loading location�" />;
+  if (location.isLoading) return <WidgetUnavailable reason="Loading location…" />;
 
   const lat = location.data?.latitude ? Number(location.data.latitude.value) : undefined;
   const lng = location.data?.longitude ? Number(location.data.longitude.value) : undefined;
