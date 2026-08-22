@@ -24,8 +24,8 @@ const MEDIUM = 0.5;
 
 function bandColor(ratio: number) {
   if (ratio <= LOW) return 'var(--color-danger)';
-  if (ratio <= MEDIUM) return '#f59e0b';
-  return '#22c55e';
+  if (ratio <= MEDIUM) return 'var(--gradient-info-from)';
+  return 'var(--color-accent)';
 }
 
 export function BatteryWidget({ label, value, min, max, unit, ts }: BatteryWidgetProps) {

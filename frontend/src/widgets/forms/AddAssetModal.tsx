@@ -21,7 +21,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 const SELECT_CLASSNAMES = {
-  label: 'text-sm font-medium text-body',
+  label: 't-field',
   trigger:
     'rounded-md border border-border bg-surface data-[hover=true]:bg-surface-card data-[open=true]:border-accent shadow-none',
   value: 'text-sm text-heading',
@@ -101,7 +101,7 @@ export function AddAssetModal({ isOpen, onClose }: AddAssetModalProps) {
           }}
         >
         <ModalHeader className="border-b border-border px-6 py-4">
-          <h2 className="text-lg font-semibold text-heading">Add Asset</h2>
+          <h2 className="t-heading text-base">Add Asset</h2>
         </ModalHeader>
 
         <ModalBody className="flex flex-col gap-3 px-6 py-4">
@@ -176,7 +176,7 @@ export function AddAssetModal({ isOpen, onClose }: AddAssetModalProps) {
                   ))}
                 </Select>
                 {needsParentButNoneAvailable && (
-                  <span className="text-xs text-red-400">Create a level-0 Asset for this Client first.</span>
+                  <span className="text-xs text-danger">Create a level-0 Asset for this Client first.</span>
                 )}
               </motion.div>
             )}
@@ -184,7 +184,7 @@ export function AddAssetModal({ isOpen, onClose }: AddAssetModalProps) {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-body" htmlFor="asset-name">
+              <label className="t-field" htmlFor="asset-name">
                 Name
               </label>
               <input
@@ -192,11 +192,11 @@ export function AddAssetModal({ isOpen, onClose }: AddAssetModalProps) {
                 {...register('name')}
                 className="rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-heading outline-none focus:border-accent"
               />
-              {errors.name && <span className="text-xs text-red-400">{errors.name.message}</span>}
+              {errors.name && <span className="text-xs text-danger">{errors.name.message}</span>}
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-body" htmlFor="asset-type">
+              <label className="t-field" htmlFor="asset-type">
                 Type
               </label>
               <input
@@ -205,12 +205,12 @@ export function AddAssetModal({ isOpen, onClose }: AddAssetModalProps) {
                 className="rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-heading outline-none focus:border-accent"
                 placeholder="warehouse"
               />
-              {errors.type && <span className="text-xs text-red-400">{errors.type.message}</span>}
+              {errors.type && <span className="text-xs text-danger">{errors.type.message}</span>}
             </div>
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-body" htmlFor="asset-label">
+            <label className="t-field" htmlFor="asset-label">
               Label (optional)
             </label>
             <input
@@ -224,7 +224,7 @@ export function AddAssetModal({ isOpen, onClose }: AddAssetModalProps) {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="rounded-md border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400"
+              className="rounded-md border border-danger/30 bg-danger/10 p-3 text-sm text-danger"
             >
               {errorMessage}
             </motion.div>
@@ -235,7 +235,7 @@ export function AddAssetModal({ isOpen, onClose }: AddAssetModalProps) {
           <button
             type="button"
             onClick={close}
-            className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-surface"
+            className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-tint"
           >
             Cancel
           </button>
@@ -243,8 +243,7 @@ export function AddAssetModal({ isOpen, onClose }: AddAssetModalProps) {
             type="submit"
             whileTap={{ scale: 0.97 }}
             disabled={!canSubmit || createAsset.isPending}
-            style={{ background: 'var(--gradient-accent)' }}
-            className="rounded-md px-4 py-2 text-sm font-semibold text-white transition hover:brightness-95 disabled:opacity-60"
+            className="btn-accent rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-60"
           >
             {createAsset.isPending ? 'Creating…' : 'Create Asset'}
           </motion.button>

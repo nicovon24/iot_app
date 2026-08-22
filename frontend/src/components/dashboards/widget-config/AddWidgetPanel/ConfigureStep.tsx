@@ -183,7 +183,7 @@ export function ConfigureStep(props: ConfigureStepProps) {
             <Checkbox checked={props.stacked} onChange={(e) => props.onStackedChange(e.target.checked)} />
             Stack bars
           </label>
-          <span className="text-xs text-faint">
+          <span className="t-meta">
             Only meaningful for additive measures — energy, volume, counts.
           </span>
         </div>
@@ -310,7 +310,7 @@ export function ConfigureStep(props: ConfigureStepProps) {
             emptyLabel="No statuses"
             maxHeightClassName="max-h-40"
           />
-          <p className="text-xs text-faint">Leave a list empty to count every value of that kind.</p>
+          <p className="t-meta">Leave a list empty to count every value of that kind.</p>
         </>
       )}
 
@@ -331,7 +331,7 @@ export function ConfigureStep(props: ConfigureStepProps) {
           widgetType === 'label' ? (
             <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-1.5">
-                <span className="text-sm font-medium text-body">Text</span>
+                <span className="t-field">Text</span>
                 <textarea
                   value={props.text}
                   onChange={(e) => props.onTextChange(e.target.value)}
@@ -394,7 +394,7 @@ export function ConfigureStep(props: ConfigureStepProps) {
 
       {tab === 'data' && meta.multiTelemetryKeys && meta.telemetryKey === 'none' && props.telemetryKeys.size > 0 && (
         <div className="flex flex-col gap-2">
-          <span className="text-sm font-medium text-body">Units</span>
+          <span className="t-field">Units</span>
           {Array.from(props.telemetryKeys).map((key) => (
             <div key={key} className="flex items-center gap-2">
               <span className="w-32 shrink-0 truncate text-xs text-muted" title={key}>

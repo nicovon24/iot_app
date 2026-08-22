@@ -15,6 +15,7 @@ import { Tooltip } from '@/components';
 import { EntityRowsSkeleton, TableRowsSkeleton } from '@/components';
 import { EditEntityDialog, type EditableField } from '../forms/EditEntityDialog';
 import type { EntityRef, EntityType, PageData } from '@/types';
+import { tableClassNames } from '@/lib';
 
 export type { EditableField };
 
@@ -62,21 +63,14 @@ function EntityAvatar({ type }: { type: EntityType }) {
   return (
     <span
       aria-hidden
-      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
-      style={{ background: 'var(--gradient-accent)' }}
+      className="badge-accent flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
     >
-      <Icon size={20} className="text-white" strokeWidth={1.75} />
+      <Icon size={20} strokeWidth={1.75} />
     </span>
   );
 }
 
-const TABLE_CLASSNAMES = {
-  base: 'h-full min-h-0',
-  wrapper: 'h-full rounded-none border-0 bg-transparent p-0 shadow-none table-scroll overflow-auto',
-  th: 'bg-surface text-center text-xs font-semibold uppercase tracking-wider text-muted first:rounded-none last:rounded-none border-b border-border py-3',
-  td: 'text-center py-3 text-sm text-body group-data-[hover=true]:bg-surface',
-  tr: 'border-b border-border last:border-b-0 transition-colors',
-};
+const TABLE_CLASSNAMES = tableClassNames({});
 
 export function EntityListWidget({
   data,
@@ -145,7 +139,7 @@ export function EntityListWidget({
                             type="button"
                             aria-label="Details"
                             onClick={() => onRowClick(entity)}
-                            className="flex items-center justify-center rounded p-1 text-heading transition-colors hover:bg-surface"
+                            className="flex items-center justify-center rounded p-1 text-heading transition-colors hover:bg-tint"
                           >
                             <Play size={15} fill="currentColor" strokeWidth={0} />
                           </button>
@@ -157,7 +151,7 @@ export function EntityListWidget({
                             type="button"
                             aria-label="Edit"
                             onClick={() => setEditingEntity(entity)}
-                            className="flex items-center justify-center rounded p-1 text-muted transition-colors hover:bg-surface hover:text-heading"
+                            className="flex items-center justify-center rounded p-1 text-muted transition-colors hover:bg-tint hover:text-heading"
                           >
                             <Pencil size={15} />
                           </button>
@@ -169,7 +163,7 @@ export function EntityListWidget({
                             type="button"
                             aria-label="Delete"
                             onClick={() => onDelete(entity)}
-                            className="flex items-center justify-center rounded p-1 text-red-600 transition-colors hover:bg-surface"
+                            className="flex items-center justify-center rounded p-1 text-danger transition-colors hover:bg-tint"
                           >
                             <Trash2 size={15} />
                           </button>
@@ -194,8 +188,8 @@ export function EntityListWidget({
               <div className="flex min-w-0 items-center gap-3">
                 <EntityAvatar type={entity.type} />
                 <div className="flex min-w-0 flex-col">
-                  <span className="truncate text-sm font-semibold text-heading">{entity.name}</span>
-                  <span className="text-[11px] font-semibold tracking-wider text-muted">{subtitleOf ? subtitleOf(entity) : entity.type}</span>
+                  <span className="truncate t-heading">{entity.name}</span>
+                  <span className="t-label">{subtitleOf ? subtitleOf(entity) : entity.type}</span>
                 </div>
               </div>
 
@@ -215,8 +209,7 @@ export function EntityListWidget({
                           type="button"
                           aria-label="Details"
                           onClick={() => onRowClick(entity)}
-                          className="flex h-9 w-9 items-center justify-center rounded-full text-white transition-opacity hover:opacity-90"
-                          style={{ background: 'var(--gradient-accent)' }}
+                          className="btn-accent flex h-9 w-9 items-center justify-center rounded-full"
                         >
                           <Play size={14} fill="currentColor" strokeWidth={0} />
                         </button>
@@ -228,7 +221,7 @@ export function EntityListWidget({
                           type="button"
                           aria-label="Edit"
                           onClick={() => setEditingEntity(entity)}
-                          className="flex h-9 w-9 items-center justify-center rounded-full bg-navy-800 text-muted transition-colors hover:text-heading"
+                          className="flex h-9 w-9 items-center justify-center rounded-full bg-ink-800 text-muted transition-colors hover:text-heading"
                         >
                           <Pencil size={14} />
                         </button>
@@ -240,7 +233,7 @@ export function EntityListWidget({
                           type="button"
                           aria-label="Delete"
                           onClick={() => onDelete(entity)}
-                          className="flex h-9 w-9 items-center justify-center rounded-full bg-red-500/15 text-red-400 transition-colors hover:bg-red-500/25"
+                          className="flex h-9 w-9 items-center justify-center rounded-full bg-danger/15 text-danger transition-colors hover:bg-danger/25"
                         >
                           <Trash2 size={14} />
                         </button>
@@ -260,7 +253,7 @@ export function EntityListWidget({
     <div className="glass-card h-full p-0">{content}</div>
   ) : (
     <div className="glass-card flex h-full flex-col overflow-hidden">
-      <h2 className="shrink-0 px-4 py-3 text-sm font-semibold text-heading">{title}</h2>
+      <h2 className="shrink-0 px-4 py-3 t-heading">{title}</h2>
       <div className="min-h-0 flex-1">{content}</div>
     </div>
   );

@@ -123,7 +123,7 @@ function Group({
   return (
     <div className="flex flex-col gap-1.5 rounded-md border border-border p-3">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-body">
+        <span className="t-field">
           {title}
           {all && <span className="ml-1.5 text-xs font-normal text-accent">all</span>}
           {!all && selected.size > 0 && (
@@ -137,7 +137,7 @@ function Group({
       </div>
 
       {all ? (
-        <p className="text-xs text-faint">Every key in this group, including ones reported later.</p>
+        <p className="t-meta">Every key in this group, including ones reported later.</p>
       ) : keys.length === 0 ? (
         <p className="text-xs text-muted">{isLoading ? 'Loading…' : 'Nothing reported yet'}</p>
       ) : (
@@ -145,7 +145,7 @@ function Group({
           {keys.map((key) => (
             <label
               key={key}
-              className="flex cursor-pointer items-center gap-2 rounded px-1.5 py-1 text-sm text-body hover:bg-surface"
+              className="flex cursor-pointer items-center gap-2 rounded px-1.5 py-1 text-sm text-body hover:bg-tint"
             >
               <Checkbox checked={selected.has(key)} onChange={() => onToggleKey(key)} />
               {key}

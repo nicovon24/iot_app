@@ -41,19 +41,18 @@ export default function UsersPage() {
 
   return (
     <div className="flex h-full w-full flex-col gap-4">
-      <div className="flex shrink-0 items-center justify-between">
-        <h1 className="text-lg font-semibold text-heading">Users</h1>
-        {isSysadmin && (
+      {isSysadmin && (
+        <div className="flex shrink-0 items-center justify-end">
           <button
             type="button"
             onClick={() => setIsCreateOpen(true)}
             disabled={!customerId}
-            className="flex items-center gap-1.5 rounded-md bg-accent-strong px-3 py-2 text-sm font-semibold text-white transition hover:brightness-90 disabled:opacity-40"
+            className="flex items-center gap-1.5 rounded-md bg-accent-strong px-3 py-2 text-sm font-semibold text-on-accent transition hover:brightness-110 disabled:opacity-40"
           >
             <Plus size={14} /> Add
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       <div className="w-full max-w-xs shrink-0">
         <Select
@@ -89,7 +88,7 @@ export default function UsersPage() {
                 type="button"
                 onClick={() => impersonate.mutate({ id: user.id, label: user.name })}
                 disabled={impersonate.isPending}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-navy-800 text-muted transition-colors hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-ink-800 text-muted transition-colors hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
                 aria-label={`Login as ${user.name}`}
               >
                 <LogIn size={14} />

@@ -17,9 +17,9 @@ export function MapStyleToggle({ value, onChange }: MapStyleToggleProps) {
     <div className="map-style-toggle absolute right-2 top-2 z-1000 flex overflow-hidden rounded-md border border-border bg-surface-card shadow-lg backdrop-blur-md">
       <button
         type="button"
-        onClick={() => onChange('light')}
+        onClick={() => onChange('dark')}
         className={`cursor-pointer px-2 py-1 text-xs font-medium transition-colors ${
-          value === 'light' ? 'bg-accent-strong text-white' : 'text-body hover:bg-surface'
+          value === 'dark' ? 'bg-accent-strong text-on-accent' : 'text-body hover:bg-tint'
         }`}
       >
         Minimal
@@ -28,7 +28,7 @@ export function MapStyleToggle({ value, onChange }: MapStyleToggleProps) {
         type="button"
         onClick={() => onChange('color')}
         className={`cursor-pointer px-2 py-1 text-xs font-medium transition-colors ${
-          value === 'color' ? 'bg-accent-strong text-white' : 'text-body hover:bg-surface'
+          value === 'color' ? 'bg-accent-strong text-on-accent' : 'text-body hover:bg-tint'
         }`}
       >
         Streets

@@ -20,13 +20,27 @@ export const axisTick = (v: number) => formatTelemetryValue(v) ?? '';
  * repeating the unit there (unlike on every axis tick) is the useful place for it. */
 export const withUnit = (unit?: string) => (v: number | string) => formatTelemetryValue(v, { unit }) ?? '';
 
-/** Tooltip chrome, identical across every chart so they read as one system. */
+/** Tooltip chrome, identical across every chart so they read as one system.
+ *
+ * Opaque `--color-ink-900` rather than the translucent card surface: a tooltip floats over
+ * plotted marks, and letting a line show through the panel that explains it is the one place
+ * the app's glass treatment actively hurts legibility. */
 export const TOOLTIP_STYLE = {
-  background: 'var(--color-surface-card)',
+  background: 'var(--color-ink-900)',
   border: '1px solid var(--color-border)',
   borderRadius: 8,
   fontSize: 12,
 } as const;
+
+/**
+ * Soft bloom for the single-series line — the only chart mark painted in the brand accent, so
+ * it carries the same restrained glow as the primary buttons and the active nav pill.
+ *
+ * Deliberately not applied to the multi-series charts: those draw from the eight categorical
+ * hues, and eight glowing lines is a light show rather than a reading. It also blunts exactly
+ * the edge separation those colours were validated on.
+ */
+export const ACCENT_LINE_GLOW = { filter: 'drop-shadow(0 0 6px rgba(46, 232, 154, 0.45))' } as const;
 
 /**
  * Recharts needs one row array with a column per series, but each entity's history comes back

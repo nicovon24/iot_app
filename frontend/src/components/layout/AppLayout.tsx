@@ -100,12 +100,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
         <div className="flex flex-1 flex-col overflow-hidden">
           {impersonation && (
-            <div className="flex shrink-0 items-center justify-between gap-3 bg-amber-500 px-4 py-1.5 text-sm font-medium text-black">
+            <div className="flex shrink-0 items-center justify-between gap-3 bg-warning px-4 py-1.5 text-sm font-medium text-on-warning">
               <span>Viewing as {impersonation.label}</span>
               <button
                 type="button"
                 onClick={() => void endImpersonation()}
-                className="rounded-md border border-black/20 px-2.5 py-1 text-xs font-semibold transition hover:bg-black/10"
+                className="rounded-md border border-on-warning/25 px-2.5 py-1 text-xs font-semibold transition hover:bg-on-warning/10"
               >
                 Back to my session
               </button>
@@ -126,10 +126,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 onClick={toggleHeaderVisible}
                 aria-label="Show header"
                 title="Show header"
-                className="fixed right-4 top-2 z-50 flex h-7 items-center gap-1 rounded-full px-3 text-xs font-semibold text-white shadow-lg"
-                style={{
-                  background: 'linear-gradient(90deg, var(--gradient-header-from), var(--gradient-header-to))',
-                }}
+                className="btn-accent fixed right-4 top-2 z-50 flex h-7 items-center gap-1 rounded-full px-3 text-xs font-semibold"
               >
                 <ChevronDown size={14} strokeWidth={2.25} />
                 Header
@@ -141,17 +138,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             initial={false}
             animate={{ height: headerVisible ? 80 : 0, opacity: headerVisible ? 1 : 0 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="flex shrink-0 items-center gap-3 overflow-hidden px-8 text-white shadow-sm"
-            style={{
-              background: 'linear-gradient(90deg, var(--gradient-header-from), var(--gradient-header-to))',
-            }}
+            className="flex shrink-0 items-center gap-3 overflow-hidden border-b border-border bg-surface px-8 text-heading"
           >
             <Tooltip label={sidebarVisible ? 'Hide sidebar' : 'Show sidebar'}>
               <button
                 type="button"
                 aria-label={sidebarVisible ? 'Hide sidebar' : 'Show sidebar'}
                 onClick={toggleSidebarVisible}
-                className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white/80 transition-colors hover:bg-white/10 hover:text-white md:flex"
+                className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted transition-colors hover:bg-accent/10 hover:text-accent md:flex"
               >
                 {sidebarVisible ? <PanelLeftClose size={20} strokeWidth={1.75} /> : <PanelLeftOpen size={20} strokeWidth={1.75} />}
               </button>
@@ -160,18 +154,18 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               type="button"
               aria-label="Open menu"
               onClick={() => setMobileOpen(true)}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white/80 transition-colors hover:bg-white/10 hover:text-white md:hidden"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted transition-colors hover:bg-accent/10 hover:text-accent md:hidden"
             >
               <Menu size={20} strokeWidth={1.75} />
             </button>
-            <span className="text-xl font-semibold tracking-tight">{pageTitle}</span>
+            <h1 className="t-title">{pageTitle}</h1>
 
             <Tooltip label="Hide header" side="bottom">
               <button
                 type="button"
                 aria-label="Hide header"
                 onClick={toggleHeaderVisible}
-                className="ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+                className="ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted transition-colors hover:bg-accent/10 hover:text-accent"
               >
                 <PanelTopClose size={20} strokeWidth={1.75} />
               </button>

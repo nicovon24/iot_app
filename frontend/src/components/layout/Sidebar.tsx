@@ -68,19 +68,19 @@ export function Sidebar({
     >
       <div
         aria-hidden
-        className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full opacity-30 blur-3xl"
+        className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full opacity-20 blur-3xl"
         style={{ background: 'var(--gradient-accent)' }}
       />
 
       <div className={`relative z-10 mb-6 flex items-center gap-2.5 ${isExpanded ? 'px-4' : 'justify-center'}`}>
         <Image src="/logo.png" alt="IoTArg logo" width={36} height={36} className="h-9 w-9 shrink-0 object-contain" priority />
-        {isExpanded && <span className="truncate text-sm font-semibold text-white">IoTArg</span>}
+        {isExpanded && <span className="truncate t-heading">IoTArg</span>}
         {mobile && (
           <button
             type="button"
             aria-label="Close menu"
             onClick={onClose}
-            className="ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+            className="ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted transition-colors hover:bg-accent/10 hover:text-accent"
           >
             <X size={20} strokeWidth={1.75} />
           </button>
@@ -96,17 +96,17 @@ export function Sidebar({
             <div
               className={`relative flex h-11 items-center gap-3 overflow-hidden rounded-xl px-3 transition-colors ${
                 item.comingSoon
-                  ? 'cursor-not-allowed text-white/30'
+                  ? 'cursor-not-allowed text-faint/50'
                   : isActive
-                    ? 'text-white'
-                    : 'text-white/70 hover:bg-white/10 hover:text-white'
+                    ? 'text-[var(--gradient-sidebar-active-ink)]'
+                    : 'text-muted hover:bg-accent/10 hover:text-accent'
               }`}
             >
               {isActive && !item.comingSoon && (
                 <motion.div
                   layoutId={mobile ? 'sidebar-active-pill-mobile' : 'sidebar-active-pill'}
-                  className="absolute inset-0 rounded-xl border border-white/20"
-                  style={{ background: 'var(--gradient-sidebar-active)' }}
+                  className="absolute inset-0 rounded-xl"
+                  style={{ background: 'var(--gradient-sidebar-active)', boxShadow: 'var(--glow-accent)' }}
                   transition={{ duration: 0.2 }}
                 />
               )}
@@ -162,7 +162,7 @@ function SidebarButton({
       type="button"
       aria-label={label}
       onClick={onClick}
-      className="flex h-11 w-full items-center gap-3 rounded-xl px-3 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+      className="flex h-11 w-full items-center gap-3 rounded-xl px-3 text-muted transition-colors hover:bg-accent/10 hover:text-accent"
     >
       <Icon size={20} strokeWidth={1.75} className="shrink-0" />
       {expanded && <span className="truncate text-sm font-medium">{label}</span>}

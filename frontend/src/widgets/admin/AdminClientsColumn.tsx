@@ -15,15 +15,10 @@ import { AdminBreadcrumbs } from './AdminBreadcrumbs';
 import { ConfirmDialog } from '@/widgets';
 import { TableRowsSkeleton } from '@/components';
 import { Tooltip } from '@/components';
-import { toastError, toastSuccess } from '@/lib';
+import { tableClassNames, toastError, toastSuccess } from '@/lib';
 import type { EntityRef } from '@/types';
 
-const TABLE_CLASSNAMES = {
-  wrapper: 'h-full rounded-none border-0 bg-transparent p-0 shadow-none overflow-y-auto',
-  th: 'bg-surface text-left text-xs font-semibold uppercase tracking-wider text-muted first:rounded-none last:rounded-none border-b border-border py-3',
-  td: 'text-left py-3 text-sm text-body group-data-[hover=true]:bg-surface',
-  tr: 'border-b border-border last:border-b-0 cursor-pointer transition-colors',
-};
+const TABLE_CLASSNAMES = tableClassNames({ align: 'left', interactive: true });
 
 export interface AdminClientsColumnProps {
   isLoading: boolean;
@@ -57,13 +52,12 @@ export function AdminClientsColumn({
   return (
     <div className="glass-card flex h-96 shrink-0 flex-col gap-3 p-4 md:h-full md:min-h-0 md:w-full">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-heading">Clients</h2>
+        <h2 className="t-heading">Clients</h2>
         {!readOnly && (
           <button
             type="button"
             onClick={onAddClient}
-            className="flex items-center gap-1 text-xs font-semibold hover:underline"
-            style={{ color: 'var(--gradient-accent-from)' }}
+            className="flex items-center gap-1 text-xs font-semibold text-accent hover:underline"
           >
             <Plus size={12} /> Add
           </button>
@@ -91,7 +85,7 @@ export function AdminClientsColumn({
               {(customer) => (
                 <TableRow
                   key={customer.id}
-                  className={`group cursor-pointer ${selectedCustomerId === customer.id ? 'bg-surface' : ''}`}
+                  className={`group cursor-pointer ${selectedCustomerId === customer.id ? 'bg-tint-strong' : ''}`}
                 >
                   <TableCell className="font-medium text-heading" onClick={() => onSelect(customer)}>
                     {customer.name}
@@ -103,7 +97,7 @@ export function AdminClientsColumn({
                           <button
                             type="button"
                             onClick={() => setPendingDelete(customer)}
-                            className="rounded p-1 text-red-600 hover:bg-surface"
+                            className="rounded p-1 text-danger hover:bg-tint"
                             aria-label="Delete"
                           >
                             <Trash2 size={13} />

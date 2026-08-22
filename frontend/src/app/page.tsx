@@ -24,7 +24,7 @@ export default function OverviewPage() {
 
   return (
     <div className="flex h-full w-full flex-col gap-4">
-      <div className="grid shrink-0 grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="stagger-children grid shrink-0 grid-cols-1 gap-4 sm:grid-cols-3">
         <CountTileWidget label="Devices" value={devicesQuery.data?.totalElements ?? 0} isLoading={devicesQuery.isLoading} accent="info" icon={Cpu} />
         <CountTileWidget label="Assets" value={assetsQuery.data?.totalElements ?? 0} isLoading={assetsQuery.isLoading} accent="info" icon={Box} />
         <CountTileWidget label="Active Alarms" value={activeAlarms.length} isLoading={alarmsQuery.isLoading} accent="danger" icon={AlertTriangle} />

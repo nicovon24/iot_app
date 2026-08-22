@@ -9,6 +9,12 @@
  * so the next palette exploration stays as free as the last one without silently
  * regressing legibility.
  *
+ * The aqua-green palette inverted one of the invariants this file used to hold. While the
+ * accent was a dark petrol cyan, every accent surface carried white; at #2ee89a white
+ * measures 1.60:1, so accent surfaces now carry --color-on-accent and it is that pairing
+ * which is asserted. The same split runs through the status gradients, which no longer
+ * agree with each other — ok/info are light, danger is dark — so each declares its own ink.
+ *
  * Thresholds are WCAG 2.1: 4.5:1 for normal text (1.4.3), 3:1 for large text and for
  * the boundary of a UI component or a meaningful icon (1.4.11).
  */
@@ -21,10 +27,20 @@ type Rgb = [number, number, number];
 const CSS = readFileSync(join(__dirname, '../../app/globals.css'), 'utf8');
 
 /** Pulls a custom property's value out of the `:root` block. */
-function token(name: string): string {
+function token(name: string, seen: string[] = []): string {
+  // The @theme inline block re-declares most tokens as `--x: var(--x)`. Alias-following
+  // only avoids those because :root is matched first, and that holds solely for tokens
+  // declared in both places — --font-sans and --font-mono, for instance, exist only in
+  // @theme and point straight at themselves. Without this guard, asking for one recurses
+  // until the stack dies instead of saying what is wrong.
+  assert.ok(!seen.includes(name), `circular token alias: ${[...seen, name].join(' -> ')}`);
   const match = CSS.match(new RegExp(`^\\s*${name}:\\s*([^;]+);`, 'm'));
   assert.ok(match, `globals.css should define ${name}`);
-  return match[1].trim();
+  const value = match[1].trim();
+  // Several tokens alias another token rather than repeating its literal — follow the
+  // indirection so the checker measures the colour that actually paints.
+  const alias = value.match(/^var\(\s*(--[\w-]+)\s*\)$/);
+  return alias ? token(alias[1], [...seen, name]) : value;
 }
 
 function parse(value: string): { rgb: Rgb; alpha: number } {
@@ -79,14 +95,33 @@ for (const name of ['--color-heading', '--color-body', '--color-muted', '--color
   checks.push({ label: `${name} as text on the page`, fg: composite(token(name), SURFACE), bg: SURFACE, min: AA_TEXT });
 }
 
-/** Solid accent/danger surfaces carry white labels — the button, badge and pill role. */
-for (const name of ['--color-accent-strong', '--color-danger-strong', '--gradient-accent-from', '--gradient-accent-to', '--gradient-header-from', '--gradient-header-to', '--gradient-sidebar-active-from', '--gradient-sidebar-active-to']) {
-  checks.push({ label: `white text on ${name}`, fg: WHITE, bg: parse(token(name)).rgb, min: AA_TEXT });
+/** Accent surfaces — the button, badge and active-pill role — carry dark ink, not white.
+ * Asserting the pair is the point: the bug this replaces was a background that moved to a
+ * brighter green while the `text-white` on top of it stayed put. */
+const ON_ACCENT = parse(token('--color-on-accent')).rgb;
+for (const name of ['--color-accent-strong', '--gradient-accent-from', '--gradient-accent-to', '--gradient-sidebar-active-from', '--gradient-sidebar-active-to']) {
+  checks.push({ label: `--color-on-accent text on ${name}`, fg: ON_ACCENT, bg: parse(token(name)).rgb, min: AA_TEXT });
 }
 
-/** Status gradients back white icons, not text, so 1.4.11's 3:1 applies. */
-for (const name of ['--gradient-ok-from', '--gradient-ok-to', '--gradient-danger-from', '--gradient-danger-to', '--gradient-info-from', '--gradient-info-to']) {
-  checks.push({ label: `white icon on ${name}`, fg: WHITE, bg: parse(token(name)).rgb, min: AA_NON_TEXT });
+/** Danger stayed a dark surface, so it kept its white label. */
+checks.push({ label: 'white text on --color-danger-strong', fg: WHITE, bg: parse(token('--color-danger-strong')).rgb, min: AA_TEXT });
+
+/** The impersonation banner is the app's one warning surface. */
+checks.push({ label: '--color-on-warning text on --color-warning', fg: parse(token('--color-on-warning')).rgb, bg: parse(token('--color-warning')).rgb, min: AA_TEXT });
+
+/** Status gradients back icons, not text, so 1.4.11's 3:1 applies — but each against its
+ * own declared ink, since ok/info are light surfaces and danger is a dark one. Anything
+ * that reads these by interpolation (CountTileWidget) depends on them agreeing. */
+for (const family of ['ok', 'danger', 'info']) {
+  const ink = parse(token(`--gradient-${family}-ink`)).rgb;
+  for (const stop of ['from', 'to']) {
+    checks.push({
+      label: `--gradient-${family}-ink icon on --gradient-${family}-${stop}`,
+      fg: ink,
+      bg: parse(token(`--gradient-${family}-${stop}`)).rgb,
+      min: AA_NON_TEXT,
+    });
+  }
 }
 
 /** A control the user has to find and click is a UI component, boundary included. */
@@ -97,15 +132,24 @@ checks.push({
   min: AA_NON_TEXT,
 });
 
-/** The focus ring has to stay visible on every surface it can land on — including the
- * accent-coloured sidebar and header, where it sits on top of the accent, not the page. */
+/** The focus ring has to stay visible on every surface it can land on. */
 for (const [label, bg] of [
   ['the page', SURFACE],
   ['a card', CARD],
-  ['the accent surface', parse(token('--color-accent-strong')).rgb as Rgb],
 ] as const) {
   checks.push({ label: `--color-focus ring on ${label}`, fg: parse(token('--color-focus')).rgb, bg, min: AA_NON_TEXT });
 }
+
+/** No single ring colour clears 3:1 against both a near-black page and a bright accent:
+ * the pale mint ring measures 1.18:1 on the accent, and white is no better at 1.60:1. A
+ * control whose own background is the accent flips to a dark ring instead — the
+ * .btn-accent / .badge-accent focus rules in globals.css are what apply it. */
+checks.push({
+  label: '--color-focus-on-accent ring on the accent surface',
+  fg: parse(token('--color-focus-on-accent')).rgb,
+  bg: parse(token('--color-accent-strong')).rgb,
+  min: AA_NON_TEXT,
+});
 
 const failures: string[] = [];
 for (const { label, fg, bg, min } of checks) {

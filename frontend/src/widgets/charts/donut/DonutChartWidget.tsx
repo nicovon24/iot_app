@@ -39,7 +39,7 @@ export function DonutChartWidget({ slices, isLoading, title, unitNoun }: DonutCh
 
   return (
     <div className="glass-card flex h-full flex-col p-4">
-      {title && <h3 className="shrink-0 truncate pb-1 text-sm font-semibold text-heading">{title}</h3>}
+      {title && <h3 className="shrink-0 truncate pb-1 t-heading">{title}</h3>}
 
       <div className="flex min-h-0 flex-1 items-center gap-3">
         <div className="relative h-full min-w-0 flex-1">
@@ -72,7 +72,7 @@ export function DonutChartWidget({ slices, isLoading, title, unitNoun }: DonutCh
           {/* The total sits in the hole — the headline number, with the breakdown around it. */}
           <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
             <span className="text-2xl font-semibold text-heading">{total}</span>
-            {unitNoun && <span className="text-[10px] uppercase tracking-wider text-muted">{unitNoun}</span>}
+            {unitNoun && <span className="t-label">{unitNoun}</span>}
           </div>
         </div>
 
@@ -88,7 +88,7 @@ export function DonutChartWidget({ slices, isLoading, title, unitNoun }: DonutCh
               <span className="truncate text-muted" title={slice.name}>
                 {slice.name}
               </span>
-              <span className="ml-auto shrink-0 font-medium tabular-nums text-heading">{slice.value}</span>
+              <span className="ml-auto shrink-0 t-metric-sm text-sm">{slice.value}</span>
             </div>
           ))}
         </div>

@@ -57,7 +57,7 @@ export function DatasourcePicker({
 
       {supportsAllScope && (
         <div className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium text-body">Scope</span>
+          <span className="t-field">Scope</span>
           <div className="flex gap-2">
             <ScopeButton
               active={scope === 'ALL'}
@@ -112,11 +112,11 @@ function ScopeButton({
       type="button"
       onClick={onClick}
       className={`flex flex-1 flex-col items-start gap-0.5 rounded-md border px-3 py-2 text-left transition-colors ${
-        active ? 'border-accent bg-surface' : 'border-border hover:bg-surface'
+        active ? 'border-accent bg-surface' : 'border-border hover:bg-tint'
       }`}
     >
       <span className={`text-sm font-medium ${active ? 'text-heading' : 'text-muted'}`}>{label}</span>
-      <span className="text-xs text-faint">{hint}</span>
+      <span className="t-meta">{hint}</span>
     </button>
   );
 }

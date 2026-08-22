@@ -61,11 +61,11 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <h1 className="mb-8 text-3xl font-semibold text-heading">Log in</h1>
+          <h1 className="mb-8 t-title text-3xl">Log in</h1>
 
           <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="email" className="text-sm font-medium text-body">
+              <label htmlFor="email" className="t-field">
                 Email
               </label>
               <input
@@ -81,7 +81,7 @@ export default function LoginPage() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="password" className="text-sm font-medium text-body">
+              <label htmlFor="password" className="t-field">
                 Password
               </label>
               <div className="relative">
@@ -126,8 +126,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={submitting}
-              style={{ background: 'var(--gradient-accent)' }}
-              className="w-full rounded-md py-2.5 text-sm font-semibold text-white transition hover:brightness-95 disabled:opacity-60"
+              className="btn-accent w-full rounded-md py-2.5 text-sm font-semibold disabled:opacity-60"
             >
               {submitting ? 'Logging in…' : 'Log in'}
             </button>
@@ -135,17 +134,21 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Right: decorative panel */}
-      <div
-        className="relative hidden overflow-hidden lg:flex lg:w-1/2 lg:items-center lg:justify-center"
-        style={{ background: 'var(--gradient-accent)' }}
-      >
-        <div className="absolute -right-40 -top-40 h-96 w-96 rounded-full bg-white/10 blur-2xl" />
-        <div className="absolute -bottom-32 -right-20 h-112 w-md rounded-full bg-white/10 blur-2xl" />
+      {/* Right: decorative panel. Inverted from a solid accent field — at this
+        * brightness a half-screen of green would out-shout the form beside it. */}
+      <div className="relative hidden overflow-hidden border-l border-border bg-surface lg:flex lg:w-1/2 lg:items-center lg:justify-center">
+        <div
+          className="absolute -right-40 -top-40 h-96 w-96 rounded-full opacity-25 blur-3xl"
+          style={{ background: 'var(--gradient-accent)' }}
+        />
+        <div
+          className="absolute -bottom-32 -right-20 h-112 w-md rounded-full opacity-20 blur-3xl"
+          style={{ background: 'var(--gradient-accent)' }}
+        />
         <div className="relative grid grid-cols-3 gap-10 p-10">
           {PANEL_ICONS.map((Icon, i) => (
             <div key={i} className="flex h-16 w-16 items-center justify-center">
-              <Icon className="h-10 w-10 text-white/90" strokeWidth={1.5} />
+              <Icon className="h-10 w-10 text-accent/80" strokeWidth={1.5} />
             </div>
           ))}
         </div>

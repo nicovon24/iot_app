@@ -114,16 +114,16 @@ export default function EntityDetailPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-xl font-semibold text-heading">
+      <h1 className="t-title">
         {entity?.name ?? 'Loading…'}
-        {entity && <span className="ml-2 text-sm font-normal text-muted">{entity.type}</span>}
+        {entity && <span className="ml-2 t-label align-middle">{entity.type}</span>}
       </h1>
 
       <Tabs aria-label="Entity detail tabs" variant="underlined" classNames={TABS_CLASSNAMES}>
         <Tab key="telemetry" title="Telemetry">
           <div className="flex flex-col gap-4">
             <div className="flex max-w-xs flex-col gap-1.5">
-              <label htmlFor="telemetry-key" className="text-sm font-medium text-body">
+              <label htmlFor="telemetry-key" className="t-field">
                 Telemetry key
               </label>
               <select

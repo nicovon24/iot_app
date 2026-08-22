@@ -66,7 +66,7 @@ export function EditEntityDialog({
       <DialogBody className="flex flex-col gap-3">
         {fields.map((field) => (
           <div key={field} className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-body" htmlFor={`edit-entity-${field}`}>
+            <label className="t-field" htmlFor={`edit-entity-${field}`}>
               {FIELD_LABEL[field]}
             </label>
             <input
@@ -83,7 +83,7 @@ export function EditEntityDialog({
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="rounded-md border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400"
+            className="rounded-md border border-danger/30 bg-danger/10 p-3 text-sm text-danger"
           >
             {errorMessage}
           </motion.div>
@@ -94,15 +94,14 @@ export function EditEntityDialog({
         <button
           type="button"
           onClick={onClose}
-          className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-surface"
+          className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-tint"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={isPending || !canSubmit}
-          style={{ background: 'var(--gradient-accent)' }}
-          className="rounded-md px-4 py-2 text-sm font-semibold text-white transition hover:brightness-95 disabled:opacity-60"
+          className="btn-accent rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-60"
         >
           {isPending ? 'Saving…' : 'Save'}
         </button>

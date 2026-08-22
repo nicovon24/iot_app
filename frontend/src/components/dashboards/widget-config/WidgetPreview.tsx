@@ -3,7 +3,7 @@
 import { AlertTriangle, Flame, MapPin, MapPinned } from 'lucide-react';
 import { LabelWidget } from '@/widgets';
 import { MultiKeyChartWidget } from '@/widgets';
-import { groupKeysByUnit } from '@/lib';
+import { groupKeysByUnit, SEVERITY_COLORS } from '@/lib';
 import { CalendarHeatmapWidget } from '@/widgets';
 import { ValueTileWidget } from '@/widgets';
 import { ValueCardsWidget } from '@/widgets';
@@ -111,10 +111,10 @@ export function WidgetPreview({ type }: { type: WidgetType }) {
       return (
         <DonutChartWidget
           slices={[
-            { name: 'CRITICAL', value: 3, color: '#dc2626' },
-            { name: 'MAJOR', value: 7, color: '#f87171' },
-            { name: 'WARNING', value: 12, color: '#f59e0b' },
-            { name: 'MINOR', value: 5, color: '#fbbf24' },
+            { name: 'CRITICAL', value: 3, color: SEVERITY_COLORS.CRITICAL },
+            { name: 'MAJOR', value: 7, color: SEVERITY_COLORS.MAJOR },
+            { name: 'WARNING', value: 12, color: SEVERITY_COLORS.WARNING },
+            { name: 'MINOR', value: 5, color: SEVERITY_COLORS.MINOR },
           ]}
           unitNoun="alarms"
         />
@@ -189,12 +189,12 @@ export function WidgetPreview({ type }: { type: WidgetType }) {
  * map tile than the old dot-grid, with none of the weight of mounting Leaflet per gallery card. */
 const MAP_BACKGROUND_SVG = encodeURIComponent(`
 <svg xmlns="http://www.w3.org/2000/svg" width="200" height="140" viewBox="0 0 200 140">
-  <rect width="200" height="140" fill="#dbeafe"/>
-  <path d="M0 90 Q40 60 70 85 T140 70 T200 95 V140 H0 Z" fill="#e0f2fe"/>
-  <path d="M0 55 L200 40" stroke="#ffffff" stroke-width="5"/>
-  <path d="M30 0 L55 140" stroke="#ffffff" stroke-width="4"/>
-  <path d="M150 0 L120 140" stroke="#ffffff" stroke-width="3"/>
-  <path d="M0 105 L200 115" stroke="#ffffff" stroke-width="3"/>
+  <rect width="200" height="140" fill="#0b120f"/>
+  <path d="M0 90 Q40 60 70 85 T140 70 T200 95 V140 H0 Z" fill="#111c18"/>
+  <path d="M0 55 L200 40" stroke="#2ee89a" stroke-opacity="0.35" stroke-width="5"/>
+  <path d="M30 0 L55 140" stroke="#2ee89a" stroke-opacity="0.28" stroke-width="4"/>
+  <path d="M150 0 L120 140" stroke="#2ee89a" stroke-opacity="0.22" stroke-width="3"/>
+  <path d="M0 105 L200 115" stroke="#2ee89a" stroke-opacity="0.22" stroke-width="3"/>
 </svg>
 `);
 

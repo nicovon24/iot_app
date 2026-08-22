@@ -22,10 +22,6 @@ export default function ClientsPage() {
 
   return (
     <div className="flex h-full w-full flex-col gap-4">
-      <div className="flex shrink-0 items-center justify-between">
-        <h1 className="text-lg font-semibold text-heading">Clients</h1>
-      </div>
-
       <div className="min-h-0 flex-1">
         <EntityListWidget
           data={data}

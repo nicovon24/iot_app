@@ -24,7 +24,7 @@ export interface MapWidgetProps {
 }
 
 export function MapWidget({ id, type, name, lat, lng, heightClassName = 'h-96' }: MapWidgetProps) {
-  const [tileStyle, setTileStyle] = useState<MapTileStyle>('color');
+  const [tileStyle, setTileStyle] = useState<MapTileStyle>('dark');
   const alarmsQuery = useEntityAlarms(id, type);
   const telemetryQuery = useTelemetryLatest(id, type);
 

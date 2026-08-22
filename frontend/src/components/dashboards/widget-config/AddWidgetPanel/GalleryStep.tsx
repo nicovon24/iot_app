@@ -19,7 +19,7 @@ export function GalleryStep({
             key={type}
             type="button"
             onClick={() => onPick(type)}
-            className="flex flex-col gap-2 rounded-md border border-border p-3 text-left transition-colors hover:border-accent hover:bg-surface"
+            className="flex flex-col gap-2 rounded-md border border-border p-3 text-left transition-colors hover:border-accent hover:bg-tint"
           >
             <span className="text-sm font-medium text-heading">{m.label}</span>
             <div className="pointer-events-none h-40 overflow-hidden rounded">

@@ -70,7 +70,7 @@ export function CreateUserDialog({ isOpen, onClose, customerId }: CreateUserDial
       <DialogBody>
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-body" htmlFor="user-email">
+            <label className="t-field" htmlFor="user-email">
               Email
             </label>
             <input
@@ -81,11 +81,11 @@ export function CreateUserDialog({ isOpen, onClose, customerId }: CreateUserDial
               className="rounded-md border border-border bg-surface px-3 py-2 text-sm text-heading outline-none focus:border-accent"
               placeholder="operator@customer-a.com"
             />
-            {errors.email && <span className="text-xs text-red-400">{errors.email.message}</span>}
+            {errors.email && <span className="text-xs text-danger">{errors.email.message}</span>}
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-body" htmlFor="user-password">
+            <label className="t-field" htmlFor="user-password">
               Password
             </label>
             <input
@@ -95,7 +95,7 @@ export function CreateUserDialog({ isOpen, onClose, customerId }: CreateUserDial
               className="rounded-md border border-border bg-surface px-3 py-2 text-sm text-heading outline-none focus:border-accent"
               placeholder="changeme123"
             />
-            {errors.password && <span className="text-xs text-red-400">{errors.password.message}</span>}
+            {errors.password && <span className="text-xs text-danger">{errors.password.message}</span>}
           </div>
 
           <Controller
@@ -118,7 +118,7 @@ export function CreateUserDialog({ isOpen, onClose, customerId }: CreateUserDial
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="rounded-md border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400"
+              className="rounded-md border border-danger/30 bg-danger/10 p-3 text-sm text-danger"
             >
               {errorMessage}
             </motion.div>
@@ -130,7 +130,7 @@ export function CreateUserDialog({ isOpen, onClose, customerId }: CreateUserDial
         <button
           type="button"
           onClick={close}
-          className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-surface"
+          className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-tint"
         >
           Cancel
         </button>
@@ -138,7 +138,7 @@ export function CreateUserDialog({ isOpen, onClose, customerId }: CreateUserDial
           type="submit"
           whileTap={{ scale: 0.97 }}
           disabled={createUser.isPending}
-          className="rounded-md bg-accent-strong px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90 disabled:opacity-60"
+          className="rounded-md bg-accent-strong px-4 py-2 text-sm font-semibold text-on-accent transition hover:brightness-110 disabled:opacity-60"
         >
           {createUser.isPending ? 'Creating…' : 'Create User'}
         </motion.button>

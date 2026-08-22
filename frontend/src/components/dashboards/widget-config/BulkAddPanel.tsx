@@ -146,8 +146,7 @@ export function BulkAddPanel({
           type="button"
           disabled={pairs.length === 0}
           onClick={handleAdd}
-          style={{ background: 'var(--gradient-accent)' }}
-          className="rounded-md px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
+          className="btn-accent rounded-md px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40"
         >
           {pairs.length > 0 ? `Add ${pairs.length} widget${pairs.length > 1 ? 's' : ''}` : 'Add widgets'}
         </button>

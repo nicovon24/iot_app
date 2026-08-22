@@ -20,18 +20,18 @@ export function GaugeShell({ label, value, unit, ts, children }: GaugeShellProps
 
   return (
     <div className="glass-card flex h-full flex-col items-center justify-center gap-1 p-4">
-      <span className="w-full truncate text-center text-xs font-semibold uppercase tracking-wider text-muted" title={label}>
+      <span className="w-full truncate text-center t-label" title={label}>
         {label}
       </span>
 
       {children}
 
       <div className="flex shrink-0 flex-col items-center">
-        <span className="text-2xl font-semibold text-heading">
+        <span className="t-metric">
           {hasValue ? (formatTelemetryValue(String(value)) ?? value) : '—'}
           {hasValue && unit ? <span className="ml-1 text-base font-normal text-body">{unit}</span> : null}
         </span>
-        <span className="text-xs text-faint">{ts ? new Date(ts).toLocaleTimeString() : 'Waiting for data…'}</span>
+        <span className="t-meta">{ts ? new Date(ts).toLocaleTimeString() : 'Waiting for data…'}</span>
       </div>
     </div>
   );

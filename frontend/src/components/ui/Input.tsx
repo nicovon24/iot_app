@@ -37,7 +37,7 @@ export function Input({ label, icon, compact = false, className = '', ...props }
 
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="text-sm font-medium text-body">{label}</span>
+      <span className="t-field">{label}</span>
       {field}
     </div>
   );

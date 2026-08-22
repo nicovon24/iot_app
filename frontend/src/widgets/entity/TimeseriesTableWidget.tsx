@@ -46,7 +46,7 @@ export function TimeseriesTableWidget({ keys, byKey, isLoading, title, units }: 
   return (
     <div className="glass-card flex h-full flex-col p-0">
       {title && (
-        <h3 className="shrink-0 truncate border-b border-border px-4 py-3 text-sm font-semibold text-heading">
+        <h3 className="shrink-0 truncate border-b border-border px-4 py-3 t-heading">
           {title}
         </h3>
       )}
@@ -94,7 +94,7 @@ function Centered({ text }: { text: string }) {
 function Th({ children, sticky }: { children: React.ReactNode; sticky?: boolean }) {
   return (
     <th
-      className={`sticky top-0 border-b border-border bg-surface px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-muted ${
+      className={`sticky top-0 border-b border-border bg-surface px-3 py-2 text-left t-label ${
         sticky ? 'left-0 z-20' : 'z-10'
       }`}
     >

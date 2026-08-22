@@ -485,8 +485,7 @@ export function AddWidgetPanel({
             type="button"
             disabled={!canAdd}
             onClick={handleSubmit}
-            style={{ background: 'var(--gradient-accent)' }}
-            className="rounded-md px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
+            className="btn-accent rounded-md px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40"
           >
             {isEditing ? 'Save changes' : 'Add widget'}
           </button>

@@ -37,9 +37,9 @@ export function MultiValueTileWidget({
   return (
     <div className="glass-card flex h-full flex-col gap-2 p-4">
       <div className="flex shrink-0 items-baseline justify-between gap-2">
-        <span className="text-xs font-semibold uppercase tracking-wider text-muted">{title}</span>
+        <span className="t-label">{title}</span>
         {omittedCount > 0 && (
-          <span className="text-xs text-faint">
+          <span className="t-meta">
             {entries.length} of {entries.length + omittedCount}
           </span>
         )}
@@ -73,7 +73,7 @@ export function MultiValueTileWidget({
                     }
                   : {})}
                 className={`flex flex-col gap-0.5 rounded-md border border-border px-3 py-2 ${
-                  onEntityClick ? 'cursor-pointer transition-colors hover:border-accent hover:bg-surface' : ''
+                  onEntityClick ? 'cursor-pointer transition-colors hover:border-accent hover:bg-tint' : ''
                 }`}
               >
                 <span className="truncate text-xs text-muted" title={entry.name}>
@@ -84,7 +84,7 @@ export function MultiValueTileWidget({
                   initial={{ opacity: 0.4 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.25 }}
-                  className="text-lg font-semibold text-heading"
+                  className="t-metric-sm"
                 >
                   {display ?? '—'}
                 </motion.span>

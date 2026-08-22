@@ -1,14 +1,19 @@
+import type { AlarmSeverity } from '@/types';
+
 /**
  * Categorical series colors for multi-series charts.
  *
  * These are the eight dark-mode steps of the reference categorical palette, validated as a
- * set against this app's real chart surface — `--color-surface-card` (rgba(30,41,59,.72))
- * composited over `--color-surface` (#0f172a), i.e. ~#1a2436. Result: lightness band, chroma
- * floor, adjacent-pair CVD separation (worst ΔE 8.4), normal-vision separation (worst ΔE
- * 19.3) and 3:1 contrast all pass. Re-run the validator before changing any hex or the order:
+ * set against this app's real chart surface — `--color-surface-card` (rgba(19,26,23,.72))
+ * composited over `--color-surface` (#050807), i.e. ~#0f1513. Result: lightness band, chroma
+ * floor, adjacent-pair CVD separation, normal-vision separation and 3:1 contrast all pass
+ * (worst is #008300 at 3.73:1). Re-run the validator before changing any hex or the order:
  * the *ordering* is the colorblind-safety mechanism, not decoration.
  *
- * Deliberately NOT derived from --color-accent: the accent is a single petrol cyan used for
+ * These survived the move to the near-black surface untouched, and with more headroom than
+ * they had on the old slate — a darker backdrop lifts every one of these ratios.
+ *
+ * Deliberately NOT derived from --color-accent: the accent is a single aqua green used for
  * UI affordances, and tinting eight series from one hue would make them indistinguishable.
  */
 export const SERIES_COLORS = [
@@ -65,11 +70,52 @@ export const HEAT_COLORS = [
  * Cells with no data at all. Distinct from the coldest step so "zero" and "never reported" are
  * never confused — spotting gaps is half of what a heatmap is for.
  *
- * A translucent white rather than `--color-border`: it has to sit a step above the card in both
- * themes, and the border token is nearly invisible against the dark surface, which made a sparse
- * grid look like a handful of stray dots floating in an empty panel.
+ * A translucent neutral rather than `--color-border`: it has to sit a step above the card, and
+ * the border token is nearly invisible against the dark surface, which made a sparse grid look
+ * like a handful of stray dots floating in an empty panel.
  */
-export const HEAT_EMPTY = 'rgba(148, 163, 184, 0.14)';
+export const HEAT_EMPTY = 'rgba(198, 226, 216, 0.12)';
+
+/**
+ * Alarm severity — an ordered scale, so it descends in heat rather than changing hue per step,
+ * and the ordering carries the ranking even in grayscale.
+ *
+ * This lived in three places before: the donut cell, the alarm chips and the gallery preview
+ * each kept a private copy, and they had already drifted — the chips collapsed CRITICAL and
+ * MAJOR onto one red and WARNING and MINOR onto one amber, so a chip and a slice describing
+ * the same alarm disagreed on screen.
+ *
+ * Every step clears 4.5:1 on the card, because these are used as chip *text* as well as chart
+ * fills. That is also a fix: the old CRITICAL (#dc2626) measured 3.82:1 as a chip label.
+ */
+export const SEVERITY_COLORS: Record<AlarmSeverity, string> = {
+  CRITICAL: '#ff5f56',
+  MAJOR: '#ff9a52',
+  WARNING: '#fbbf24',
+  MINOR: '#d8db5f',
+  INDETERMINATE: '#8ca79c',
+};
+
+/**
+ * Colour for a severity that arrives as a plain string. The alarm donut groups by a field
+ * chosen at runtime, so the key is only known to be a severity when `groupBy` says so and
+ * the type can't follow that. An unrecognised value falls back to INDETERMINATE, which is
+ * what it is, rather than rendering a slice with no colour at all.
+ */
+export function severityColor(severity: string): string {
+  return SEVERITY_COLORS[severity as AlarmSeverity] ?? SEVERITY_COLORS.INDETERMINATE;
+}
+
+/**
+ * Ink plus its own translucent fill, for a severity chip. Takes a plain string and routes
+ * through severityColor() so an unrecognised severity degrades to INDETERMINATE rather
+ * than to `background: "undefined26"`, which the browser drops and which renders as an
+ * unstyled chip that looks like a layout bug rather than unknown data.
+ */
+export function severityChipStyle(severity: string) {
+  const color = severityColor(severity);
+  return { color, background: `${color}26` };
+}
 
 /**
  * Bins `value` into a HEAT_COLORS step, given the range it sits in.

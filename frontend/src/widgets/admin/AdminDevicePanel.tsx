@@ -9,7 +9,7 @@ import { useEntities } from '@/hooks';
 import { Dialog, DialogHeader, DialogTitle, DialogCloseButton, DialogBody, DialogFooter } from '@/components';
 import { Select } from '@/components';
 import { TableRowsSkeleton } from '@/components';
-import { toastError, toastSuccess } from '@/lib';
+import { tableClassNames, toastError, toastSuccess } from '@/lib';
 
 export interface AdminDevicePanelProps {
   title: string;
@@ -17,12 +17,7 @@ export interface AdminDevicePanelProps {
   readOnly?: boolean;
 }
 
-const TABLE_CLASSNAMES = {
-  wrapper: 'h-full rounded-none border-0 bg-transparent p-0 shadow-none overflow-y-auto',
-  th: 'bg-surface text-left text-xs font-semibold uppercase tracking-wider text-muted first:rounded-none last:rounded-none border-b border-border py-3',
-  td: 'text-left py-3 text-sm text-body group-data-[hover=true]:bg-surface',
-  tr: 'border-b border-border last:border-b-0 transition-colors',
-};
+const TABLE_CLASSNAMES = tableClassNames({ align: 'left' });
 
 export function AdminDevicePanel({ title, activeNode, readOnly = false }: AdminDevicePanelProps) {
   const [isAssignOpen, setIsAssignOpen] = useState(false);
@@ -71,7 +66,7 @@ export function AdminDevicePanel({ title, activeNode, readOnly = false }: AdminD
   return (
     <div className="glass-card flex h-96 shrink-0 flex-col gap-3 p-4 md:h-full md:min-h-0 md:w-full">
       <div className="flex items-center justify-between">
-        <h2 className="truncate text-sm font-semibold text-heading" title={title}>
+        <h2 className="truncate t-heading" title={title}>
           {title}
         </h2>
         {!readOnly && (
@@ -80,8 +75,7 @@ export function AdminDevicePanel({ title, activeNode, readOnly = false }: AdminD
               type="button"
               onClick={() => setIsClaimOpen(true)}
               title="Claim a Device with no Customer into your own Customer"
-              className="flex items-center gap-1 text-xs font-semibold hover:underline"
-              style={{ color: 'var(--gradient-accent-from)' }}
+              className="flex items-center gap-1 text-xs font-semibold text-accent hover:underline"
             >
               <UserPlus size={12} /> Claim
             </button>
@@ -90,8 +84,7 @@ export function AdminDevicePanel({ title, activeNode, readOnly = false }: AdminD
               disabled={!canAssign}
               onClick={() => setIsAssignOpen(true)}
               title={canAssign ? undefined : 'Select an Asset to assign a Device'}
-              className="flex items-center gap-1 text-xs font-semibold hover:underline disabled:cursor-not-allowed disabled:opacity-40 disabled:no-underline"
-              style={{ color: 'var(--gradient-accent-from)' }}
+              className="flex items-center gap-1 text-xs font-semibold text-accent hover:underline disabled:cursor-not-allowed disabled:opacity-40 disabled:no-underline"
             >
               <Plus size={12} /> Assign
             </button>
@@ -145,7 +138,7 @@ export function AdminDevicePanel({ title, activeNode, readOnly = false }: AdminD
                               },
                             )
                           }
-                          className="rounded p-1 text-red-600 hover:bg-surface"
+                          className="rounded p-1 text-danger hover:bg-tint"
                           aria-label="Unassign"
                           title="Unassign"
                         >
@@ -176,7 +169,7 @@ export function AdminDevicePanel({ title, activeNode, readOnly = false }: AdminD
           />
         </DialogBody>
         <DialogFooter>
-          <button type="button" onClick={closeAssign} className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-surface">
+          <button type="button" onClick={closeAssign} className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-tint">
             Cancel
           </button>
           <button
@@ -196,8 +189,7 @@ export function AdminDevicePanel({ title, activeNode, readOnly = false }: AdminD
                 },
               );
             }}
-            style={{ background: 'var(--gradient-accent)' }}
-            className="rounded-md px-4 py-2 text-sm font-semibold text-white transition hover:brightness-95 disabled:opacity-60"
+            className="btn-accent rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-60"
           >
             {linkDevice.isPending ? 'Assigning…' : 'Assign'}
           </button>
@@ -222,7 +214,7 @@ export function AdminDevicePanel({ title, activeNode, readOnly = false }: AdminD
           />
         </DialogBody>
         <DialogFooter>
-          <button type="button" onClick={closeClaim} className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-surface">
+          <button type="button" onClick={closeClaim} className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-tint">
             Cancel
           </button>
           <button
@@ -239,8 +231,7 @@ export function AdminDevicePanel({ title, activeNode, readOnly = false }: AdminD
                 onError: (error) => toastError("Couldn't claim device", error),
               });
             }}
-            style={{ background: 'var(--gradient-accent)' }}
-            className="rounded-md px-4 py-2 text-sm font-semibold text-white transition hover:brightness-95 disabled:opacity-60"
+            className="btn-accent rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-60"
           >
             {claimDevice.isPending ? 'Claiming…' : 'Claim'}
           </button>

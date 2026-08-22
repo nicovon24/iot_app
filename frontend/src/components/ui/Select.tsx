@@ -35,7 +35,7 @@ function renderOption(option: SelectOption) {
     <RadixSelect.Item
       key={option.value}
       value={option.value}
-      className="flex cursor-pointer items-center justify-between rounded px-3 py-2 text-sm text-body outline-none data-[highlighted]:bg-surface data-[highlighted]:text-heading"
+      className="flex cursor-pointer items-center justify-between rounded px-3 py-2 text-sm text-body outline-none data-[highlighted]:bg-tint data-[highlighted]:text-heading"
     >
       <RadixSelect.ItemText>{option.label}</RadixSelect.ItemText>
       <RadixSelect.ItemIndicator>
@@ -53,7 +53,7 @@ export function Select({ label, placeholder, value, onChange, options, disabled,
   return (
     <RadixSelect.Root value={value} onValueChange={onChange} disabled={disabled}>
       <div className="flex flex-col gap-1.5">
-        {label && <span className="text-sm font-medium text-body">{label}</span>}
+        {label && <span className="t-field">{label}</span>}
         <RadixSelect.Trigger
           className={`flex items-center justify-between gap-2 rounded-md border border-border-strong bg-surface text-heading outline-none transition-colors data-[placeholder]:text-muted data-[state=open]:border-accent disabled:cursor-not-allowed disabled:opacity-50 ${
             compact ? 'px-2 py-1.5 text-xs' : 'px-3 py-2 text-sm'
@@ -82,7 +82,7 @@ export function Select({ label, placeholder, value, onChange, options, disabled,
                   <>
                     {groupNames.map((groupName) => (
                       <RadixSelect.Group key={groupName}>
-                        <RadixSelect.Label className="px-3 pt-2 pb-1 text-xs font-semibold uppercase tracking-wider text-muted">
+                        <RadixSelect.Label className="px-3 pt-2 pb-1 t-label">
                           {groupName}
                         </RadixSelect.Label>
                         {options.filter((o) => o.group === groupName).map(renderOption)}

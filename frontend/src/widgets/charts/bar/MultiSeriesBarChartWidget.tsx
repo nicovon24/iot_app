@@ -56,9 +56,9 @@ export function MultiSeriesBarChartWidget({
 
   return (
     <div className="glass-card flex h-full flex-col p-4">
-      {title && <h3 className="shrink-0 truncate pb-1 text-sm font-semibold text-heading">{title}</h3>}
+      {title && <h3 className="shrink-0 truncate pb-1 t-heading">{title}</h3>}
       {omittedCount > 0 && (
-        <p className="mb-1 shrink-0 text-xs text-faint">
+        <p className="mb-1 shrink-0 t-meta">
           Showing {series.length} of {series.length + omittedCount} entities
         </p>
       )}

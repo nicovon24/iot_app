@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { MAX_SERIES } from '@/lib';
+import { MAX_SERIES, severityColor } from '@/lib';
 import { useEntityAlarms, useGlobalAlarms } from '@/hooks';
 import { useEntities } from '@/hooks';
 import { LineChartWidget } from '@/widgets';
@@ -278,16 +278,6 @@ export function ScatterCell({ config }: { config: EntityWidgetConfig }) {
   );
 }
 
-/** Severity keeps its established colours — the same red/amber the alarm chips use, so a slice
- * means the same thing here as everywhere else in the app. */
-const SEVERITY_COLORS: Record<string, string> = {
-  CRITICAL: '#dc2626',
-  MAJOR: '#f87171',
-  WARNING: '#f59e0b',
-  MINOR: '#fbbf24',
-  INDETERMINATE: '#94a3b8',
-};
-
 export function DonutCell({ config }: { config: EntityWidgetConfig }) {
   const all = isAllScope(config);
   const scoped = Boolean(config.entityId) && !all;
@@ -332,7 +322,7 @@ export function DonutCell({ config }: { config: EntityWidgetConfig }) {
   const slices = Array.from(counts, ([name, value]) => ({
     name,
     value,
-    color: groupBy === 'ALARM_SEVERITY' ? SEVERITY_COLORS[name] : undefined,
+    color: groupBy === 'ALARM_SEVERITY' ? severityColor(name) : undefined,
   })).sort((a, b) => b.value - a.value);
 
   return (

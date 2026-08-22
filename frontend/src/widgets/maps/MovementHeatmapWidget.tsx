@@ -87,7 +87,7 @@ export function MovementHeatmapWidget({
   heightClassName = 'h-full',
   emptyReason,
 }: MovementHeatmapWidgetProps) {
-  const [tileStyle, setTileStyle] = useState<MapTileStyle>('color');
+  const [tileStyle, setTileStyle] = useState<MapTileStyle>('dark');
 
   if (isLoading && points.length === 0) return <Centered text="Loading position history…" />;
   if (points.length === 0) {
@@ -99,7 +99,7 @@ export function MovementHeatmapWidget({
   return (
     <div className="glass-card flex h-full flex-col overflow-hidden p-0">
       {title && (
-        <h3 className="shrink-0 truncate border-b border-border px-4 py-3 text-sm font-semibold text-heading">
+        <h3 className="shrink-0 truncate border-b border-border px-4 py-3 t-heading">
           {title}
         </h3>
       )}

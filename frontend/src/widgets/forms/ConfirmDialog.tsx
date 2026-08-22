@@ -22,7 +22,7 @@ export function ConfirmDialog({ isOpen, title, description, isPending, error, on
     <Dialog isOpen={isOpen} onClose={onClose} widthClassName="max-w-xs">
       <DialogBody className="flex flex-col gap-3 py-4">
         <div className="flex items-start gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-500/15 text-red-400">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-danger/15 text-danger">
             <AlertTriangle size={18} />
           </div>
           <div>
@@ -35,7 +35,7 @@ export function ConfirmDialog({ isOpen, title, description, isPending, error, on
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="rounded-md border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400"
+            className="rounded-md border border-danger/30 bg-danger/10 p-3 text-sm text-danger"
           >
             {errorMessage}
           </motion.div>
@@ -45,7 +45,7 @@ export function ConfirmDialog({ isOpen, title, description, isPending, error, on
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-surface"
+            className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-tint"
           >
             Cancel
           </button>
@@ -53,7 +53,7 @@ export function ConfirmDialog({ isOpen, title, description, isPending, error, on
             type="button"
             onClick={onConfirm}
             disabled={isPending}
-            className="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90 disabled:opacity-60"
+            className="rounded-md bg-danger-strong px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90 disabled:opacity-60"
           >
             {isPending ? 'Deleting…' : 'Delete'}
           </button>

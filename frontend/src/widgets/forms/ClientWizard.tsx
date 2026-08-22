@@ -132,7 +132,7 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
       <DialogHeader>
         <div className="flex w-full flex-col gap-4 pt-1">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-heading">Create Client</h2>
+            <h2 className="t-heading text-base">Create Client</h2>
             <DialogCloseButton />
           </div>
           <div className="flex items-center gap-2">
@@ -151,7 +151,7 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
                     {step > s.n ? <Check size={14} /> : s.n}
                   </motion.div>
                   <span
-                    className={`text-[11px] font-medium uppercase tracking-wide ${step === s.n ? 'text-accent' : 'text-muted'}`}
+                    className={`t-label ${step === s.n ? '!text-accent' : ''}`}
                   >
                     {s.label}
                   </span>
@@ -186,7 +186,7 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
                   transition={{ duration: 0.2 }}
                   className="flex flex-col gap-2"
                 >
-                  <label className="text-sm font-medium text-body" htmlFor="client-name">
+                  <label className="t-field" htmlFor="client-name">
                     Client name
                   </label>
                   <input
@@ -202,7 +202,7 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="text-xs text-red-600"
+                        className="text-xs text-danger"
                       >
                         {errors.name.message}
                       </motion.span>
@@ -237,7 +237,7 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
                           className="flex items-center gap-2 rounded-lg border border-border bg-surface px-2 py-2"
                         >
                           <GripVertical size={14} className="shrink-0 text-faint" />
-                          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-100 text-xs font-semibold text-accent">
+                          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent/15 text-xs font-semibold text-accent">
                             {index + 1}
                           </div>
                           <input
@@ -266,7 +266,7 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
                             type="button"
                             onClick={() => remove(index)}
                             disabled={fields.length <= 1}
-                            className="rounded p-1.5 text-red-600 transition hover:bg-surface-card disabled:opacity-30"
+                            className="rounded p-1.5 text-danger transition hover:bg-surface-card disabled:opacity-30"
                             aria-label="Remove level"
                           >
                             <Trash2 size={14} />
@@ -277,7 +277,7 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
                   </div>
 
                   {errors.hierarchyLevels && (
-                    <span className="text-xs text-red-600">
+                    <span className="text-xs text-danger">
                       {errors.hierarchyLevels.message ?? 'Check each level name'}
                     </span>
                   )}
@@ -286,7 +286,7 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
                     type="button"
                     whileTap={{ scale: 0.97 }}
                     onClick={() => append({ name: '' })}
-                    className="flex w-fit items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm text-body hover:bg-surface"
+                    className="flex w-fit items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm text-body hover:bg-tint"
                   >
                     <Plus size={14} /> Add level
                   </motion.button>
@@ -315,7 +315,7 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
                           transition={{ delay: i * 0.05 }}
                           className="flex items-center gap-2 text-body"
                         >
-                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-sky-100 text-[10px] font-semibold text-accent">
+                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent/15 text-[10px] font-semibold text-accent">
                             {i + 1}
                           </span>
                           {l.name}
@@ -323,7 +323,7 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
                       ))}
                     </div>
                   </div>
-                  <div className="rounded-md border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
+                  <div className="rounded-md border border-danger/30 bg-danger/10 p-3 text-sm text-danger">
                     The hierarchy cannot be changed after the Client is created. Review it carefully before
                     submitting.
                   </div>
@@ -331,7 +331,7 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="rounded-md border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400"
+                      className="rounded-md border border-danger/30 bg-danger/10 p-3 text-sm text-danger"
                     >
                       {errorMessage}
                     </motion.div>
@@ -347,7 +347,7 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
             <button
               type="button"
               onClick={goBack}
-              className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-surface"
+              className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-tint"
             >
               Back
             </button>
@@ -355,7 +355,7 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
             <button
               type="button"
               onClick={close}
-              className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-surface"
+              className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-tint"
             >
               Cancel
             </button>
@@ -364,7 +364,7 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
             <motion.button
               type="submit"
               whileTap={{ scale: 0.97 }}
-              className="rounded-md bg-accent-strong px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90"
+              className="rounded-md bg-accent-strong px-4 py-2 text-sm font-semibold text-on-accent transition hover:brightness-110"
             >
               Next
             </motion.button>
@@ -373,7 +373,7 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
               type="submit"
               whileTap={{ scale: 0.97 }}
               disabled={createCustomer.isPending}
-              className="rounded-md bg-accent-strong px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90 disabled:opacity-60"
+              className="rounded-md bg-accent-strong px-4 py-2 text-sm font-semibold text-on-accent transition hover:brightness-110 disabled:opacity-60"
             >
               {createCustomer.isPending ? 'Creating…' : 'Create Client'}
             </motion.button>

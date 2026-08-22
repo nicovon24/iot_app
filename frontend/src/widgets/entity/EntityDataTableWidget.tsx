@@ -40,11 +40,11 @@ function Shell({ children, note, title }: { children: React.ReactNode; note?: st
   return (
     <div className="glass-card flex h-full flex-col p-0">
       {title && (
-        <h3 className="shrink-0 truncate border-b border-border px-4 py-3 text-sm font-semibold text-heading">
+        <h3 className="shrink-0 truncate border-b border-border px-4 py-3 t-heading">
           {title}
         </h3>
       )}
-      {note && <p className="shrink-0 border-b border-border px-4 py-2 text-xs text-faint">{note}</p>}
+      {note && <p className="shrink-0 border-b border-border px-4 py-2 t-meta">{note}</p>}
       <div className="table-scroll min-h-0 flex-1 overflow-auto">{children}</div>
     </div>
   );
@@ -156,7 +156,7 @@ export function EntityDataTableWidget({
                   }
                 : {})}
               className={`border-b border-border last:border-b-0 ${
-                onEntityClick ? 'cursor-pointer transition-colors hover:bg-surface' : ''
+                onEntityClick ? 'cursor-pointer transition-colors hover:bg-tint' : ''
               }`}
             >
               <td className="sticky left-0 z-10 bg-surface px-3 py-2 font-medium text-heading">{row.name}</td>
@@ -180,7 +180,7 @@ function Th({ children, sticky, title }: { children: React.ReactNode; sticky?: b
   return (
     <th
       title={title}
-      className={`sticky top-0 border-b border-border bg-surface px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-muted ${
+      className={`sticky top-0 border-b border-border bg-surface px-3 py-2 text-left t-label ${
         sticky ? 'left-0 z-20' : 'z-10'
       }`}
     >

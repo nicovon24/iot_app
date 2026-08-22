@@ -33,7 +33,7 @@ const DEFAULT_ZOOM = 2;
 function buildIcon(color: string) {
   return L.divIcon({
     className: '',
-    html: `<div style="width:18px;height:18px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.5);"></div>`,
+    html: `<div style="width:18px;height:18px;border-radius:50%;background:${color};border:2px solid #04120c;box-shadow:0 0 6px ${color}80;"></div>`,
     iconSize: [18, 18],
     iconAnchor: [9, 9],
     popupAnchor: [0, -9],
@@ -72,7 +72,7 @@ export function ValueMapWidget({
   unit,
   onEntityClick,
 }: ValueMapWidgetProps) {
-  const [tileStyle, setTileStyle] = useState<MapTileStyle>('color');
+  const [tileStyle, setTileStyle] = useState<MapTileStyle>('dark');
 
   if (isLoading && entries.length === 0) return <Centered text="Loading…" />;
   if (entries.length === 0) return <Centered text="No entities with location data" />;
@@ -85,7 +85,7 @@ export function ValueMapWidget({
   return (
     <div className="glass-card flex h-full flex-col overflow-hidden p-0">
       {title && (
-        <h3 className="shrink-0 truncate border-b border-border px-4 py-3 text-sm font-semibold text-heading">
+        <h3 className="shrink-0 truncate border-b border-border px-4 py-3 t-heading">
           {title}
         </h3>
       )}
@@ -112,14 +112,14 @@ export function ValueMapWidget({
                       className="h-2 w-2 shrink-0 rounded-full"
                       style={{ background: heatColor(entry.value, min, max) }}
                     />
-                    <p className="truncate text-sm font-semibold text-heading" title={entry.name}>
+                    <p className="truncate t-heading" title={entry.name}>
                       {entry.name}
                     </p>
                   </div>
 
                   <div className="flex items-baseline justify-between gap-3 text-xs">
                     <span className="truncate text-muted">{telemetryKey ?? 'value'}</span>
-                    <span className="shrink-0 font-medium tabular-nums text-heading">
+                    <span className="shrink-0 t-metric-sm text-sm">
                       {entry.value === undefined
                         ? '—'
                         : `${formatTelemetryValue(String(entry.value)) ?? entry.value}${unit ? ` ${unit}` : ''}`}
@@ -130,8 +130,7 @@ export function ValueMapWidget({
                     <button
                       type="button"
                       onClick={() => onEntityClick(entry.id)}
-                      style={{ background: 'var(--gradient-accent)' }}
-                      className="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+                      className="btn-accent cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold"
                     >
                       Details
                     </button>

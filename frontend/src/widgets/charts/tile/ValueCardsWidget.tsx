@@ -63,9 +63,9 @@ export function ValueCardsWidget({
 
   return (
     <div className="glass-card flex h-full flex-col gap-2 p-4">
-      {title && <h3 className="shrink-0 truncate text-sm font-semibold text-heading">{title}</h3>}
+      {title && <h3 className="shrink-0 truncate t-heading">{title}</h3>}
       {omittedCount > 0 && (
-        <span className="shrink-0 text-xs text-faint">
+        <span className="shrink-0 t-meta">
           Showing {entries.length} of {entries.length + omittedCount} entities
         </span>
       )}
@@ -87,7 +87,7 @@ export function ValueCardsWidget({
                 }
               : {})}
             className={`flex flex-col gap-2 rounded-lg border border-border p-3 ${
-              onEntityClick ? 'cursor-pointer transition-colors hover:border-accent hover:bg-surface' : ''
+              onEntityClick ? 'cursor-pointer transition-colors hover:border-accent hover:bg-tint' : ''
             }`}
           >
             <span className="truncate text-xs font-semibold text-heading" title={entry.name}>
@@ -98,13 +98,13 @@ export function ValueCardsWidget({
                 const display = formatTelemetryValue(measure.value, { unit: units?.[measure.key] });
                 return (
                   <div key={measure.key} className="flex flex-col">
-                    <span className="text-[10px] uppercase tracking-wider text-muted">{measure.key}</span>
+                    <span className="t-label">{measure.key}</span>
                     <motion.span
                       key={measure.value}
                       initial={{ opacity: 0.4 }}
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.25 }}
-                      className="text-lg font-semibold leading-tight text-heading"
+                      className="t-metric-sm leading-tight"
                     >
                       {display ?? '—'}
                     </motion.span>

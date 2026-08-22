@@ -169,7 +169,7 @@ export default function DashboardDetailPage() {
             className="!text-lg !font-semibold"
           />
         ) : (
-          <h1 className="text-lg font-semibold text-heading">{title}</h1>
+          <h1 className="t-heading text-lg">{title}</h1>
         )}
 
         {/* Outside the canWrite gate on purpose: a read-only viewer must be able to change the
@@ -188,8 +188,8 @@ export default function DashboardDetailPage() {
                 onClick={() => setLayoutMode((m) => (m === 'FIT' ? 'SCROLL' : 'FIT'))}
                 className={`flex h-9 w-9 items-center justify-center rounded-md border transition-colors ${
                   layoutMode === 'FIT'
-                    ? 'border-accent bg-surface text-accent'
-                    : 'border-border text-muted hover:bg-surface'
+                    ? 'border-accent bg-tint-strong text-accent'
+                    : 'border-border text-muted hover:bg-tint'
                 }`}
               >
                 {layoutMode === 'FIT' ? <Maximize2 size={16} /> : <ScrollText size={16} />}
@@ -210,14 +210,14 @@ export default function DashboardDetailPage() {
                     setEditingWidget(null);
                     setPanelOpen(true);
                   }}
-                  className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm font-medium text-body hover:bg-surface"
+                  className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 t-field hover:bg-tint"
                 >
                   <Plus size={15} /> Add widget
                 </button>
                 <button
                   type="button"
                   onClick={() => setBulkPanelOpen(true)}
-                  className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm font-medium text-body hover:bg-surface"
+                  className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 t-field hover:bg-tint"
                 >
                   <Layers size={15} /> Bulk add
                 </button>
@@ -227,8 +227,7 @@ export default function DashboardDetailPage() {
               <button
                 type="button"
                 onClick={handleSave}
-                style={{ background: 'var(--gradient-accent)' }}
-                className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-semibold text-white"
+                className="btn-accent flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-semibold"
               >
                 <Save size={15} /> Save
               </button>
@@ -236,7 +235,7 @@ export default function DashboardDetailPage() {
               <button
                 type="button"
                 onClick={() => setEditMode(true)}
-                className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm font-medium text-body hover:bg-surface"
+                className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 t-field hover:bg-tint"
               >
                 <Pencil size={15} /> Edit
               </button>

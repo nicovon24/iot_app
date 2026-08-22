@@ -133,7 +133,7 @@ export function CalendarHeatmapWidget({ points, isLoading, title, unit, window }
 
   return (
     <div className="glass-card relative flex h-full flex-col gap-2 p-4">
-      {title && <h3 className="shrink-0 truncate text-sm font-semibold text-heading">{title}</h3>}
+      {title && <h3 className="shrink-0 truncate t-heading">{title}</h3>}
 
       {/* Scrolling moves the cells out from under a tooltip measured against the card, so it's
         * dismissed rather than left pointing at the wrong day. */}

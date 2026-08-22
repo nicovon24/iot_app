@@ -7,90 +7,171 @@
  * (e.g. injected per-tenant via a <style> tag or `element.style.setProperty`)
  * with no rebuild and no component changes required.
  *
- * Dark "control room" theme — slate bg/sidebar with a petrol-cyan accent used
- * everywhere (icons, buttons, borders, header). Sidebar active/selected uses
- * a washed-out (desaturated) pastel version of the same cyan instead of a
- * second hue, so "selected" reads as a faded variant of the main accent
- * rather than a different color (Phase 9.1 experiment #4c, see STATE.md
- * Decisions).
+ * Dark "control room" theme — near-black neutrals carrying a whisper of green,
+ * with a single bright aqua-green accent used everywhere: icons, buttons,
+ * borders, the sidebar active pill, single-series charts.
+ *
+ * The accent being *bright* inverts the convention this file used to hold. White
+ * ink on #2ee89a measures 1.60:1 and fails every threshold, so anything sitting
+ * on an accent surface takes --color-on-accent (11.96:1) instead. The
+ * --gradient-*-ink tokens below exist to express that per gradient, because the
+ * status gradients no longer agree with each other: ok/info are light surfaces
+ * wanting dark ink, danger is a dark surface still wanting white.
  */
 :root {
   /* Fixed dark constants (tooltips, dropdown menus) — kept for contrast against
    * the dark page itself, tuned a shade darker than the page background. */
-  --color-navy-950: #060a14;
-  --color-navy-900: #0b1220;
-  --color-navy-800: #131b2e;
+  --color-ink-950: #010403;
+  --color-ink-900: #070d0b;
+  --color-ink-800: #101815;
 
-  --color-accent: #06b6d4;
-  --color-accent-soft: #67e8f9;
-  /* Solid accent backgrounds that carry white text/icons — buttons, badges, the
-   * sidebar active pill. Darker than --color-accent by necessity, see above. */
-  --color-accent-strong: #0e7490;
-  --color-link-hover: #67e8f9;
-  --color-surface: #0f172a;
-  --color-surface-card: rgba(30, 41, 59, 0.72);
-  --color-border: rgba(6, 182, 212, 0.18);
+  --color-accent: #2ee89a;
+  --color-accent-soft: #7df3c0;
+  /* Solid accent backgrounds — buttons, badges, the sidebar active pill. Unlike
+   * the petrol cyan this replaced, it is the *same* value as the ink role above;
+   * what changes on a solid surface is the ink, not the green. */
+  --color-accent-strong: #2ee89a;
+  /* Ink for anything sitting on an accent surface. 11.96:1 against the accent. */
+  --color-on-accent: #04120c;
+  --color-link-hover: #7df3c0;
+
+  --color-surface: #050807;
+  /* Barely lifted off the page — 1.10:1. The hairline, not the fill, is what draws the
+   * edge of a panel. That is the whole difference between "calm" and "flat": the surface
+   * is allowed to be almost invisible as long as its boundary is precise. */
+  --color-surface-card: #101614;
+  /* One step further up, for the few things that genuinely float. */
+  --color-surface-raised: #161e1b;
+
+  /* Interactive tint — hover, highlight, selection.
+   *
+   * Thirty-five call sites reached for --color-surface to signal hover. That is the
+   * *page* colour, and now that a card sits above the page rather than below it, using
+   * it made a hovered row fall into a hole instead of lifting. A translucent accent
+   * wash lifts on any surface it is laid over, and makes the feedback the brand's. */
+  --color-tint: rgba(46, 232, 154, 0.055);
+  --color-tint-strong: rgba(46, 232, 154, 0.1);
+
+  /* Chrome hairline. Neutral, not green: at fourteen percent accent on eighty-eight
+   * borders the app was outlining every box in brand colour, which spends the accent on
+   * chrome instead of on meaning. Green is now reserved for state — active, focused,
+   * selected — and is worth more for being rarer. */
+  --color-border: rgba(198, 226, 216, 0.11);
   /* Decorative card hairlines can stay whisper-thin, but an input or select the user
-   * has to find and click is a UI component: WCAG 1.4.11 asks 3:1 for its boundary. */
-  --color-border-strong: rgba(203, 213, 225, 0.45);
-  --color-muted: #94a3b8;
+   * has to find and click is a UI component: WCAG 1.4.11 asks 3:1 for its boundary.
+   * Neutral rather than green on purpose — a half-opacity green border on every
+   * input in the app turns the whole screen into accent. */
+  --color-border-strong: rgba(198, 226, 216, 0.45);
+  --color-muted: #8ca79c;
 
   /* Text tokens — every text-* color in the app resolves here instead of a
-   * literal Tailwind gray, tuned for legibility on the dark slate surfaces. */
-  --color-heading: #f1f5f9;
-  --color-body: #cbd5e1;
-  --color-faint: #8295ab;
-  --color-danger: #f87171;
+   * literal Tailwind gray, tuned for legibility on the near-black surfaces. */
+  --color-heading: #ecfdf5;
+  --color-body: #c2d6ce;
+  --color-faint: #7a968b;
+  --color-danger: #ff6b6b;
   /* Danger as a surface (a delete button on hover) rather than as ink — same
-   * two-role split as the accent above. */
+   * two-role split as the accent above. Still dark, so it still carries white. */
   --color-danger-strong: #b91c1c;
 
-  /* Focus ring. Bright enough to clear 3:1 against every surface it can land on,
-   * including the accent-colored sidebar and header. */
-  --color-focus: #67e8f9;
+  /* The impersonation banner — the app's one deliberate warning surface, and the
+   * only thing on screen allowed to compete with the accent for attention. */
+  --color-warning: #f5b32e;
+  --color-on-warning: #1a1206;
 
-  /* Primary petrol-cyan accent gradient — logo badge, primary buttons, icons,
-   * avatar badges, toggle "on" state. Monochrome petrol cyan, used across the
-   * whole app as the one main accent. */
-  --gradient-accent-from: #0e7490;
-  --gradient-accent-to: #155e75;
+  /* Focus ring. Bright enough to clear 3:1 against every dark surface it lands on. */
+  --color-focus: #7df3c0;
+  /* ...but not against the accent itself: #7df3c0 on #2ee89a is 1.18:1, invisible.
+   * A control whose own background is the accent flips to a dark ring instead
+   * (11.96:1) — see the .btn-accent / .badge-accent rules further down. */
+  --color-focus-on-accent: #04120c;
+
+  /* Accent bloom. Deliberately restrained: this is a panel someone watches for
+   * hours, so the glow lands on the active pill, primary buttons and chart lines
+   * only — never on the sixty cards, which would leave nothing at rest. */
+  --glow-accent: 0 0 20px rgba(46, 232, 154, 0.35);
+  --glow-accent-soft: 0 0 16px rgba(46, 232, 154, 0.22);
+
+  /* Radii — a concentric set. A control nested in a card should carry a smaller radius
+   * than the card, or the corners fight; the app had 6px controls inside 20px cards,
+   * which is the wrong way round and reads as bubbly rather than considered. These
+   * override Tailwind's own scale (see tailwind.config.ts) so all 100-odd existing
+   * rounded-* classes inherit the system instead of needing a sweep. */
+  --radius-chip: 6px;
+  --radius-control: 8px;
+  --radius-panel: 10px;
+  --radius-card: 14px;
+  --radius-overlay: 18px;
+
+  /* Elevation. Level 1 has no shadow at all — a hairline is enough, and sixty drop
+   * shadows is what made every panel look like it was hovering. */
+  --shadow-raised: 0 4px 16px -4px rgb(0 0 0 / 0.55);
+  --shadow-overlay: 0 24px 60px -20px rgb(0 0 0 / 0.75);
+
+  /* Motion. One easing curve for anything entering or settling, one for anything that
+   * travels and stops. Measured motion is most of what separates "expensive" from
+   * "abrupt"; the durations are deliberately a little longer than the defaults. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 160ms;
+  --dur-base: 260ms;
+  --dur-slow: 400ms;
+
+  /* Primary aqua-green accent gradient — logo badge, primary buttons, icons,
+   * avatar badges, toggle "on" state. */
+  --gradient-accent-from: #2ee89a;
+  --gradient-accent-to: #14c88a;
+  --gradient-accent-ink: var(--color-on-accent);
   --gradient-accent: linear-gradient(135deg, var(--gradient-accent-from), var(--gradient-accent-to));
 
-  /* Secondary status gradients — stat-card icon badges, status dots. */
-  --gradient-ok-from: #0d9e6e;
-  --gradient-ok-to: #059669;
+  /* Secondary status gradients — stat-card icon badges, status dots. CountTileWidget
+   * builds these names by interpolation (`--gradient-${accent}-ink`), so the -from
+   * / -to / -ink suffixes are load-bearing, not cosmetic.
+   *
+   * `ok` deliberately shares the accent green: a positive delta *is* the brand
+   * color. `info` moves to teal so it stays distinguishable beside it. */
+  --gradient-ok-from: #2ee89a;
+  --gradient-ok-to: #14c88a;
+  --gradient-ok-ink: var(--color-on-accent);
   --gradient-danger-from: #ef4444;
   --gradient-danger-to: #dc2626;
-  --gradient-info-from: #0e7490;
-  --gradient-info-to: #0e7490;
+  --gradient-danger-ink: #ffffff;
+  --gradient-info-from: #2dd4bf;
+  --gradient-info-to: #14b8a6;
+  --gradient-info-ink: var(--color-on-accent);
 
-  /* Sidebar rail — #1E293B family, a shade lighter than the page background. */
-  --gradient-sidebar: linear-gradient(165deg, #0f172a 0%, #1e293b 55%, #24324a 100%);
+  /* Sidebar rail — a shade lifted off the page background. */
+  --gradient-sidebar: linear-gradient(165deg, #050807 0%, #0b120f 55%, #101815 100%);
 
-  /* Sidebar active nav item — same petrol cyan as the top header, for full
-   * visual continuity between the two. */
-  --gradient-sidebar-active-from: #0e7490;
-  --gradient-sidebar-active-to: #155e75;
+  /* Sidebar active nav item — the bright pill from the reference, dark label. */
+  --gradient-sidebar-active-from: #2ee89a;
+  --gradient-sidebar-active-to: #14c88a;
+  --gradient-sidebar-active-ink: var(--color-on-accent);
   --gradient-sidebar-active: linear-gradient(135deg, var(--gradient-sidebar-active-from), var(--gradient-sidebar-active-to));
 
-  /* Top header banner gradient — same petrol cyan, matches the accent everywhere. */
-  --gradient-header-from: #0e7490;
-  --gradient-header-to: #155e75;
+  /* The top header is no longer an accent banner. It is the page surface with a
+   * hairline under it, so the green reads as an accent rather than as chrome —
+   * and, not incidentally, so a focus ring never has to land on a large green
+   * area where no single ring color can stay visible. */
 
   --background: var(--color-surface);
   --foreground: var(--color-body);
 }
 
 @theme inline {
-  --color-navy-950: var(--color-navy-950);
-  --color-navy-900: var(--color-navy-900);
-  --color-navy-800: var(--color-navy-800);
+  --color-ink-950: var(--color-ink-950);
+  --color-ink-900: var(--color-ink-900);
+  --color-ink-800: var(--color-ink-800);
   --color-accent: var(--color-accent);
   --color-accent-soft: var(--color-accent-soft);
   --color-accent-strong: var(--color-accent-strong);
+  --color-on-accent: var(--color-on-accent);
   --color-link-hover: var(--color-link-hover);
   --color-surface: var(--color-surface);
   --color-surface-card: var(--color-surface-card);
+  --color-surface-raised: var(--color-surface-raised);
+  --color-tint: var(--color-tint);
+  --color-tint-strong: var(--color-tint-strong);
   --color-border: var(--color-border);
   --color-border-strong: var(--color-border-strong);
   --color-muted: var(--color-muted);
@@ -99,7 +180,10 @@
   --color-faint: var(--color-faint);
   --color-danger: var(--color-danger);
   --color-danger-strong: var(--color-danger-strong);
+  --color-warning: var(--color-warning);
+  --color-on-warning: var(--color-on-warning);
   --color-focus: var(--color-focus);
+  --color-focus-on-accent: var(--color-focus-on-accent);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
@@ -113,25 +197,227 @@ body {
 }
 
 /*
- * Glass-card — the standard container surface for the whole app (stat cards,
- * list rows, Admin Miller columns, Login form, dialogs). Translucent white +
- * backdrop-blur is the single most distinctive element of the 9.1 look.
+ * Surfaces
+ * --------
+ * There used to be exactly one card style, used sixty times: translucent, blurred,
+ * 20px, with a drop shadow. A stat tile, a map, a dialog and an Admin column all
+ * floated at the same elevation, so elevation could no longer say anything — if
+ * everything is raised, nothing is.
+ *
+ * Three levels now, and almost everything belongs on the first. `.glass-card` keeps
+ * its name because sixty call sites use it and the name is not worth the churn; what
+ * changed is that it is now the quiet default rather than the loud one.
  */
 .glass-card {
   background: var(--color-surface-card);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--color-border);
-  border-radius: 20px;
-  box-shadow:
-    0 20px 44px -18px rgba(0, 0, 0, 0.55),
-    0 0 0 1px rgba(8, 145, 178, 0.05);
+  border-radius: var(--radius-card);
 }
 
+/* Level 2 — things that genuinely sit above the page: popovers, dropdowns, the
+ * floating controls layered over a map. */
+.surface-raised {
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-raised);
+}
+
+/* Level 3 — modal surfaces. The only place a backdrop blur earns its repaint cost,
+ * because here it is doing real work: pushing the page behind out of focus. */
+.surface-overlay {
+  background: color-mix(in oklab, var(--color-surface-raised) 88%, transparent);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-overlay);
+  box-shadow: var(--shadow-overlay);
+}
+
+/* The icon in an empty state. Deliberately not .badge-accent: a filled bright-green
+ * disc announcing "no alarms" spends the loudest thing on screen on the absence of
+ * information. A ring and a faint glyph says the same thing without the alarm. */
+.badge-quiet {
+  background: var(--color-tint);
+  border: 1px solid var(--color-border);
+  color: var(--color-faint);
+}
+
+/*
+ * Typography
+ * ----------
+ * The audit that motivated this: 87% of every text node in the app sat at one of two
+ * sizes (text-sm, text-xs), and six in total used a normal weight — 93 were semibold.
+ * With neither scale contrast nor weight contrast available, nothing could signal
+ * importance, and every screen read as one undifferentiated field of 14px semibold.
+ *
+ * These are roles, not sizes. Naming the role keeps a card title identical in all
+ * twenty-five places one appears, and lets family, size, leading, tracking, weight and
+ * colour move together as a single decision instead of six independent utilities.
+ *
+ * Inside @layer components on purpose. Unlayered CSS outranks every layered rule, so
+ * without this a role would beat any Tailwind utility sitting next to it and
+ * `t-metric-sm text-sm` would silently ignore the text-sm. In the components layer the
+ * role sets the defaults and a utility can still override one axis of it.
+ */
+@layer components {
+
+/* The number a tile exists to show. Mono because a telemetry reading is a measurement,
+ * and tabular figures keep a live value from resizing itself on every poll. */
+.t-display {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 2.25rem;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-heading);
+}
+
+/* Secondary metric — gauges, value tiles inside a grid. */
+.t-metric {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 1.5rem;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-heading);
+}
+
+/* Metric in a dense list or a multi-value tile. */
+.t-metric-sm {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 1rem;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-heading);
+}
+
+/* Page title. */
+.t-title {
+  font-size: 1.375rem;
+  line-height: 1.2;
+  letter-spacing: -0.021em;
+  font-weight: 600;
+  color: var(--color-heading);
+}
+
+/* Card and section heading. Negative tracking only starts paying off around this size;
+ * below it, tightening makes text harder to read rather than more refined. */
+.t-heading {
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  letter-spacing: -0.006em;
+  font-weight: 600;
+  color: var(--color-heading);
+}
+
+/* Body. Regular weight — this is the change that gives every other weight something to
+ * contrast against. */
+.t-body {
+  font-size: 0.875rem;
+  line-height: 1.55;
+  font-weight: 400;
+  color: var(--color-body);
+}
+
+/* The small caps label above a value. Thirteen sites hand-rolled this as
+ * `text-xs font-semibold uppercase tracking-wider`; at 11px the extra letter-spacing
+ * is what keeps uppercase legible, and 500 is enough weight once it is spaced. */
+.t-label {
+  font-size: 0.6875rem;
+  line-height: 1.45;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--color-muted);
+}
+
+/* The label above a form control. Distinct from .t-label, which is a small-caps eyebrow
+ * over a value; this one names an input, so it stays sentence case and keeps the medium
+ * weight that makes a form scannable. 13px against the control's 14px is what turns the
+ * pair into a hierarchy instead of two equal lines. */
+.t-field {
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  font-weight: 500;
+  color: var(--color-body);
+}
+
+/* Timestamps, counts, "updated 14:32" — present but never competing. */
+.t-meta {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--color-faint);
+}
+
+/* Identifiers, telemetry keys, anything the user might copy. Mono signals
+ * "this is a literal string" without needing a label to say so. */
+.t-mono {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  font-weight: 400;
+  color: var(--color-faint);
+}
+
+}
+
+/*
+ * Accent surfaces.
+ *
+ * Fifteen primary buttons and seven icon badges each used to repeat
+ * `style={{ background: 'var(--gradient-accent)' }}` next to a `text-white`, which
+ * is exactly the pair that broke when the accent went bright — the background moved
+ * and the ink didn't. Naming the pair means the ink can never drift from the surface
+ * again, and the focus override below rides along for free.
+ */
+.btn-accent,
+.badge-accent {
+  background: var(--gradient-accent);
+  color: var(--gradient-accent-ink);
+}
+
+.btn-accent {
+  box-shadow: var(--glow-accent-soft);
+  transition:
+    box-shadow var(--dur-fast) var(--ease-out),
+    filter var(--dur-fast) var(--ease-out);
+}
+.btn-accent:hover:not(:disabled) {
+  filter: brightness(1.06);
+  box-shadow: var(--glow-accent);
+}
+
+/* The default ring is a pale mint, which measures 1.18:1 on the accent — invisible
+ * on precisely the controls that shout loudest. On an accent surface it flips dark.
+ *
+ * .bg-accent-strong is in here because it is the other way an accent surface gets made:
+ * the buttons that set the background through the utility rather than the gradient. Keying
+ * off it means a new accent button is covered without anyone remembering a second class. */
+.btn-accent:focus-visible,
+.badge-accent:focus-visible,
+.bg-accent-strong:focus-visible {
+  outline-color: var(--color-focus-on-accent);
+}
+
+/*
+ * Motion
+ * ------
+ * Shorter travel and a longer duration than the original 8px/0.4s/ease. Something that
+ * moves a long way quickly reads as cheap; the same element moving a short way with a
+ * decelerating curve reads as considered. 6px is far enough to be perceived as arriving
+ * from somewhere without ever looking like it flew.
+ */
 @keyframes fadeUp {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -139,7 +425,38 @@ body {
   }
 }
 .animate-fade-up {
-  animation: fadeUp 0.4s ease both;
+  animation: fadeUp var(--dur-base) var(--ease-out) both;
+}
+
+/*
+ * Staggered entrance for lists and grids. Rows arriving together land as one block and
+ * the eye has nowhere to start; 40ms apart, they read top-to-bottom in the order they
+ * should be read. Capped at eight because past that the last row is waiting on an
+ * animation rather than on data, which is the point at which polish becomes latency.
+ */
+.stagger-children > * {
+  animation: fadeUp var(--dur-base) var(--ease-out) both;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 40ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 80ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 120ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 160ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 200ms; }
+.stagger-children > *:nth-child(7) { animation-delay: 240ms; }
+.stagger-children > *:nth-child(n + 8) { animation-delay: 280ms; }
+
+/*
+ * Someone who has asked their OS to reduce motion has asked for exactly this. Entrances
+ * collapse to nothing rather than merely speeding up — a fast animation is still an
+ * animation — while colour and shadow transitions stay, since those are feedback rather
+ * than movement and removing them makes the UI feel broken instead of calm.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .stagger-children > * {
+    animation: none;
+  }
 }
 
 /* Browsers don't give <button>/<select> a pointer cursor by default — apply it
@@ -167,8 +484,8 @@ select:disabled {
  */
 :root {
   --scrollbar-size: 10px;
-  --scrollbar-thumb: rgba(148, 163, 184, 0.26);
-  --scrollbar-thumb-hover: rgba(103, 232, 249, 0.45);
+  --scrollbar-thumb: rgba(140, 167, 156, 0.26);
+  --scrollbar-thumb-hover: rgba(46, 232, 154, 0.45);
 }
 
 /*
@@ -233,11 +550,11 @@ select:disabled {
  */
 .leaflet-popup .leaflet-popup-content-wrapper,
 .leaflet-popup .leaflet-popup-tip {
-  background: #131c2e;
+  background: #0b120f;
   color: var(--color-body);
-  /* Not --color-border: at 18% cyan it disappears against the dark popup, and this edge is the
+  /* Not --color-border: at 14% green it disappears against the dark popup, and this edge is the
    * only thing separating the popup from an equally dark map tile beneath it. */
-  border: 1px solid rgba(148, 163, 184, 0.22);
+  border: 1px solid rgba(198, 226, 216, 0.22);
 }
 
 .leaflet-popup .leaflet-popup-content-wrapper {
@@ -322,9 +639,9 @@ select:disabled {
  * reads as "this is where it lands" instead of a flash of red.
  */
 .react-grid-item.react-grid-placeholder {
-  background: var(--color-accent, #0891b2);
+  background: var(--color-accent);
   opacity: 0.15;
-  border: 2px dashed var(--color-accent, #0891b2);
+  border: 2px dashed var(--color-accent);
   border-radius: 20px;
   transition-duration: 120ms;
 }
@@ -361,8 +678,8 @@ select:disabled {
   opacity: 0.7;
 }
 .dashboard-grid--editing .react-grid-item > .react-resizable-handle::after {
-  border-right-color: var(--color-accent, #0891b2);
-  border-bottom-color: var(--color-accent, #0891b2);
+  border-right-color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
   width: 8px;
   height: 8px;
 }

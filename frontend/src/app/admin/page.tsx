@@ -91,8 +91,6 @@ export default function AdminPage() {
 
   return (
     <div className="flex h-full w-full flex-col gap-4">
-      <h1 className="text-lg font-semibold text-heading">Admin</h1>
-
       <div
         className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-2 md:grid md:overflow-x-auto md:overflow-y-hidden"
         style={{ gridTemplateColumns: `repeat(${totalColumns}, minmax(240px, 1fr))` }}
