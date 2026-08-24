@@ -9,7 +9,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { ACCENT_LINE_GLOW, TOOLTIP_STYLE, axisTick, formatTime, withUnit } from '../chart-shared';
+import { ACCENT_LINE_WIDTH, TOOLTIP_STYLE, axisTick, formatTime, withUnit } from '../chart-shared';
 
 export interface LineChartPoint {
   ts: number;
@@ -75,9 +75,8 @@ export function LineChartWidget({
             dataKey="value"
             name={dataKey}
             stroke="var(--color-accent)"
-            strokeWidth={2}
+            strokeWidth={ACCENT_LINE_WIDTH}
             dot={false}
-            style={ACCENT_LINE_GLOW}
           />
           </LineChart>
         </ResponsiveContainer>

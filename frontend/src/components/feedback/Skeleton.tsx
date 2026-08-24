@@ -21,7 +21,7 @@ export function Skeleton({ className = '', style }: SkeletonProps) {
       <motion.div
         className="absolute inset-0"
         style={{
-          background: 'linear-gradient(90deg, transparent 0%, rgba(46, 232, 154, 0.12) 50%, transparent 100%)',
+          background: 'linear-gradient(90deg, transparent 0%, rgba(52, 211, 153, 0.1) 50%, transparent 100%)',
           width: '60%',
         }}
         animate={{ x: ['-100%', '100%'] }}

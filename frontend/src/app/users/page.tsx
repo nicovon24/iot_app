@@ -8,7 +8,8 @@ import { useImpersonate } from '@/hooks';
 import { usePermissions } from '@/hooks';
 import { Select } from '@/components';
 import { Tooltip } from '@/components';
-import { EntityListWidget } from '@/widgets';
+import { EntityListWidget, metaCell, type EntityColumn } from '@/widgets';
+import { PageHeader } from '@/components';
 import { CreateUserDialog } from '@/widgets';
 import { ConfirmDialog } from '@/widgets';
 import type { EntityRef } from '@/types';
@@ -34,27 +35,43 @@ export default function UsersPage() {
 
   const customerNameById = new Map((customers?.data ?? []).map((c) => [c.id, c.name]));
 
+  // Board 3f leads with the client rather than the account: on this screen the question is
+  // "who belongs to whom", not "what is this" — every row is already a user.
+  const userColumns: EntityColumn[] = [
+    {
+      key: 'client',
+      header: 'Client',
+      width: '170px',
+      render: (user) => metaCell(user.customerId?.id ? customerNameById.get(user.customerId.id) : undefined),
+    },
+    { key: 'role', header: 'Role', width: '150px', render: (user) => metaCell(roleOf(user)) },
+  ];
+
   const closeDeleteDialog = () => {
     setPendingDelete(null);
     deleteUser.reset();
   };
 
   return (
-    <div className="flex h-full w-full flex-col gap-4">
-      {isSysadmin && (
-        <div className="flex shrink-0 items-center justify-end">
-          <button
-            type="button"
-            onClick={() => setIsCreateOpen(true)}
-            disabled={!customerId}
-            className="flex items-center gap-1.5 rounded-md bg-accent-strong px-3 py-2 text-sm font-semibold text-on-accent transition hover:brightness-110 disabled:opacity-40"
-          >
-            <Plus size={14} /> Add
-          </button>
-        </div>
-      )}
+    <div className="flex h-full w-full flex-col">
+      <PageHeader
+        title="Users"
+        description="Platform accounts and the role each one carries. Only tenant administrators may create or remove them."
+        actions={
+          isSysadmin ? (
+            <button
+              type="button"
+              onClick={() => setIsCreateOpen(true)}
+              disabled={!customerId}
+              className="btn-accent flex items-center gap-1.5 px-3 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.12em] disabled:opacity-40"
+            >
+              <Plus size={14} /> Add user
+            </button>
+          ) : undefined
+        }
+      />
 
-      <div className="w-full max-w-xs shrink-0">
+      <div className="rule-2 mt-[30px] w-full max-w-xs shrink-0 pt-5">
         <Select
           label="Client"
           placeholder={isCustomersLoading ? 'Loading…' : undefined}
@@ -71,7 +88,7 @@ export default function UsersPage() {
         * row styling lands on all three at once. Users differ only in what the generic slots
         * are fed: role instead of entity type, client name instead of customer, and an extra
         * "Login as" action alongside Delete. */}
-      <div className="min-h-0 flex-1">
+      <div className="mt-4 min-h-0 flex-1">
         <EntityListWidget
           data={users ? { data: users, totalPages: 1, totalElements: users.length, hasNext: false } : undefined}
           isLoading={isUsersLoading}
@@ -79,8 +96,7 @@ export default function UsersPage() {
           error={error}
           emptyLabel="No users found"
           readOnly={!isSysadmin}
-          subtitleOf={roleOf}
-          metaOf={(user) => (user.customerId?.id ? customerNameById.get(user.customerId.id) : undefined)}
+          columns={userColumns}
           onDelete={(user) => setPendingDelete(user)}
           extraActions={(user) => (
             <Tooltip label="Login as">
@@ -88,10 +104,10 @@ export default function UsersPage() {
                 type="button"
                 onClick={() => impersonate.mutate({ id: user.id, label: user.name })}
                 disabled={impersonate.isPending}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-ink-800 text-muted transition-colors hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
+                className="text-faint transition-colors duration-fast ease-out hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
                 aria-label={`Login as ${user.name}`}
               >
-                <LogIn size={14} />
+                <LogIn size={14} strokeWidth={1.75} />
               </button>
             </Tooltip>
           )}

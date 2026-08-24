@@ -191,10 +191,10 @@ const MAP_BACKGROUND_SVG = encodeURIComponent(`
 <svg xmlns="http://www.w3.org/2000/svg" width="200" height="140" viewBox="0 0 200 140">
   <rect width="200" height="140" fill="#0b120f"/>
   <path d="M0 90 Q40 60 70 85 T140 70 T200 95 V140 H0 Z" fill="#111c18"/>
-  <path d="M0 55 L200 40" stroke="#2ee89a" stroke-opacity="0.35" stroke-width="5"/>
-  <path d="M30 0 L55 140" stroke="#2ee89a" stroke-opacity="0.28" stroke-width="4"/>
-  <path d="M150 0 L120 140" stroke="#2ee89a" stroke-opacity="0.22" stroke-width="3"/>
-  <path d="M0 105 L200 115" stroke="#2ee89a" stroke-opacity="0.22" stroke-width="3"/>
+  <path d="M0 55 L200 40" stroke="#34d399" stroke-opacity="0.35" stroke-width="5"/>
+  <path d="M30 0 L55 140" stroke="#34d399" stroke-opacity="0.28" stroke-width="4"/>
+  <path d="M150 0 L120 140" stroke="#34d399" stroke-opacity="0.22" stroke-width="3"/>
+  <path d="M0 105 L200 115" stroke="#34d399" stroke-opacity="0.22" stroke-width="3"/>
 </svg>
 `);
 
@@ -208,7 +208,7 @@ function FauxMap({ icon: Icon }: { icon: typeof MapPin }) {
         backgroundPosition: 'center',
       }}
     >
-      <Icon size={28} className="text-accent drop-shadow" fill="var(--color-accent)" fillOpacity={0.25} />
+      <Icon size={28} className="text-accent" fill="var(--color-accent)" fillOpacity={0.25} />
     </div>
   );
 }

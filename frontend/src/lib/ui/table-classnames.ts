@@ -50,6 +50,7 @@ export function tableClassNames({
       'border-b border-border last:border-b-0',
       'transition-colors duration-fast ease-out',
       'group-data-[hover=true]:bg-tint',
+      'group-data-[hover=true]:[box-shadow:inset_2px_0_0_var(--color-accent-strong)]',
       interactive ? 'cursor-pointer' : '',
     ]
       .filter(Boolean)

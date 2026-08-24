@@ -8,6 +8,7 @@ import { usePatchAsset } from '@/hooks';
 import { usePermissions } from '@/hooks';
 import { EntityListWidget } from '@/widgets';
 import { ConfirmDialog } from '@/widgets';
+import { PageHeader, StatusPill } from '@/components';
 import { toastError } from '@/lib';
 import type { EntityRef } from '@/types';
 
@@ -24,9 +25,21 @@ export default function AssetsPage() {
     deleteAsset.reset();
   };
 
+  const total = data?.totalElements ?? 0;
+
   return (
-    <div className="flex h-full w-full flex-col gap-4">
-      <div className="min-h-0 flex-1">
+    <div className="flex h-full w-full flex-col">
+      <PageHeader
+        title="Assets"
+        description={
+          <>
+            {total} {total === 1 ? 'asset' : 'assets'} in the hierarchy. Click a row to open its detail.
+          </>
+        }
+        actions={!isLoading && !isError ? <StatusPill label={`${total} registered`} muted /> : undefined}
+      />
+
+      <div className="rule-2 mt-[30px] min-h-0 flex-1">
         <EntityListWidget
           data={data}
           isLoading={isLoading}

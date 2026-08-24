@@ -46,7 +46,11 @@ const config: Config = {
         muted: 'var(--color-muted)',
         heading: 'var(--color-heading)',
         body: 'var(--color-body)',
+        nav: 'var(--color-nav)',
         faint: 'var(--color-faint)',
+        inactive: 'var(--color-inactive)',
+        disabled: 'var(--color-disabled)',
+        rule: 'var(--color-rule)',
         danger: {
           DEFAULT: 'var(--color-danger)',
           strong: 'var(--color-danger-strong)',
@@ -56,8 +60,6 @@ const config: Config = {
         focus: 'var(--color-focus)',
       },
       boxShadow: {
-        glow: 'var(--glow-accent)',
-        'glow-soft': 'var(--glow-accent-soft)',
         raised: 'var(--shadow-raised)',
         overlay: 'var(--shadow-overlay)',
       },
@@ -67,12 +69,15 @@ const config: Config = {
       // control inside a card must be rounder-than-nothing but flatter than its
       // container, and 6px controls inside 20px cards had that backwards.
       borderRadius: {
+        none: '0px',
         sm: 'var(--radius-chip)',
         DEFAULT: 'var(--radius-chip)',
         md: 'var(--radius-control)',
         lg: 'var(--radius-panel)',
         xl: 'var(--radius-card)',
         '2xl': 'var(--radius-overlay)',
+        // The one curve the system keeps, for avatars and the LIVE dot.
+        full: '9999px',
       },
       transitionTimingFunction: {
         out: 'var(--ease-out)',

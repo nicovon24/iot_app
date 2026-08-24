@@ -1,9 +1,7 @@
 'use client';
 
-import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@heroui/react';
-import { BellOff } from 'lucide-react';
-import { TableRowsSkeleton } from '@/components';
-import { severityChipStyle, tableClassNames } from '@/lib';
+import { RuledTable, type RuledColumn } from '@/components';
+import { severityChipStyle } from '@/lib';
 import type { Alarm, AlarmSeverity } from '@/types';
 
 export interface AlarmsListWidgetProps {
@@ -12,16 +10,21 @@ export interface AlarmsListWidgetProps {
   isError: boolean;
   error?: unknown;
   emptyLabel: string;
-  /** Optional card title rendered above the table, inside the same white card. */
+  /** Optional heading above the table, for the dashboard widget that embeds this list. */
   title?: string;
 }
 
-const TABLE_CLASSNAMES = tableClassNames({});
-
+/**
+ * Severity as a square chip.
+ *
+ * Square, not a pill: the system has no radii, and severity is the one place a colour has to
+ * carry meaning on its own — the ink and its own 15% wash come from the same validated hex,
+ * so the chip cannot drift from the donut slice describing the same alarm.
+ */
 function SeverityChip({ severity }: { severity: AlarmSeverity }) {
   return (
     <span
-      className="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold"
+      className="inline-flex px-2 py-1 text-[10px] font-extrabold uppercase tracking-[0.1em]"
       style={severityChipStyle(severity)}
     >
       {severity}
@@ -29,69 +32,69 @@ function SeverityChip({ severity }: { severity: AlarmSeverity }) {
   );
 }
 
+/** Board 3c: SEVERITY · STATUS · TYPE · ORIGINATOR · CREATED. */
+const ALARM_COLUMNS: RuledColumn<Alarm>[] = [
+  {
+    key: 'severity',
+    header: 'Severity',
+    width: '130px',
+    render: (alarm) => <SeverityChip severity={alarm.severity} />,
+  },
+  {
+    key: 'status',
+    header: 'Status',
+    width: '1fr',
+    render: (alarm) => <span className="t-meta truncate">{alarm.status}</span>,
+  },
+  {
+    key: 'type',
+    header: 'Type',
+    width: '1fr',
+    render: (alarm) => (
+      <span className="t-item truncate" title={alarm.type}>
+        {alarm.type}
+      </span>
+    ),
+  },
+  {
+    key: 'originator',
+    header: 'Originator',
+    width: '150px',
+    render: (alarm) => (
+      <span className="t-meta truncate">
+        {alarm.originatorName ?? alarm.originatorLabel ?? alarm.originator.id}
+      </span>
+    ),
+  },
+  {
+    key: 'created',
+    header: 'Created',
+    width: '150px',
+    // Locale-formatted rather than raw: this is the one column a person reads as a time,
+    // not as an identifier, so it keeps the reader's own conventions.
+    render: (alarm) => <span className="t-meta truncate">{new Date(alarm.startTs).toLocaleString()}</span>,
+  },
+];
+
 export function AlarmsListWidget({ alarms, isLoading, isError, error, emptyLabel, title }: AlarmsListWidgetProps) {
-  let content: React.ReactNode;
+  const table = (
+    <RuledTable
+      columns={ALARM_COLUMNS}
+      rows={alarms ?? []}
+      rowKey={(alarm) => `${alarm.id.id}-${alarm.startTs}`}
+      isLoading={isLoading}
+      isError={isError}
+      error={error}
+      emptyLabel={emptyLabel}
+    />
+  );
 
-  if (isLoading) {
-    content = <TableRowsSkeleton rows={4} columns={5} />;
-  } else if (isError) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    content = (
-      <div className="flex h-full min-h-40 items-center justify-center">
-        <p className="text-sm text-danger">Failed to load: {message}</p>
-      </div>
-    );
-  } else {
-    const rows = alarms ?? [];
-
-    if (rows.length === 0) {
-      content = (
-        <div className="flex h-full min-h-40 flex-col items-center justify-center gap-3 text-center">
-          <span
-            aria-hidden
-            className="badge-quiet flex h-11 w-11 items-center justify-center rounded-full"
-          >
-            <BellOff size={20} strokeWidth={1.75} />
-          </span>
-          <p className="t-body text-muted">{emptyLabel}</p>
-        </div>
-      );
-    } else {
-      content = (
-        <Table aria-label="Alarms list" classNames={TABLE_CLASSNAMES}>
-          <TableHeader>
-            <TableColumn align="center">SEVERITY</TableColumn>
-            <TableColumn align="center">TYPE</TableColumn>
-            <TableColumn align="center">STATUS</TableColumn>
-            <TableColumn align="center">ORIGINATOR</TableColumn>
-            <TableColumn align="center">START TIME</TableColumn>
-          </TableHeader>
-          <TableBody items={rows}>
-            {(alarm) => (
-              <TableRow key={`${alarm.id.id}-${alarm.startTs}`} className="group">
-                <TableCell>
-                  <SeverityChip severity={alarm.severity} />
-                </TableCell>
-                <TableCell className="font-medium text-heading">{alarm.type}</TableCell>
-                <TableCell>{alarm.status}</TableCell>
-                <TableCell>{alarm.originatorName ?? alarm.originatorLabel ?? alarm.originator.id}</TableCell>
-                <TableCell>{new Date(alarm.startTs).toLocaleString()}</TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      );
-    }
-  }
-
-  if (!title) {
-    return <div className="glass-card h-full p-0">{content}</div>;
-  }
+  if (!title) return table;
 
   return (
-    <div className="glass-card flex h-full flex-col overflow-hidden">
-      <h2 className="shrink-0 px-4 py-3 t-heading">{title}</h2>
-      <div className="min-h-0 flex-1">{content}</div>
+    <div className="flex h-full flex-col overflow-hidden">
+      <h2 className="t-heading shrink-0 pb-3">{title}</h2>
+      <div className="min-h-0 flex-1">{table}</div>
     </div>
   );
 }

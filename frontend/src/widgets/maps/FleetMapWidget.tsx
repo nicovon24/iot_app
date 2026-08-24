@@ -11,57 +11,24 @@ import MarkerClusterGroup from 'react-leaflet-cluster';
 import { apiClient } from '@/lib';
 import { useEntities } from '@/hooks';
 import { useTelemetryKeys, useTelemetryLatest } from '@/hooks';
-import { useEntityAlarms } from '@/hooks';
+
 import { entityDetailsHref } from '@/components';
 import { EntityMapMarker } from './EntityMapMarker';
+import { useFleetPositions, type FleetEntityType } from './fleet-positions';
+import { useFleetStatus, type EntityStatus } from './useFleetStatus';
 import { MapAutoResize } from './MapAutoResize';
 import { MapStyleToggle } from './MapStyleToggle';
 import { MAP_TILE_CONFIG, type MapTileStyle } from '@/lib';
 import { MapSkeleton } from '@/components';
 import type { EntityRef, TelemetryLatest } from '@/types';
 
+/** What a marker wears before its status is known. Never alarmed, never offline. */
+const UNKNOWN_STATUS: EntityStatus = { connectivity: 'unknown', severity: null, level: null };
+
 const DEFAULT_CENTER: [number, number] = [20, 0];
 const DEFAULT_ZOOM = 2;
 const SINGLE_DEVICE_ZOOM = 13;
 
-/** Assets carry location telemetry the same way devices do, so the fleet map works for both. */
-export type FleetEntityType = 'DEVICE' | 'ASSET';
-
-/**
- * Pre-fetches device positions before the map ever mounts, so the map can be
- * created already centered/zoomed on the fleet instead of starting at the
- * world view and animating (flying) into place once positions arrive.
- */
-function useFleetPositions(devices: EntityRef[], entityType: FleetEntityType) {
-  const keysResults = useQueries({
-    queries: devices.map((device) => ({
-      queryKey: ['telemetry', 'keys', device.id],
-      queryFn: () => apiClient.get<string[]>(`/entities/${device.id}/telemetry/keys?type=${entityType}`),
-    })),
-  });
-  const latestResults = useQueries({
-    queries: devices.map((device) => ({
-      queryKey: ['telemetry', 'latest', device.id, undefined],
-      queryFn: () => apiClient.get<TelemetryLatest>(`/entities/${device.id}/telemetry/latest?type=${entityType}`),
-    })),
-  });
-
-  const isLoading = keysResults.some((r) => r.isLoading) || latestResults.some((r) => r.isLoading);
-
-  const positions: Record<string, [number, number]> = {};
-  devices.forEach((device, i) => {
-    const keys = keysResults[i]?.data ?? [];
-    if (!keys.includes('latitude') || !keys.includes('longitude')) return;
-    const telemetry = latestResults[i]?.data ?? {};
-    const lat = telemetry.latitude ? Number(telemetry.latitude.value) : undefined;
-    const lng = telemetry.longitude ? Number(telemetry.longitude.value) : undefined;
-    if (lat !== undefined && lng !== undefined && !Number.isNaN(lat) && !Number.isNaN(lng)) {
-      positions[device.id] = [lat, lng];
-    }
-  });
-
-  return { positions, isLoading };
-}
 
 function computeInitialView(positions: Record<string, [number, number]>): {
   center: [number, number];
@@ -104,10 +71,12 @@ function FitToDevices({ positions }: { positions: Record<string, [number, number
 function FleetMarker({
   device,
   entityType,
+  status,
   onPosition,
 }: {
   device: EntityRef;
   entityType: FleetEntityType;
+  status: EntityStatus;
   onPosition: (id: string, position: [number, number] | null) => void;
 }) {
   const keysQuery = useTelemetryKeys(device.id, entityType);
@@ -115,7 +84,6 @@ function FleetMarker({
     (keysQuery.data ?? []).includes('latitude') && (keysQuery.data ?? []).includes('longitude');
 
   const telemetryQuery = useTelemetryLatest(device.id, entityType);
-  const alarmsQuery = useEntityAlarms(device.id, entityType);
 
   const telemetry = telemetryQuery.data ?? {};
   const lat = telemetry.latitude ? Number(telemetry.latitude.value) : undefined;
@@ -130,9 +98,6 @@ function FleetMarker({
 
   if (!hasValidCoords) return null;
 
-  const hasActiveAlarm = (alarmsQuery.data?.data ?? []).some(
-    (a) => a.status === 'ACTIVE_UNACK' || a.status === 'ACTIVE_ACK',
-  );
   const tsValues = Object.values(telemetry).map((v) => v.ts);
   const lastReportTs = tsValues.length > 0 ? Math.max(...tsValues) : undefined;
 
@@ -141,7 +106,7 @@ function FleetMarker({
       lat={lat as number}
       lng={lng as number}
       name={device.name}
-      hasActiveAlarm={hasActiveAlarm}
+      status={status}
       telemetry={telemetry}
       lastReportTs={lastReportTs}
       detailsHref={entityDetailsHref(device.id, entityType)}
@@ -168,6 +133,9 @@ export function FleetMapWidget({
   const devices = data?.data ?? [];
   const [positions, setPositions] = useState<Record<string, [number, number]>>({});
   const { positions: prefetchedPositions, isLoading: positionsLoading } = useFleetPositions(devices, entityType);
+  // One call for the whole map. Its queries are keyed, so the dock and the overlay on the same
+  // screen read the identical cache entries rather than refetching any of this.
+  const { statusById } = useFleetStatus(entityType);
 
   const handlePosition = useCallback((id: string, position: [number, number] | null) => {
     setPositions((prev) => {
@@ -212,7 +180,13 @@ export function FleetMapWidget({
         <FitToDevices positions={positions} />
         <MarkerClusterGroup chunkedLoading>
           {devices.map((device) => (
-            <FleetMarker key={device.id} device={device} entityType={entityType} onPosition={handlePosition} />
+            <FleetMarker
+              key={device.id}
+              device={device}
+              entityType={entityType}
+              status={statusById.get(device.id) ?? UNKNOWN_STATUS}
+              onPosition={handlePosition}
+            />
           ))}
         </MarkerClusterGroup>
       </MapContainer>

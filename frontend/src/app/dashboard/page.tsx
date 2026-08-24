@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Home, LayoutDashboard, Lock, Pencil, Plus, Trash2, Users } from 'lucide-react';
 import { Spinner } from '@heroui/react';
+import { PageHeader, SectionHeader } from '@/components';
 import { useDashboards, useDeleteDashboard } from '@/hooks';
 import { usePermissions } from '@/hooks';
 import { Tooltip } from '@/components';
@@ -36,20 +37,30 @@ export default function DashboardsPage() {
   const dashboards = data ?? [];
 
   return (
-    <div className="flex h-full w-full flex-col gap-4">
-      {canWrite && (
-        <div className="flex shrink-0 items-center justify-end gap-3">
-          <button
-            type="button"
-            onClick={() => router.push('/dashboard/new')}
-            className="btn-accent flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-semibold"
-          >
-            <Plus size={15} /> New dashboard
-          </button>
-        </div>
-      )}
+    <div className="flex h-full w-full flex-col">
+      <PageHeader
+        title="Dashboards"
+        description="Overview is the fixed fleet summary; everything below it is a dashboard someone built."
+        actions={
+          canWrite ? (
+            <button
+              type="button"
+              onClick={() => router.push('/dashboard/new')}
+              className="btn-accent flex items-center gap-1.5 px-3 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.12em]"
+            >
+              <Plus size={14} /> New dashboard
+            </button>
+          ) : undefined
+        }
+      />
 
-      <div className="table-scroll min-h-0 flex-1 overflow-y-auto">
+      <SectionHeader
+        className="rule-2 mt-[30px] pt-5"
+        title="Gallery"
+        meta={`1 fixed · ${dashboards.length} custom`}
+      />
+
+      <div className="table-scroll mt-4 min-h-0 flex-1 overflow-y-auto">
         {isLoading ? (
           <div className="glass-card flex h-40 items-center justify-center">
             <Spinner label="Loading dashboards…" color="primary" />
@@ -73,29 +84,28 @@ export default function DashboardsPage() {
                 e.preventDefault();
                 router.push('/');
               }}
-              className="group glass-card relative flex cursor-pointer flex-col gap-3 p-4 transition-colors duration-fast ease-out hover:border-accent/40 hover:bg-tint"
+              className="group glass-card relative flex cursor-pointer flex-col gap-3 px-[18px] py-4 transition-colors duration-fast ease-out hover:border-accent-strong hover:bg-tint"
             >
-              <span
-                aria-hidden
-                className="badge-accent flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
-              >
-                <Home size={17} strokeWidth={1.75} />
-              </span>
-
-              <div className="flex flex-col gap-1">
-                <span className="truncate t-heading">Overview</span>
-                <span className="t-meta">Fleet summary</span>
+              <div className="flex items-center justify-between">
+                <span
+                  aria-hidden
+                  className="flex h-9 w-9 shrink-0 items-center justify-center border border-border text-accent"
+                >
+                  <Home size={17} strokeWidth={1.75} />
+                </span>
+                <span aria-hidden className="diamond h-1.5 w-1.5" />
               </div>
 
-              <div className="flex items-center gap-1.5 t-meta">Default dashboard</div>
+              <div className="t-item truncate">Overview</div>
+
+              <div className="flex items-center justify-between border-t border-border pt-[11px]">
+                <span className="t-label">Fixed · fleet summary</span>
+              </div>
             </div>
 
             {dashboards.length === 0 ? (
-              <div className="glass-card flex h-40 flex-col items-center justify-center gap-3 text-center">
-                <span
-                  aria-hidden
-                  className="badge-quiet flex h-11 w-11 items-center justify-center rounded-full"
-                >
+              <div className="flex h-40 flex-col items-center justify-center gap-3 border border-dashed border-border text-center">
+                <span aria-hidden className="badge-quiet flex h-11 w-11 items-center justify-center">
                   <LayoutDashboard size={20} strokeWidth={1.75} />
                 </span>
                 <p className="t-body text-muted">
@@ -114,12 +124,12 @@ export default function DashboardsPage() {
                   e.preventDefault();
                   router.push(`/dashboard/${dashboard.id}`);
                 }}
-                className="group glass-card relative flex cursor-pointer flex-col gap-3 p-4 transition-colors hover:border-accent"
+                className="group glass-card relative flex cursor-pointer flex-col gap-3 px-[18px] py-4 transition-colors duration-fast ease-out hover:border-accent-strong hover:bg-tint"
               >
                 <div className="flex items-start justify-between gap-2">
                   <span
                     aria-hidden
-                    className="badge-accent flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center border border-border text-accent"
                   >
                     <LayoutDashboard size={17} strokeWidth={1.75} />
                   </span>

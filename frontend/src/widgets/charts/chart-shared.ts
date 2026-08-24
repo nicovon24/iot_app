@@ -33,14 +33,14 @@ export const TOOLTIP_STYLE = {
 } as const;
 
 /**
- * Soft bloom for the single-series line — the only chart mark painted in the brand accent, so
- * it carries the same restrained glow as the primary buttons and the active nav pill.
+ * The single-series line's stroke width.
  *
- * Deliberately not applied to the multi-series charts: those draw from the eight categorical
- * hues, and eight glowing lines is a light show rather than a reading. It also blunts exactly
- * the edge separation those colours were validated on.
+ * This used to carry a drop-shadow bloom. The Editorial direction removes glow from the
+ * system outright — depth comes from rules and grounds, not from light — so what is left is
+ * the one thing the line still needs to say: it is the accent-coloured mark, and it is
+ * heavier than the grid it crosses.
  */
-export const ACCENT_LINE_GLOW = { filter: 'drop-shadow(0 0 6px rgba(46, 232, 154, 0.45))' } as const;
+export const ACCENT_LINE_WIDTH = 2;
 
 /**
  * Recharts needs one row array with a column per series, but each entity's history comes back

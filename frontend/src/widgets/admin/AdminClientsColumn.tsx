@@ -1,24 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
-} from '@heroui/react';
 import { Plus, Trash2 } from 'lucide-react';
 import { useDeleteCustomer } from '@/hooks';
 import { AdminBreadcrumbs } from './AdminBreadcrumbs';
 import { ConfirmDialog } from '@/widgets';
 import { TableRowsSkeleton } from '@/components';
 import { Tooltip } from '@/components';
-import { tableClassNames, toastError, toastSuccess } from '@/lib';
+import { MillerColumn, MillerEmpty, MillerRow } from '@/components';
+import { toastError, toastSuccess } from '@/lib';
 import type { EntityRef } from '@/types';
-
-const TABLE_CLASSNAMES = tableClassNames({ align: 'left', interactive: true });
 
 export interface AdminClientsColumnProps {
   isLoading: boolean;
@@ -50,68 +41,53 @@ export function AdminClientsColumn({
   };
 
   return (
-    <div className="glass-card flex h-96 shrink-0 flex-col gap-3 p-4 md:h-full md:min-h-0 md:w-full">
-      <div className="flex items-center justify-between">
-        <h2 className="t-heading">Clients</h2>
-        {!readOnly && (
+    <>
+    <MillerColumn
+      title="Clients"
+      action={
+        !readOnly && (
           <button
             type="button"
             onClick={onAddClient}
-            className="flex items-center gap-1 text-xs font-semibold text-accent hover:underline"
+            className="t-action flex items-center gap-1"
           >
             <Plus size={12} /> Add
           </button>
-        )}
+        )
+      }
+    >
+      <div className="px-4 pb-2">
+        <AdminBreadcrumbs rootLabel="Root" trail={trail.map((c) => ({ id: c.id, name: c.name }))} onNavigate={onNavigateTrail} />
       </div>
 
-      <AdminBreadcrumbs rootLabel="Root" trail={trail.map((c) => ({ id: c.id, name: c.name }))} onNavigate={onNavigateTrail} />
+      {isLoading && <TableRowsSkeleton rows={3} columns={2} />}
 
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        {isLoading && <TableRowsSkeleton rows={3} columns={2} />}
+      {!isLoading && customers.length === 0 && <MillerEmpty label="No Clients here." />}
 
-        {!isLoading && customers.length === 0 && (
-          <div className="flex h-full min-h-32 items-center justify-center">
-            <p className="text-sm text-muted">No Clients here.</p>
-          </div>
-        )}
-
-        {!isLoading && customers.length > 0 && (
-          <Table aria-label="Clients" classNames={TABLE_CLASSNAMES}>
-            <TableHeader>
-              <TableColumn>NAME</TableColumn>
-              <TableColumn align="end">ACTIONS</TableColumn>
-            </TableHeader>
-            <TableBody items={customers}>
-              {(customer) => (
-                <TableRow
-                  key={customer.id}
-                  className={`group cursor-pointer ${selectedCustomerId === customer.id ? 'bg-tint-strong' : ''}`}
-                >
-                  <TableCell className="font-medium text-heading" onClick={() => onSelect(customer)}>
-                    {customer.name}
-                  </TableCell>
-                  <TableCell>
-                    {!readOnly && (
-                      <div className="flex justify-end">
-                        <Tooltip label="Delete">
-                          <button
-                            type="button"
-                            onClick={() => setPendingDelete(customer)}
-                            className="rounded p-1 text-danger hover:bg-tint"
-                            aria-label="Delete"
-                          >
-                            <Trash2 size={13} />
-                          </button>
-                        </Tooltip>
-                      </div>
-                    )}
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        )}
-      </div>
+      {!isLoading &&
+        customers.map((customer) => (
+          <MillerRow
+            key={customer.id}
+            label={customer.name}
+            selected={selectedCustomerId === customer.id}
+            onSelect={() => onSelect(customer)}
+            actions={
+              !readOnly && (
+                <Tooltip label="Delete">
+                  <button
+                    type="button"
+                    onClick={() => setPendingDelete(customer)}
+                    className="text-faint transition-colors duration-fast ease-out hover:text-danger"
+                    aria-label="Delete"
+                  >
+                    <Trash2 size={13} strokeWidth={1.75} />
+                  </button>
+                </Tooltip>
+              )
+            }
+          />
+        ))}
+    </MillerColumn>
 
       <ConfirmDialog
         isOpen={!!pendingDelete}
@@ -132,6 +108,6 @@ export function AdminClientsColumn({
           });
         }}
       />
-    </div>
+    </>
   );
 }

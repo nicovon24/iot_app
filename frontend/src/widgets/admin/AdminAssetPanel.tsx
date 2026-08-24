@@ -90,9 +90,12 @@ export function AdminAssetPanel({
   };
 
   return (
-    <div className="glass-card flex h-96 shrink-0 flex-col gap-3 p-4 md:h-full md:min-h-0 md:w-full">
-      <div className="flex items-center justify-between">
-        <h2 className="truncate t-heading" title={title}>
+    <div className="flex h-96 shrink-0 flex-col border-r border-border md:h-full md:min-h-0 md:w-full">
+      <div className="flex shrink-0 items-center justify-between gap-2 px-4 pb-3 pt-1">
+        <h2
+          className="truncate text-[10px] font-extrabold uppercase leading-none tracking-[0.16em] text-muted"
+          title={title}
+        >
           {title}
         </h2>
         {!readOnly && (
@@ -101,19 +104,19 @@ export function AdminAssetPanel({
             disabled={!parentId}
             onClick={() => setIsAdding((v) => !v)}
             title={parentId ? undefined : 'Select the previous level first'}
-            className="flex shrink-0 items-center gap-1 text-xs font-semibold text-accent hover:underline disabled:cursor-not-allowed disabled:opacity-40 disabled:no-underline"
+            className="t-action flex shrink-0 items-center gap-1 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <Plus size={12} /> Add
           </button>
         )}
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="table-scroll min-h-0 flex-1 overflow-y-auto">
         {parentId && isLoading && <TableRowsSkeleton rows={3} columns={2} />}
 
         {!isLoading && assets.length === 0 && (
-          <div className="flex h-full min-h-32 items-center justify-center">
-            <p className="text-sm text-muted">
+          <div className="flex h-full min-h-32 items-center justify-center px-4 text-center">
+            <p className="t-body">
               {parentId ? `No ${title} here.` : 'Select the previous level first.'}
             </p>
           </div>

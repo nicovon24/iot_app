@@ -1,18 +1,17 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Inter } from "next/font/google";
+import { Archivo } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { AppLayout } from '@/components';
 
-const inter = Inter({
+// 400 for body, 600 for row and card names, 800 for anything structural — the
+// three weights the boards actually use. Loading only these keeps the payload to
+// what the design needs rather than to what the family offers.
+const archivo = Archivo({
   variable: "--font-sans",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "600", "800"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -28,7 +27,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${archivo.variable} h-full antialiased`}
     >
       <body className="h-full flex flex-col overflow-hidden">
         <Providers>

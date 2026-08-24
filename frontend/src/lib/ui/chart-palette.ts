@@ -107,6 +107,72 @@ export function severityColor(severity: string): string {
 }
 
 /**
+ * Severity, collapsed to the three bands a map marker can usefully carry.
+ *
+ * Five colours on a 9px diamond is more resolution than the mark can hold, and more than a
+ * legend can spend a line each on. Three is what survives being read at that size across a
+ * cluster.
+ *
+ * Bands rather than the raw scale for a second reason: nothing in this repo configures alarms —
+ * no rule chains, no device profiles, no seeds — so which severities a tenant actually emits is
+ * unknown. Grouping means a deployment that only ever raises MAJOR still lights the same red as
+ * one that raises CRITICAL, instead of the marker's top colour never appearing.
+ */
+export type AlarmLevel = 'critical' | 'warning' | 'indeterminate';
+
+const SEVERITY_LEVEL: Record<AlarmSeverity, AlarmLevel> = {
+  CRITICAL: 'critical',
+  MAJOR: 'critical',
+  WARNING: 'warning',
+  MINOR: 'warning',
+  INDETERMINATE: 'indeterminate',
+};
+
+/**
+ * Explicit ranking. Not the declaration order of SEVERITY_COLORS — that object is a colour
+ * lookup, and keying urgency off the order someone happened to type it in is the kind of
+ * coupling that breaks silently the first time the keys get sorted.
+ */
+const SEVERITY_RANK: Record<AlarmSeverity, number> = {
+  CRITICAL: 4,
+  MAJOR: 3,
+  WARNING: 2,
+  MINOR: 1,
+  INDETERMINATE: 0,
+};
+
+/** The band a severity belongs to. Unknown strings degrade to INDETERMINATE's band. */
+export function alarmLevel(severity: string): AlarmLevel {
+  return SEVERITY_LEVEL[severity as AlarmSeverity] ?? 'indeterminate';
+}
+
+/**
+ * The most urgent severity in a set, or null for an empty one.
+ *
+ * A marker shows one colour, so when an entity carries several alarms it has to be the worst
+ * of them — anything else under-reports the entity while claiming to describe it.
+ */
+export function highestSeverity(severities: string[]): AlarmSeverity | null {
+  let best: AlarmSeverity | null = null;
+  for (const raw of severities) {
+    const s = (SEVERITY_RANK[raw as AlarmSeverity] === undefined ? 'INDETERMINATE' : raw) as AlarmSeverity;
+    if (best === null || SEVERITY_RANK[s] > SEVERITY_RANK[best]) best = s;
+  }
+  return best;
+}
+
+/**
+ * Band colours. Deliberately pointers into SEVERITY_COLORS rather than three new hexes: a
+ * marker, the chip in the alarms table and a donut slice describing the same alarm have to
+ * agree, and the only way to guarantee that is to have one set of values.
+ */
+export const LEVEL_COLORS: Record<AlarmLevel, string> = {
+  critical: SEVERITY_COLORS.CRITICAL,
+  warning: SEVERITY_COLORS.WARNING,
+  indeterminate: SEVERITY_COLORS.INDETERMINATE,
+};
+
+/**
  * Ink plus its own translucent fill, for a severity chip. Takes a plain string and routes
  * through severityColor() so an unrecognised severity degrades to INDETERMINATE rather
  * than to `background: "undefined26"`, which the browser drops and which renders as an

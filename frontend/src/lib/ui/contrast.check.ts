@@ -89,7 +89,7 @@ const AA_NON_TEXT = 3;
 const checks: { label: string; fg: Rgb; bg: Rgb; min: number }[] = [];
 
 /** Ink tokens must clear AA as body text on both the page and a card. */
-for (const name of ['--color-heading', '--color-body', '--color-muted', '--color-faint', '--color-accent', '--color-danger']) {
+for (const name of ['--color-heading', '--color-body', '--color-nav', '--color-muted', '--color-faint', '--color-accent', '--color-danger']) {
   const ink = composite(token(name), CARD);
   checks.push({ label: `${name} as text on a card`, fg: ink, bg: CARD, min: AA_TEXT });
   checks.push({ label: `${name} as text on the page`, fg: composite(token(name), SURFACE), bg: SURFACE, min: AA_TEXT });
@@ -123,6 +123,15 @@ for (const family of ['ok', 'danger', 'info']) {
     });
   }
 }
+
+/** --color-inactive paints a zeroed 68px numeral. Large text, so 1.4.3 asks 3:1
+ * rather than 4.5:1 — but the board's own value missed even that, at 2.40:1. */
+checks.push({
+  label: '--color-inactive as a large numeral on the page',
+  fg: composite(token('--color-inactive'), SURFACE),
+  bg: SURFACE,
+  min: AA_NON_TEXT,
+});
 
 /** A control the user has to find and click is a UI component, boundary included. */
 checks.push({

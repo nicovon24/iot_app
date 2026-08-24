@@ -33,10 +33,10 @@ const DEFAULT_ZOOM = 2;
 function buildIcon(color: string) {
   return L.divIcon({
     className: '',
-    html: `<div style="width:18px;height:18px;border-radius:50%;background:${color};border:2px solid #04120c;box-shadow:0 0 6px ${color}80;"></div>`,
-    iconSize: [18, 18],
-    iconAnchor: [9, 9],
-    popupAnchor: [0, -9],
+    html: `<div style="width:10px;height:10px;transform:rotate(45deg);background:${color};border:1px solid #04120c"></div>`,
+    iconSize: [10, 10],
+    iconAnchor: [5, 5],
+    popupAnchor: [0, -7],
   });
 }
 

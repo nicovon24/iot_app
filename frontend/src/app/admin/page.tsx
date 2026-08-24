@@ -9,6 +9,7 @@ import { ClientWizard } from '@/widgets';
 import { AdminClientsColumn } from '@/widgets';
 import { AdminAssetPanel } from '@/widgets';
 import { AdminDevicePanel } from '@/widgets';
+import { PageHeader } from '@/components';
 import type { EntityRef } from '@/types';
 
 export default function AdminPage() {
@@ -90,9 +91,14 @@ export default function AdminPage() {
   const totalColumns = 1 + assetLevels.length + 1;
 
   return (
-    <div className="flex h-full w-full flex-col gap-4">
+    <div className="flex h-full w-full flex-col">
+      <PageHeader
+        title="Admin"
+        description="Drill from a client through its asset hierarchy to the devices at the leaves. Each column narrows the next."
+      />
+
       <div
-        className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-2 md:grid md:overflow-x-auto md:overflow-y-hidden"
+        className="rule-2 mt-[30px] flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-2 pt-5 md:grid md:overflow-x-auto md:overflow-y-hidden"
         style={{ gridTemplateColumns: `repeat(${totalColumns}, minmax(240px, 1fr))` }}
       >
         <AdminClientsColumn
