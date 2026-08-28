@@ -2,7 +2,7 @@
 
 **Phase:** 12 — Testing harness (backend + frontend, whole app)
 **Generated:** 2026-08-05
-**Status:** Ready for planning — resequenced 2026-08-12: runs after Phase 11 (units/widgets, already applied)
+**Status:** Ready for planning — resequenced 2026-08-12: runs after Phase 12 (units/widgets, already applied). Renumbered 2026-08-28 from its prior directory name `12-testing-harness` to `13-testing-harness` to make room for the retroactively-documented editorial rebrand as Phase 11 — no content change, only the phase number.
 
 ## Goals
 

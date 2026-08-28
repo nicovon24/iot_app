@@ -2,7 +2,7 @@
 
 **Phase:** 12 — Telemetry unit system + new widget types
 **Generated:** 2026-08-12
-**Status:** Discussed and designed, plan approved by user in a Claude Code session, all 5 plans applied 2026-08-12 — **resequenced to run first**, ahead of the testing harness (now Phase 12, see `.paul/phases/12-testing-harness/`), per explicit user decision
+**Status:** Discussed and designed, plan approved by user in a Claude Code session, all 5 plans applied 2026-08-12 — **resequenced to run first**, ahead of the testing harness (now Phase 13, see `.paul/phases/13-testing-harness/`), per explicit user decision. Renumbered 2026-08-28 from its prior directory name `11-units-and-widgets` to `12-units-and-widgets` to make room for the retroactively-documented editorial rebrand as Phase 11 — no content change, only the phase number.
 
 ## Goals
 
@@ -22,11 +22,11 @@ Explored via two parallel Explore agents (units-handling trace + widget-pipeline
 
 ## Approved plan (verbatim, from the Claude Code plan file)
 
-The full phased design below was approved by the user 2026-08-12 and should be brought into the formal `PLAN.md`(s) at `/paul:plan` time rather than re-discussed from scratch. It already names exact files, line numbers, and code shapes as of that session — **re-verify against current code before executing**, since Phase 11 (testing) and any other work will land first and may shift line numbers.
+The full phased design below was approved by the user 2026-08-12 and should be brought into the formal `PLAN.md`(s) at `/paul:plan` time rather than re-discussed from scratch. It already names exact files, line numbers, and code shapes as of that session — **re-verify against current code before executing**, since other work will land first and may shift line numbers.
 
 ---
 
-Corre antes de testing (Phase 12, ver `.paul/phases/12-testing-harness/CONTEXT.md`) — el usuario decidió explícitamente arrancar esta fase primero. Este plan no incluye setup de Jest ni tests automatizados; solo los `*.check.ts` assert-based manuales que ya son el patrón del repo.
+Corre antes de testing (Phase 13, ver `.paul/phases/13-testing-harness/CONTEXT.md`) — el usuario decidió explícitamente arrancar esta fase primero. Este plan no incluye setup de Jest ni tests automatizados; solo los `*.check.ts` assert-based manuales que ya son el patrón del repo.
 
 ### Contexto
 
