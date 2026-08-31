@@ -9,7 +9,8 @@ import { entityDetailsHref } from '@/components';
 import { EntityMapMarker } from './EntityMapMarker';
 import { MapAutoResize } from './MapAutoResize';
 import { MapStyleToggle } from './MapStyleToggle';
-import { MAP_TILE_CONFIG, type MapTileStyle } from '@\/lib';
+import { MAP_TILE_CONFIG, alarmLevel, highestSeverity, type MapTileStyle } from '@/lib';
+import type { EntityStatus } from './useFleetStatus';
 import type { EntityType } from '@/types';
 
 export interface MapWidgetProps {
@@ -24,13 +25,23 @@ export interface MapWidgetProps {
 }
 
 export function MapWidget({ id, type, name, lat, lng, heightClassName = 'h-96' }: MapWidgetProps) {
-  const [tileStyle, setTileStyle] = useState<MapTileStyle>('color');
+  const [tileStyle, setTileStyle] = useState<MapTileStyle>('dark');
   const alarmsQuery = useEntityAlarms(id, type);
   const telemetryQuery = useTelemetryLatest(id, type);
 
-  const hasActiveAlarm = (alarmsQuery.data?.data ?? []).some(
-    (a) => a.status === 'ACTIVE_UNACK' || a.status === 'ACTIVE_ACK',
-  );
+  // One entity, so the fleet hook would be overkill — but the reduction has to match it
+  // exactly, which is why both go through highestSeverity/alarmLevel rather than re-deriving
+  // "is this alarmed" a second time.
+  const activeSeverities = (alarmsQuery.data?.data ?? [])
+    .filter((a) => a.status === 'ACTIVE_UNACK' || a.status === 'ACTIVE_ACK')
+    .map((a) => a.severity);
+  const severity = highestSeverity(activeSeverities);
+  const status: EntityStatus = {
+    // This widget has no connectivity source of its own; unknown is drawn as reachable.
+    connectivity: 'unknown',
+    severity,
+    level: severity ? alarmLevel(severity) : null,
+  };
   const telemetry = telemetryQuery.data ?? {};
   const tsValues = Object.values(telemetry).map((v) => v.ts);
   const lastReportTs = tsValues.length > 0 ? Math.max(...tsValues) : undefined;
@@ -46,7 +57,7 @@ export function MapWidget({ id, type, name, lat, lng, heightClassName = 'h-96' }
           lat={lat}
           lng={lng}
           name={name}
-          hasActiveAlarm={hasActiveAlarm}
+          status={status}
           telemetry={telemetry}
           lastReportTs={lastReportTs}
           detailsHref={entityDetailsHref(id, type as 'DEVICE' | 'ASSET')}

@@ -12,7 +12,7 @@ export function CategoryStep({ onPick }: { onPick: (category: WidgetCategory) =>
             key={cat}
             type="button"
             onClick={() => onPick(cat)}
-            className="flex flex-col items-start gap-2 rounded-md border border-border p-4 text-left transition-colors hover:border-accent hover:bg-surface"
+            className="flex flex-col items-start gap-2 rounded-md border border-border p-4 text-left transition-colors hover:border-accent hover:bg-tint"
           >
             <CategoryIcon size={22} className="text-accent" />
             <div className="flex flex-col gap-0.5">

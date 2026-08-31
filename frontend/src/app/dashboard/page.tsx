@@ -4,11 +4,12 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Home, LayoutDashboard, Lock, Pencil, Plus, Trash2, Users } from 'lucide-react';
 import { Spinner } from '@heroui/react';
+import { PageHeader, SectionHeader } from '@/components';
 import { useDashboards, useDeleteDashboard } from '@/hooks';
 import { usePermissions } from '@/hooks';
 import { Tooltip } from '@/components';
 import { ConfirmDialog } from '@/widgets';
-import { toastError, toastSuccess } from '@\/lib';
+import { toastError, toastSuccess } from '@/lib';
 import type { Dashboard } from '@/types';
 
 /**
@@ -36,22 +37,30 @@ export default function DashboardsPage() {
   const dashboards = data ?? [];
 
   return (
-    <div className="flex h-full w-full flex-col gap-4">
-      <div className="flex shrink-0 items-center justify-between gap-3">
-        <h1 className="text-lg font-semibold text-heading">Dashboards</h1>
-        {canWrite && (
-          <button
-            type="button"
-            onClick={() => router.push('/dashboard/new')}
-            style={{ background: 'var(--gradient-accent)' }}
-            className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-semibold text-white"
-          >
-            <Plus size={15} /> New dashboard
-          </button>
-        )}
-      </div>
+    <div className="flex h-full w-full flex-col">
+      <PageHeader
+        title="Dashboards"
+        description="Overview is the fixed fleet summary; everything below it is a dashboard someone built."
+        actions={
+          canWrite ? (
+            <button
+              type="button"
+              onClick={() => router.push('/dashboard/new')}
+              className="btn-accent flex items-center gap-1.5 px-3 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.12em]"
+            >
+              <Plus size={14} /> New dashboard
+            </button>
+          ) : undefined
+        }
+      />
 
-      <div className="table-scroll min-h-0 flex-1 overflow-y-auto">
+      <SectionHeader
+        className="rule-2 mt-[30px] pt-5"
+        title="Gallery"
+        meta={`1 fixed · ${dashboards.length} custom`}
+      />
+
+      <div className="table-scroll mt-4 min-h-0 flex-1 overflow-y-auto">
         {isLoading ? (
           <div className="glass-card flex h-40 items-center justify-center">
             <Spinner label="Loading dashboards…" color="primary" />
@@ -63,7 +72,7 @@ export default function DashboardsPage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-4">
+          <div className="stagger-children grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-4">
             {/* Overview is the fixed fleet-summary dashboard — always shown first, not part of
                 the user-built gallery, so it has no edit/delete actions. */}
             <div
@@ -75,34 +84,31 @@ export default function DashboardsPage() {
                 e.preventDefault();
                 router.push('/');
               }}
-              className="group glass-card relative flex cursor-pointer flex-col gap-3 p-4 transition-colors hover:border-accent"
+              className="group glass-card relative flex cursor-pointer flex-col gap-3 px-[18px] py-4 transition-colors duration-fast ease-out hover:border-accent-strong hover:bg-tint"
             >
-              <span
-                aria-hidden
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
-                style={{ background: 'var(--gradient-accent)' }}
-              >
-                <Home size={17} className="text-white" strokeWidth={1.75} />
-              </span>
-
-              <div className="flex flex-col gap-1">
-                <span className="truncate text-sm font-semibold text-heading">Overview</span>
-                <span className="text-xs text-muted">Fleet summary</span>
+              <div className="flex items-center justify-between">
+                <span
+                  aria-hidden
+                  className="flex h-9 w-9 shrink-0 items-center justify-center border border-border text-accent"
+                >
+                  <Home size={17} strokeWidth={1.75} />
+                </span>
+                <span aria-hidden className="diamond h-1.5 w-1.5" />
               </div>
 
-              <div className="flex items-center gap-1.5 text-xs text-faint">Default dashboard</div>
+              <div className="t-item truncate">Overview</div>
+
+              <div className="flex items-center justify-between border-t border-border pt-[11px]">
+                <span className="t-label">Fixed · fleet summary</span>
+              </div>
             </div>
 
             {dashboards.length === 0 ? (
-              <div className="glass-card flex h-40 flex-col items-center justify-center gap-3 text-center">
-                <span
-                  aria-hidden
-                  className="flex h-11 w-11 items-center justify-center rounded-full"
-                  style={{ background: 'var(--gradient-accent)' }}
-                >
-                  <LayoutDashboard size={20} className="text-white" strokeWidth={1.75} />
+              <div className="flex h-40 flex-col items-center justify-center gap-3 border border-dashed border-border text-center">
+                <span aria-hidden className="badge-quiet flex h-11 w-11 items-center justify-center">
+                  <LayoutDashboard size={20} strokeWidth={1.75} />
                 </span>
-                <p className="text-sm font-medium text-muted">
+                <p className="t-body text-muted">
                   {canWrite ? 'No dashboards yet — create your first one.' : 'No dashboards shared with you yet.'}
                 </p>
               </div>
@@ -118,15 +124,14 @@ export default function DashboardsPage() {
                   e.preventDefault();
                   router.push(`/dashboard/${dashboard.id}`);
                 }}
-                className="group glass-card relative flex cursor-pointer flex-col gap-3 p-4 transition-colors hover:border-accent"
+                className="group glass-card relative flex cursor-pointer flex-col gap-3 px-[18px] py-4 transition-colors duration-fast ease-out hover:border-accent-strong hover:bg-tint"
               >
                 <div className="flex items-start justify-between gap-2">
                   <span
                     aria-hidden
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
-                    style={{ background: 'var(--gradient-accent)' }}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center border border-border text-accent"
                   >
-                    <LayoutDashboard size={17} className="text-white" strokeWidth={1.75} />
+                    <LayoutDashboard size={17} strokeWidth={1.75} />
                   </span>
 
                   {canWrite && (
@@ -153,7 +158,7 @@ export default function DashboardsPage() {
                             e.stopPropagation();
                             setPendingRemoval(dashboard);
                           }}
-                          className="flex h-7 w-7 items-center justify-center rounded text-muted transition-colors hover:bg-danger hover:text-white"
+                          className="flex h-7 w-7 items-center justify-center rounded text-muted transition-colors hover:bg-danger-strong hover:text-white"
                         >
                           <Trash2 size={13} />
                         </button>
@@ -163,7 +168,7 @@ export default function DashboardsPage() {
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <span className="truncate text-sm font-semibold text-heading" title={dashboard.title}>
+                  <span className="truncate t-heading" title={dashboard.title}>
                     {dashboard.title}
                   </span>
                   <span className="text-xs text-muted">
@@ -171,7 +176,7 @@ export default function DashboardsPage() {
                   </span>
                 </div>
 
-                <div className="flex items-center gap-1.5 text-xs text-faint">
+                <div className="flex items-center gap-1.5 t-meta">
                   {dashboard.visibility === 'PRIVATE' ? (
                     <>
                       <Lock size={12} /> Private

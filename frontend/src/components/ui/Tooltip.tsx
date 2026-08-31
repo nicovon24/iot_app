@@ -29,10 +29,10 @@ export function Tooltip({ label, children, side = 'right' }: TooltipProps) {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.96 }}
               transition={{ duration: 0.12 }}
-              className="z-50 select-none whitespace-nowrap rounded-md bg-navy-950 px-2.5 py-1.5 text-xs font-medium text-white shadow-lg"
+              className="z-50 select-none whitespace-nowrap rounded-md bg-ink-950 px-2.5 py-1.5 text-xs font-medium text-white shadow-lg"
             >
               {label}
-              <RadixTooltip.Arrow width={11} height={5} className="fill-navy-950" />
+              <RadixTooltip.Arrow width={11} height={5} className="fill-ink-950" />
             </motion.div>
           </RadixTooltip.Content>
         </RadixTooltip.Portal>

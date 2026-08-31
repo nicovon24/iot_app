@@ -2,8 +2,12 @@
 
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
 import { Clock } from 'lucide-react';
-import { Select } from '@/components';
-import { Input } from '@/components';
+// Reached directly rather than through the '@/components' barrel: that barrel re-exports
+// DashboardCanvas, which imports react-grid-layout's stylesheet, and pulling a .css file in
+// left time-window.check.ts unable to run at all outside a bundler. Same relative-import
+// shape AppLayout already uses for its ui primitives.
+import { Select } from '../../ui/Select';
+import { Input } from '../../ui/Input';
 import type { DashboardTimeWindow } from '@/types';
 
 const MINUTE = 60_000;

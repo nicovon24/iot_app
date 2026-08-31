@@ -193,7 +193,7 @@ export function DashboardCanvas({
                         type="button"
                         aria-label="Remove widget"
                         onClick={() => setPendingRemoval({ ...w, id: key })}
-                        className="flex h-6 w-6 items-center justify-center rounded text-muted transition-colors hover:bg-danger hover:text-white"
+                        className="flex h-6 w-6 items-center justify-center rounded text-muted transition-colors hover:bg-danger-strong hover:text-white"
                       >
                         <X size={14} strokeWidth={2.5} />
                       </button>

@@ -7,114 +7,414 @@
  * (e.g. injected per-tenant via a <style> tag or `element.style.setProperty`)
  * with no rebuild and no component changes required.
  *
- * Dark "control room" theme — slate bg/sidebar with a petrol-cyan accent used
- * everywhere (icons, buttons, borders, header). Sidebar active/selected uses
- * a washed-out (desaturated) pastel version of the same cyan instead of a
- * second hue, so "selected" reads as a faded variant of the main accent
- * rather than a different color (Phase 9.1 experiment #4c, see STATE.md
- * Decisions).
+ * "Editorial" — the direction approved in the Claude Design canvas (Overview
+ * Redesign.dc.html, boards 1c / 2a / 3a-3g / 4b). Near-black grounds, one green,
+ * and elegance carried by the grid, 2px rules, zero radius and Archivo rather
+ * than by glow or gradients. Everything rounded, blurred or bloomed in the
+ * previous pass is deliberately gone.
+ *
+ * Four inks are one step brighter here than on the boards. The design used
+ * #5b6a63 and #4f5e57 for small text (3.47:1 and 2.89:1) and #43524b for a
+ * zeroed 68px numeral (2.40:1), all under their WCAG thresholds, and drew
+ * control borders at 10% white (1.25:1 against 1.4.11's 3:1). Each was raised
+ * along its own hue to the minimum that passes — see contrast.check.ts, which
+ * is the quality gate this palette has to clear.
  */
 :root {
-  /* Fixed dark constants (tooltips, dropdown menus) — kept for contrast against
-   * the dark page itself, tuned a shade darker than the page background. */
-  --color-navy-950: #060a14;
-  --color-navy-900: #0b1220;
-  --color-navy-800: #131b2e;
+  /* Grounds. Three steps, all near-black: the page, the panels that sit on it,
+   * and the rail. Separation comes from the hairline, never from the fill. */
+  --color-surface: #080b0a;
+  --color-surface-card: #0b100e;
+  --color-surface-raised: #0c100e;
 
-  --color-accent: #0891b2;
-  --color-accent-soft: #67e8f9;
-  --color-link-hover: #67e8f9;
-  --color-surface: #0f172a;
-  --color-surface-card: rgba(30, 41, 59, 0.72);
-  --color-border: rgba(8, 145, 178, 0.18);
-  --color-muted: #94a3b8;
+  /* Fixed dark constants (tooltips, dropdown menus) — a shade under the page. */
+  --color-ink-950: #040706;
+  --color-ink-900: #070b09;
+  --color-ink-800: #0f1513;
 
-  /* Text tokens — every text-* color in the app resolves here instead of a
-   * literal Tailwind gray, tuned for legibility on the dark slate surfaces. */
-  --color-heading: #f1f5f9;
-  --color-body: #cbd5e1;
-  --color-faint: #64748b;
-  --color-danger: #dc2626;
+  /* Accent. Two roles: -strong paints solid surfaces (the active nav item, the
+   * primary button), the base value is the ink laid on dark grounds. */
+  --color-accent: #34d399;
+  --color-accent-strong: #10b981;
+  --color-accent-soft: #6ee7b7;
+  --color-on-accent: #04120c;
+  --color-link-hover: #6ee7b7;
 
-  /* Primary petrol-cyan accent gradient — logo badge, primary buttons, icons,
-   * avatar badges, toggle "on" state. Monochrome petrol cyan, used across the
-   * whole app as the one main accent. */
-  --gradient-accent-from: #0891b2;
-  --gradient-accent-to: #0e7490;
-  --gradient-accent: linear-gradient(135deg, var(--gradient-accent-from), var(--gradient-accent-to));
+  /* Ink */
+  --color-heading: #f6faf8;
+  --color-body: #cfe0d9;
+  --color-nav: #a3b1ab;
+  --color-muted: #8fa09a;
+  /* Raised from the board's #5b6a63 (3.47:1) — this carries real small text.
+   * Solved against the rail (#0c100e), the lightest ground it lands on. */
+  --color-faint: #6d7f76;
+  /* A numeral showing zero. Large-text threshold only; board value was 2.40:1. */
+  --color-inactive: #51645b;
+  /* Nav items that are not implemented yet. 1.4.3 exempts disabled controls, so
+   * this is the one place the board's own value stands unchanged. */
+  --color-disabled: #3f4d47;
+  --color-danger: #f87171;
+  --color-danger-strong: #b91c1c;
+  --color-warning: #f5b32e;
+  --color-on-warning: #1a1206;
 
-  /* Secondary status gradients — stat-card icon badges, status dots. */
-  --gradient-ok-from: #34d399;
-  --gradient-ok-to: #059669;
-  --gradient-danger-from: #ef4444;
-  --gradient-danger-to: #dc2626;
-  --gradient-info-from: #0891b2;
-  --gradient-info-to: #0891b2;
+  /* Rules. The system has exactly two weights: a 1px hairline that separates
+   * rows and panels, and a 2px rule that opens a section. Nothing else. */
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-rule: rgba(255, 255, 255, 0.12);
+  /* An input or select the user has to find and click is a UI component, and
+   * 1.4.11 asks 3:1 for its boundary — the board's 10% measures 1.25:1. */
+  --color-border-strong: rgba(255, 255, 255, 0.35);
 
-  /* Sidebar rail — #1E293B family, a shade lighter than the page background. */
-  --gradient-sidebar: linear-gradient(165deg, #0f172a 0%, #1e293b 55%, #24324a 100%);
+  /* Interactive tint. Hover and selection lift toward the accent rather than
+   * toward the page, which is darker than everything sitting on it. */
+  --color-tint: rgba(16, 185, 129, 0.05);
+  --color-tint-strong: rgba(16, 185, 129, 0.1);
 
-  /* Sidebar active nav item — same petrol cyan as the top header, for full
-   * visual continuity between the two. */
-  --gradient-sidebar-active-from: #0891b2;
-  --gradient-sidebar-active-to: #0e7490;
-  --gradient-sidebar-active: linear-gradient(135deg, var(--gradient-sidebar-active-from), var(--gradient-sidebar-active-to));
+  /* Zero radius throughout. This is the most defining decision of the system:
+   * every corner in the app is square, so the grid does the work a border-radius
+   * used to. Kept as tokens anyway, so the override point stays where a
+   * white-label theme would expect to find it. */
+  --radius-chip: 0px;
+  --radius-control: 0px;
+  --radius-panel: 0px;
+  --radius-card: 0px;
+  --radius-overlay: 0px;
 
-  /* Top header banner gradient — same petrol cyan, matches the accent everywhere. */
-  --gradient-header-from: #0891b2;
-  --gradient-header-to: #0e7490;
+  /* Elevation is a hairline plus, for the few things that truly float, ambient
+   * darkness. No coloured glow anywhere — the boards removed it on purpose. */
+  --shadow-raised: 0 4px 16px -4px rgb(0 0 0 / 0.55);
+  --shadow-overlay: 0 24px 60px -20px rgb(0 0 0 / 0.8);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 160ms;
+  --dur-base: 260ms;
+  --dur-slow: 400ms;
+
+  /* Status gradients survive only as flat pairs — CountTileWidget builds these
+   * names by interpolation, so the -from / -to / -ink suffixes stay load-bearing
+   * even now that from and to hold the same value and nothing gradates. */
+  --gradient-accent-from: #10b981;
+  --gradient-accent-to: #10b981;
+  --gradient-accent-ink: var(--color-on-accent);
+  --gradient-accent: var(--gradient-accent-from);
+  --gradient-ok-from: #10b981;
+  --gradient-ok-to: #10b981;
+  --gradient-ok-ink: var(--color-on-accent);
+  --gradient-danger-from: #f87171;
+  --gradient-danger-to: #f87171;
+  --gradient-danger-ink: #1a0606;
+  --gradient-info-from: #2dd4bf;
+  --gradient-info-to: #2dd4bf;
+  --gradient-info-ink: var(--color-on-accent);
+
+  --gradient-sidebar: var(--color-surface-raised);
+  --gradient-sidebar-active-from: #10b981;
+  --gradient-sidebar-active-to: #10b981;
+  --gradient-sidebar-active-ink: var(--color-on-accent);
+  --gradient-sidebar-active: var(--gradient-sidebar-active-from);
+
+  --color-focus: #6ee7b7;
+  --color-focus-on-accent: #04120c;
 
   --background: var(--color-surface);
   --foreground: var(--color-body);
 }
 
 @theme inline {
-  --color-navy-950: var(--color-navy-950);
-  --color-navy-900: var(--color-navy-900);
-  --color-navy-800: var(--color-navy-800);
+  --color-ink-950: var(--color-ink-950);
+  --color-ink-900: var(--color-ink-900);
+  --color-ink-800: var(--color-ink-800);
   --color-accent: var(--color-accent);
   --color-accent-soft: var(--color-accent-soft);
+  --color-accent-strong: var(--color-accent-strong);
+  --color-on-accent: var(--color-on-accent);
   --color-link-hover: var(--color-link-hover);
   --color-surface: var(--color-surface);
   --color-surface-card: var(--color-surface-card);
+  --color-surface-raised: var(--color-surface-raised);
+  --color-tint: var(--color-tint);
+  --color-tint-strong: var(--color-tint-strong);
   --color-border: var(--color-border);
+  --color-rule: var(--color-rule);
+  --color-border-strong: var(--color-border-strong);
+  --color-nav: var(--color-nav);
   --color-muted: var(--color-muted);
   --color-heading: var(--color-heading);
   --color-body: var(--color-body);
   --color-faint: var(--color-faint);
+  --color-inactive: var(--color-inactive);
+  --color-disabled: var(--color-disabled);
   --color-danger: var(--color-danger);
+  --color-danger-strong: var(--color-danger-strong);
+  --color-warning: var(--color-warning);
+  --color-on-warning: var(--color-on-warning);
+  --color-focus: var(--color-focus);
+  --color-focus-on-accent: var(--color-focus-on-accent);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
 }
 
 /*
- * Glass-card — the standard container surface for the whole app (stat cards,
- * list rows, Admin Miller columns, Login form, dialogs). Translucent white +
- * backdrop-blur is the single most distinctive element of the 9.1 look.
+ * Surfaces
+ * --------
+ * A panel is a fill plus a hairline and nothing else. `.glass-card` keeps its
+ * name because sixty call sites use it; what it means is now "the quiet panel".
  */
 .glass-card {
   background: var(--color-surface-card);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--color-border);
-  border-radius: 20px;
-  box-shadow:
-    0 20px 44px -18px rgba(0, 0, 0, 0.55),
-    0 0 0 1px rgba(8, 145, 178, 0.05);
+  border-radius: var(--radius-card);
 }
 
+/* Things that genuinely sit above the page: popovers, dropdowns, map controls. */
+.surface-raised {
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-raised);
+}
+
+/* Modal surfaces. The one place a backdrop blur earns its repaint cost. */
+.surface-overlay {
+  background: var(--color-surface-raised);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-overlay);
+  box-shadow: var(--shadow-overlay);
+}
+
+/*
+ * The 2px rule. Opens a section, closes a page header, sits above a table. It is
+ * the system's main structural gesture, so it gets a name rather than being
+ * retyped as an arbitrary border every time.
+ */
+.rule-2 {
+  border-top: 2px solid var(--color-rule);
+}
+
+/*
+ * Accent surfaces. The pairing of a solid green with dark ink is named so the
+ * two can never drift apart — white on this green measures 2.2:1.
+ */
+.btn-accent,
+.badge-accent {
+  background: var(--color-accent-strong);
+  color: var(--color-on-accent);
+  border-radius: var(--radius-control);
+}
+.btn-accent {
+  transition: background var(--dur-fast) var(--ease-out);
+}
+.btn-accent:hover:not(:disabled) {
+  background: var(--color-accent);
+}
+
+/* The pale focus ring is invisible on green; accent-backed controls flip dark. */
+.btn-accent:focus-visible,
+.badge-accent:focus-visible,
+.bg-accent-strong:focus-visible {
+  outline-color: var(--color-focus-on-accent);
+}
+
+/* A quiet badge for empty states — an absence should not shout. */
+.badge-quiet {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-faint);
+}
+
+/*
+ * Typography
+ * ----------
+ * Roles, not sizes. Archivo carries every piece of running text and every
+ * numeral, at 800 for anything structural; the monospace face is reserved for
+ * labels, keys and machine values, always uppercase and always letter-spaced.
+ * That split — humanist for language, mono for data — is how the boards separate
+ * what the app is saying from what it is reporting.
+ *
+ * Inside @layer components on purpose: unlayered CSS outranks every layered
+ * rule, so without it a role would beat any Tailwind utility sitting next to it
+ * and `t-metric text-3xl` would silently ignore the text-3xl.
+ */
+@layer components {
+
+/* The headline numeral on a summary row. */
+.t-display {
+  font-size: 4.25rem;
+  line-height: 1;
+  letter-spacing: -0.045em;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-heading);
+}
+
+/* Page title. */
+.t-title {
+  font-size: 2.625rem;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-weight: 800;
+  color: var(--color-heading);
+}
+
+/* A metric inside a widget, where 68px would not fit. */
+.t-metric {
+  font-size: 2rem;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-heading);
+}
+
+.t-metric-sm {
+  font-size: 1.125rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-heading);
+}
+
+/* Section heading — the "Devices" above a list. */
+.t-heading {
+  font-size: 0.9375rem;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  font-weight: 800;
+  color: var(--color-heading);
+}
+
+/* The name of a row or card. */
+.t-item {
+  font-size: 0.84375rem;
+  line-height: 1.2;
+  font-weight: 600;
+  color: var(--color-heading);
+}
+
+/* Body copy — the sentence under a page title. */
+.t-body {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--color-muted);
+}
+
+/* The label above a form control. */
+.t-field {
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 0.59375rem;
+  line-height: 1;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 400;
+  color: var(--color-muted);
+}
+
+/* The system's workhorse: a column header, an eyebrow, a status word. */
+.t-label {
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 0.59375rem;
+  line-height: 1.4;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 400;
+  color: var(--color-faint);
+}
+
+/* The same label one step up, for a section divider in the rail. */
+.t-label-lg {
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 0.625rem;
+  line-height: 1.4;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 400;
+  color: var(--color-faint);
+}
+
+/* Machine values that are not labels: a client name in a cell, a timestamp. */
+.t-meta {
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--color-muted);
+}
+
+/* Identifiers and telemetry keys — anything the user might copy. */
+.t-mono {
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--color-faint);
+}
+
+/* An inline call to action: VIEW ALL →. Archivo, not mono — it is language. */
+.t-action {
+  font-size: 0.6875rem;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 800;
+  color: var(--color-accent);
+}
+.t-action:hover {
+  color: var(--color-accent-soft);
+}
+
+}
+
+/*
+ * The diamond. A 45°-rotated square standing in for a status dot, used on map
+ * markers, list rows and card headers. Squares are the system's vocabulary; a
+ * circle here would be the only curve in the app.
+ */
+.diamond {
+  transform: rotate(45deg);
+  background: var(--color-accent);
+}
+
+/*
+ * A row in a ruled table. The green edge on hover replaces a fill-only
+ * highlight: at 5% the tint alone is too quiet to track across a 1440px row, and
+ * an inset shadow costs no layout and is never clipped by the row's own bounds.
+ */
+.ruled-row {
+  border-bottom: 1px solid var(--color-border);
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+.ruled-row:hover,
+.ruled-row[data-selected='true'] {
+  background: var(--color-tint);
+  box-shadow: inset 2px 0 0 var(--color-accent-strong);
+}
+
+/*
+ * Motion
+ * ------
+ * Short travel, decelerating curve. Something that moves a long way quickly
+ * reads as cheap; the same element moving 6px with an ease-out reads as
+ * considered.
+ */
 @keyframes fadeUp {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -122,7 +422,89 @@ body {
   }
 }
 .animate-fade-up {
-  animation: fadeUp 0.4s ease both;
+  animation: fadeUp var(--dur-base) var(--ease-out) both;
+}
+
+/* The blinking dot in a LIVE pill. */
+@keyframes liveBlink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+.animate-live {
+  animation: liveBlink 2s ease-in-out infinite;
+}
+
+/* A marker announcing itself on the map, without a permanent halo. */
+@keyframes markerPulse {
+  0% {
+    transform: rotate(45deg) scale(1);
+    opacity: 0.55;
+  }
+  70% {
+    transform: rotate(45deg) scale(2.6);
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.animate-marker-pulse {
+  animation: markerPulse 3s ease-out infinite;
+}
+
+/*
+ * The login field's slow scan. Eleven seconds to cross the viewport is deliberately longer
+ * than anyone looks at a login form — it should register as the surface being alive, not as
+ * something to watch. Login only; nowhere inside the app moves on its own.
+ */
+@keyframes scanSweep {
+  0% {
+    transform: translateY(-10%);
+  }
+  100% {
+    transform: translateY(900%);
+  }
+}
+.animate-scan {
+  animation: scanSweep 11s linear infinite;
+}
+
+/*
+ * Staggered entrance for lists and grids. Rows arriving together land as one
+ * block and the eye has nowhere to start; 40ms apart they read in order. Capped
+ * at eight, past which the last row waits on an animation rather than on data.
+ */
+.stagger-children > * {
+  animation: fadeUp var(--dur-base) var(--ease-out) both;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 40ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 80ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 120ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 160ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 200ms; }
+.stagger-children > *:nth-child(7) { animation-delay: 240ms; }
+.stagger-children > *:nth-child(n + 8) { animation-delay: 280ms; }
+
+/*
+ * Someone who asked their OS to reduce motion asked for exactly this. Entrances
+ * collapse to nothing rather than merely speeding up — a fast animation is still
+ * an animation — while colour transitions stay, since those are feedback rather
+ * than movement and removing them makes the UI feel broken instead of calm.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .stagger-children > *,
+  .animate-live,
+  .animate-marker-pulse,
+  .animate-scan {
+    animation: none;
+  }
 }
 
 /* Browsers don't give <button>/<select> a pointer cursor by default — apply it
@@ -139,26 +521,27 @@ select:disabled {
 /*
  * Scrolling
  * ---------
- * Every scroll surface in the app draws from these three tokens, so a theme override
- * (see the token block at the top) restyles scrollbars along with everything else
- * instead of leaving hard-coded slate greys behind.
+ * Every scroll surface in the app draws from these three tokens, so a theme
+ * override restyles scrollbars along with everything else instead of leaving
+ * hard-coded greys behind.
  *
- * The thumb is painted with a transparent border + background-clip: padding-box. That's
- * what gives it the inset "floating pill" look — the border reserves gutter space the
- * thumb can't paint into, so it never touches the container's edge, while the scrollbar
- * itself keeps its full hit area for grabbing.
+ * The thumb is painted with a transparent border + background-clip: padding-box.
+ * That's what gives it the inset look — the border reserves gutter space the
+ * thumb can't paint into, so it never touches the container's edge, while the
+ * scrollbar keeps its full hit area for grabbing.
  */
 :root {
   --scrollbar-size: 10px;
-  --scrollbar-thumb: rgba(148, 163, 184, 0.26);
-  --scrollbar-thumb-hover: rgba(103, 232, 249, 0.45);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.14);
+  --scrollbar-thumb-hover: rgba(52, 211, 153, 0.45);
 }
 
 /*
- * The single highest-impact rule here. Without color-scheme, the browser renders every
- * *native* control in its light theme — which on this dark app meant a white, chunky
- * OS scrollbar on the page itself and on any container that hadn't opted into a
- * .table-scroll style. It also darkens checkboxes, selects and the like for free.
+ * The single highest-impact rule here. Without color-scheme, the browser renders
+ * every *native* control in its light theme — which on this dark app meant a
+ * white, chunky OS scrollbar on the page itself and on any container that hadn't
+ * opted into a .table-scroll style. It also darkens checkboxes and selects for
+ * free.
  */
 :root {
   color-scheme: dark;
@@ -183,7 +566,6 @@ select:disabled {
   background: var(--scrollbar-thumb);
   border: 3px solid transparent;
   background-clip: padding-box;
-  border-radius: 9999px;
 }
 *::-webkit-scrollbar-thumb:hover {
   background: var(--scrollbar-thumb-hover);
@@ -191,45 +573,41 @@ select:disabled {
 }
 
 /*
- * Inner scroll areas (widget tables, key pickers, the tile grid). Same look as the
- * global default; the class exists for `overscroll-behavior: contain`, which stops a
- * flick inside a widget from continuing into the page once the widget hits its end —
- * the "scroll chaining" that makes a dashboard feel slippery.
+ * Inner scroll areas (widget tables, key pickers, the tile grid). Same look as
+ * the global default; the class exists for `overscroll-behavior: contain`, which
+ * stops a flick inside a widget from continuing into the page once the widget
+ * hits its end — the "scroll chaining" that makes a dashboard feel slippery.
  */
 .table-scroll {
   overscroll-behavior: contain;
 }
 
 /*
- * Leaflet popup chrome, retinted to the app's card surface.
+ * Leaflet popup chrome, retinted to the app's panel surface.
  *
- * Leaflet ships an opaque white popup with a white tip. The popup's contents are written with
- * this app's ink tokens (--color-heading, --color-muted…), which are tuned for the dark card
- * surface — on white they render as pale grey on white and are effectively unreadable.
- * Restyling the container is what makes those tokens correct again, rather than overriding
- * every piece of text inside it to a second, light-surface palette.
+ * Leaflet ships an opaque white popup with a white tip. The popup's contents are
+ * written with this app's ink tokens, which are tuned for a dark surface — on
+ * white they render as pale grey on white and are effectively unreadable.
  *
- * Every rule is scoped through `.leaflet-popup` (the class Leaflet puts on the popup root) so it
- * wins on specificity rather than on order: leaflet.css is imported from the map components,
- * which Next injects *after* this global sheet, so an equally-specific rule here loses and the
- * popup stays white.
+ * Every rule is scoped through `.leaflet-popup` so it wins on specificity rather
+ * than on order: leaflet.css is imported from the map components, which Next
+ * injects *after* this global sheet, so an equally-specific rule here loses and
+ * the popup stays white.
  */
 .leaflet-popup .leaflet-popup-content-wrapper,
 .leaflet-popup .leaflet-popup-tip {
-  background: #131c2e;
+  background: var(--color-surface-raised);
   color: var(--color-body);
-  /* Not --color-border: at 18% cyan it disappears against the dark popup, and this edge is the
-   * only thing separating the popup from an equally dark map tile beneath it. */
-  border: 1px solid rgba(148, 163, 184, 0.22);
+  border: 1px solid var(--color-border-strong);
 }
 
 .leaflet-popup .leaflet-popup-content-wrapper {
-  border-radius: 12px;
+  border-radius: 0;
   padding: 0;
-  box-shadow: 0 12px 32px rgba(2, 6, 23, 0.55);
+  box-shadow: var(--shadow-raised);
 }
 
-/* Leaflet's default 13px/1.4 sizing fights the utility classes used inside the popup. */
+/* Leaflet's default 13px/1.4 sizing fights the utility classes used inside. */
 .leaflet-popup .leaflet-popup-content {
   margin: 0;
   padding: 14px;
@@ -238,26 +616,27 @@ select:disabled {
   width: auto !important;
 }
 
-/* leaflet.css gives popup paragraphs a 1.3em vertical margin, which pushes the flex gaps the
- * popup's own layout relies on into uneven double spacing. */
+/* leaflet.css gives popup paragraphs a 1.3em vertical margin, which pushes the
+ * flex gaps the popup's own layout relies on into uneven double spacing. */
 .leaflet-popup .leaflet-popup-content p {
   margin: 0;
 }
 
-/* The tip is a square rotated 45°, so it needs two corrections leaflet.css doesn't anticipate
- * once the popup is dark: only the two outward-facing edges may carry the border (or the seam
- * shows as a line across the popup's underside), and its shadow has to go — rotated, it casts
- * back onto the popup body as a dark smudge under the point. */
+/* The tip is a square rotated 45°, so it needs two corrections leaflet.css does
+ * not anticipate once the popup is dark: only the two outward-facing edges may
+ * carry the border (or the seam shows as a line across the popup's underside),
+ * and its shadow has to go — rotated, it casts back onto the popup body as a
+ * dark smudge under the point. */
 .leaflet-popup .leaflet-popup-tip {
   border-top: none;
   border-left: none;
   box-shadow: none;
 }
 
-/* leaflet.css styles this button as `.leaflet-container a.leaflet-popup-close-button` and its
- * hover state at the same specificity as anything written here. Since that sheet is injected
- * after this one, ties go to Leaflet — `!important` is the only lever left short of a wrapper
- * class on every map in the app. */
+/* leaflet.css styles this button as `.leaflet-container a.leaflet-popup-close-button`
+ * and its hover state at the same specificity as anything written here. Since
+ * that sheet is injected after this one, ties go to Leaflet — `!important` is the
+ * only lever left short of a wrapper class on every map in the app. */
 .leaflet-container a.leaflet-popup-close-button {
   color: var(--color-muted) !important;
   padding: 10px 10px 0 0;
@@ -268,10 +647,8 @@ select:disabled {
   background: transparent;
 }
 
-/*
- * Map popup telemetry list — ghost until hovered, so a short scrollable list inside a
- * small popup doesn't advertise itself with a permanent bar.
- */
+/* Map popup telemetry list — ghost until hovered, so a short scrollable list
+ * inside a small popup doesn't advertise itself with a permanent bar. */
 .map-popup-scroll {
   overscroll-behavior: contain;
   scrollbar-color: transparent transparent;
@@ -290,8 +667,9 @@ select:disabled {
   background-clip: padding-box;
 }
 
-/* Anchor jumps and programmatic scrollTo ease instead of teleporting — but honour a
- * reduced-motion preference, where that easing is exactly what the user opted out of. */
+/* Anchor jumps and programmatic scrollTo ease instead of teleporting — but
+ * honour a reduced-motion preference, where that easing is exactly what the user
+ * opted out of. */
 @media (prefers-reduced-motion: no-preference) {
   html {
     scroll-behavior: smooth;
@@ -299,21 +677,23 @@ select:disabled {
 }
 
 /*
- * Dashboard grid (react-grid-layout). RGL ships a bare stylesheet: the drop placeholder is
- * an opaque red block and items snap between cells with no transition. These rules replace
- * the placeholder with an accent-tinted drop target and ease items into place, so dragging
- * reads as "this is where it lands" instead of a flash of red.
+ * Dashboard grid (react-grid-layout). RGL ships a bare stylesheet: the drop
+ * placeholder is an opaque red block and items snap between cells with no
+ * transition. These rules replace the placeholder with an accent-tinted drop
+ * target and ease items into place, so dragging reads as "this is where it
+ * lands" instead of a flash of red.
  */
 .react-grid-item.react-grid-placeholder {
-  background: var(--color-accent, #0891b2);
+  background: var(--color-accent-strong);
   opacity: 0.15;
-  border: 2px dashed var(--color-accent, #0891b2);
-  border-radius: 20px;
+  border: 1px dashed var(--color-accent-strong);
+  border-radius: 0;
   transition-duration: 120ms;
 }
 
-/* Only animate position for items sitting still — the dragged item is transform-positioned
- * by RGL on every pointer move, and transitioning that makes it lag behind the cursor. */
+/* Only animate position for items sitting still — the dragged item is
+ * transform-positioned by RGL on every pointer move, and transitioning that
+ * makes it lag behind the cursor. */
 .react-grid-item:not(.react-grid-placeholder):not(.react-draggable-dragging):not(.resizing) {
   transition:
     transform 200ms ease,
@@ -326,16 +706,17 @@ select:disabled {
   will-change: transform;
 }
 
-/* The map's own style switcher sits in the same corner as the widget toolbar and would
- * collide with it. Widget content is inert while editing anyway, so the switcher can't be
- * used there — hide it rather than stack two controls on the same 40 pixels. Scoped to the
- * dashboard grid, so the standalone /map page keeps its switcher. */
+/* The map's own style switcher sits in the same corner as the widget toolbar and
+ * would collide with it. Widget content is inert while editing anyway, so the
+ * switcher can't be used there — hide it rather than stack two controls on the
+ * same 40 pixels. Scoped to the dashboard grid, so the standalone /map page
+ * keeps its switcher. */
 .dashboard-grid--editing .map-style-toggle {
   display: none;
 }
 
-/* RGL's resize corner is a low-contrast background image that all but disappears on the
- * dark theme; make it a visible grabbable corner while editing. */
+/* RGL's resize corner is a low-contrast background image that all but disappears
+ * on the dark theme; make it a visible grabbable corner while editing. */
 .dashboard-grid--editing .react-grid-item > .react-resizable-handle {
   opacity: 0;
   transition: opacity 150ms ease;
@@ -344,8 +725,41 @@ select:disabled {
   opacity: 0.7;
 }
 .dashboard-grid--editing .react-grid-item > .react-resizable-handle::after {
-  border-right-color: var(--color-accent, #0891b2);
-  border-bottom-color: var(--color-accent, #0891b2);
+  border-right-color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
   width: 8px;
   height: 8px;
+}
+
+/*
+ * Focus
+ * -----
+ * `outline` rather than a box-shadow ring on purpose: an outline is painted
+ * outside the box so it never shifts layout, and — unlike a shadow — is never
+ * clipped by an ancestor's `overflow: hidden`, which every panel and scroll
+ * container here has.
+ *
+ * `:focus-visible` (not `:focus`) so a mouse click doesn't leave a ring behind;
+ * the browser shows it for keyboard traversal and hides it for pointer input.
+ */
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Tailwind's `outline-none` (a transparent 2px outline) is applied by the shared
+ * Input and Select to suppress the UA default. It also suppressed the rule
+ * above, since both land at the same specificity. Re-assert it for
+ * focus-visible only. */
+.outline-none:focus-visible,
+[data-slot]:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Rows and cards that are clickable via role="button" sit flush against their
+ * neighbours, so the default 2px offset would overlap the next one. Pull the
+ * ring inside instead. */
+[role='button']:focus-visible {
+  outline-offset: -2px;
 }

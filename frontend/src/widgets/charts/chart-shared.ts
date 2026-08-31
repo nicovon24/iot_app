@@ -1,5 +1,5 @@
 import type { TelemetryValue } from '@/types';
-import { formatTelemetryValue } from '@\/lib';
+import { formatTelemetryValue } from '@/lib';
 
 export interface ChartSeries {
   /** Stable dataKey — the entity id, not its name, so a rename doesn't orphan the series. */
@@ -20,13 +20,27 @@ export const axisTick = (v: number) => formatTelemetryValue(v) ?? '';
  * repeating the unit there (unlike on every axis tick) is the useful place for it. */
 export const withUnit = (unit?: string) => (v: number | string) => formatTelemetryValue(v, { unit }) ?? '';
 
-/** Tooltip chrome, identical across every chart so they read as one system. */
+/** Tooltip chrome, identical across every chart so they read as one system.
+ *
+ * Opaque `--color-ink-900` rather than the translucent card surface: a tooltip floats over
+ * plotted marks, and letting a line show through the panel that explains it is the one place
+ * the app's glass treatment actively hurts legibility. */
 export const TOOLTIP_STYLE = {
-  background: 'var(--color-surface-card)',
+  background: 'var(--color-ink-900)',
   border: '1px solid var(--color-border)',
   borderRadius: 8,
   fontSize: 12,
 } as const;
+
+/**
+ * The single-series line's stroke width.
+ *
+ * This used to carry a drop-shadow bloom. The Editorial direction removes glow from the
+ * system outright — depth comes from rules and grounds, not from light — so what is left is
+ * the one thing the line still needs to say: it is the accent-coloured mark, and it is
+ * heavier than the grid it crosses.
+ */
+export const ACCENT_LINE_WIDTH = 2;
 
 /**
  * Recharts needs one row array with a column per series, but each entity's history comes back

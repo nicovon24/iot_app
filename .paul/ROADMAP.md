@@ -18,7 +18,9 @@ Phases: 7 of 7 complete (+6 inserted phases: 2.1, 2.2, 2.3, 4.3, 6.4, 6.5 — al
 
 **Version 2 — Admin hierarchy panel + Device linking** (v2.0, in progress)
 Status: In progress
-Phase 8 (Admin hierarchy management panel) complete 2026-08-04, first V2 phase shipped. Backend (08-01: sub-customer breadcrumbs, Contains-relation tree reads, Asset PATCH, Device assign/unassign) and frontend (08-02: the `/admin` panel itself) both applied and verified. **Phase 9.1 (Visual modernization) complete 2026-08-05** — all 3 plans (light glassmorphic redesign, skeleton loading system, restyled Admin/dialogs/entity-detail/Alarms) applied, plus further chat-driven dark-theme palette iterations after the initial light-glass ship (see STATE.md Decisions/Addenda) — maps deliberately excluded throughout. **Phase 9.2 (roles enforcement & user management) complete 2026-08-05** — all 3 plans (9.2-01 READER write-block guard, 9.2-02 Users management UI, 9.2-03 impersonation) applied, plus a substantial chat-driven follow-up (client-side role-based UI gating via a new `GET /auth/me`, an "All Clients" default view, a real activation-link bug fix, code-review fixes, and a Tooltip portal rewrite) — see `9.2-03-SUMMARY.md`'s Addendum. **Phase 10 (dashboard builder) code-complete 2026-08-05** — all 3 plans (10-01 backend: Prisma schema + widget registry + scoped CRUD; 10-02 frontend base: canvas + one-by-one Add-widget panel + dynamic Sidebar selector; 10-03 bulk-add) applied, backend live-verified via curl, frontend verified via `tsc`/`next build` only — **a real browser click-through is the top outstanding item** before this phase is considered fully done, no browser tool available this session. **Phase 11 (telemetry unit system + new widget types) applied 2026-08-12** — all 5 plans (11-01..05) applied, code-complete, not yet click-tested in a real browser. **Phase 12 (testing harness, backend + frontend) resequenced 2026-08-12** — was discussed and scoped (CONTEXT.md written) as the original "Phase 11", postponed, un-numbered as `tbd-testing-harness`, and now renumbered to 12 to run after the units/widgets work, per explicit user decision.
+Phase 8 (Admin hierarchy management panel) complete 2026-08-04, first V2 phase shipped. Backend (08-01: sub-customer breadcrumbs, Contains-relation tree reads, Asset PATCH, Device assign/unassign) and frontend (08-02: the `/admin` panel itself) both applied and verified. **Phase 9.1 (Visual modernization) complete 2026-08-05** — all 3 plans (light glassmorphic redesign, skeleton loading system, restyled Admin/dialogs/entity-detail/Alarms) applied, plus further chat-driven dark-theme palette iterations after the initial light-glass ship (see STATE.md Decisions/Addenda) — maps deliberately excluded throughout. **Phase 9.2 (roles enforcement & user management) complete 2026-08-05** — all 3 plans (9.2-01 READER write-block guard, 9.2-02 Users management UI, 9.2-03 impersonation) applied, plus a substantial chat-driven follow-up (client-side role-based UI gating via a new `GET /auth/me`, an "All Clients" default view, a real activation-link bug fix, code-review fixes, and a Tooltip portal rewrite) — see `9.2-03-SUMMARY.md`'s Addendum. **Phase 10 (dashboard builder) closed 2026-08-28** — 10-01/10-02/10-03 (backend: Prisma schema + widget registry + scoped CRUD; frontend base: canvas + one-by-one Add-widget panel + dynamic Sidebar selector; bulk-add) are the phase's real deliverable, each individually verified (curl for 10-01, `tsc`/`next build`/dev-server checks for 10-02/10-03). 10-04 (widget titles/click actions/dashboard time window) was found **partially implemented** when closed out retroactively: only a fragment of its backend schema landed, its frontend was never built, and its own blocking human-verify checkpoint was never reached — see `10-04-SUMMARY.md`. Phase 10 is closed on that basis; 10-04's remaining scope carries forward as a deferred item, not an open plan. **A real browser click-through across Phase 10's screens remains the top outstanding item**, now shared with Phases 11-13 below (none of them have been click-tested live either). **Phase 11 (editorial rebrand) applied 2026-08-22/24 by Ulises-I-M outside the PAUL loop, documented retroactively 2026-08-28** — near-black/aqua-green palette, ten-role type system, `PageHeader`/`RuledTable` applied across all ten screens, two-axis map markers. **Phase 12 (telemetry unit system + new widget types) applied 2026-08-12** — all 5 plans (12-01..05) applied, code-complete, not yet click-tested in a real browser. **Phase 13 (testing harness, backend + frontend)** — discussed and scoped (CONTEXT.md written), not yet planned via `/paul:plan`.
+
+**Numbering note (2026-08-28):** Phases 11-13 were renumbered when the editorial rebrand was retroactively documented — prior "Phase 11" (units-and-widgets) is now Phase 12, prior "Phase 12" (testing-harness) is now Phase 13, and the rebrand was inserted as Phase 11. Directory names, frontmatter `phase:` fields, and this file were all updated together; no plan content changed, only numbers.
 
 ## Phases
 
@@ -42,9 +44,10 @@ Phase 8 (Admin hierarchy management panel) complete 2026-08-04, first V2 phase s
 | 8 | Admin hierarchy management panel (V2, first phase) | 2 | Complete | 2026-08-04 |
 | 9.1 | Visual modernization | 3 | Complete | 2026-08-05 |
 | 9.2 | Roles enforcement & user management | 3 | Complete | 2026-08-05 |
-| 10 | User-editable dashboards (builder) | 3 applied + 3 planned (10-04/05/06) | 10-01..03 code-complete, browser verification pending; 10-04 planned | 2026-08-05 |
-| 11 | Telemetry unit system + new widget types | 5 applied (11-01..05) | Applied 2026-08-12, code-complete, browser verification pending | 2026-08-12 |
-| 12 | Testing harness — backend + frontend (whole app) | TBD | Discussed (CONTEXT.md), scoped — **runs after Phase 11** | — |
+| 10 | User-editable dashboards (builder) | 3 applied (10-01..03) + 10-04 partial | **Closed 2026-08-28** — 10-01..03 are the real deliverable; 10-04 only partially built, remaining scope deferred (see `10-04-SUMMARY.md`); 10-05/10-06 never planned | 2026-08-05 |
+| 11 | Editorial rebrand (frontend visual system) | 2 commits, applied outside PAUL | Applied 2026-08-22/24 by Ulises-I-M, documented retroactively 2026-08-28, browser verification pending | 2026-08-22 |
+| 12 | Telemetry unit system + new widget types | 5 applied (12-01..05) | Applied 2026-08-12, code-complete, browser verification pending | 2026-08-12 |
+| 13 | Testing harness — backend + frontend (whole app) | TBD | Discussed (CONTEXT.md), scoped — **runs after Phase 12** | — |
 
 ## Phase Details
 
@@ -316,7 +319,7 @@ Phase 8 (Admin hierarchy management panel) complete 2026-08-04, first V2 phase s
 - [x] 9.2-02: Users management UI (`/users` list/create/delete, `appRole` exposed on `GET /users`) — applied, then extended mid-session with an "All Clients" default view backed by TB's real `GET /api/customer/users` (confirmed live against this project's tenant)
 - [x] 9.2-03: Impersonation (`ImpersonationLog`, impersonate/end endpoints, banner + Login-as button) — applied; see its SUMMARY.md's substantial Addendum for the rest of this session's work (role-based UI gating, bug fixes, Tooltip rewrite) that closed out the phase
 
-### Phase 10: User-editable dashboards (builder)
+### Phase 10: User-editable dashboards (builder) — CLOSED 2026-08-28
 
 **Goal:** Admin/sysadmin users can create custom dashboards, drag/resize widgets on a grid, and add widgets one at a time or in bulk — materially simpler than ThingsBoard's own dashboard editor, targeting a ≤5-minute build time for a typical (~5-8 widget) dashboard. The fixed Main Dashboard (Phase 6.5) stays exactly as-is; custom dashboards are additional, reached via the Sidebar's dashboard selector.
 **Depends on:** Phase 6/6.4 (reuses `ValueTileWidget`/`LineChartWidget`/`AttributesTableWidget`/`AlarmsListWidget`/`MapWidget`/`FleetMapWidget` as-is), Phase 6.5 (extends its dashboard-selector seam), Phase 9.2 (`ReaderBlockGuard` already covers dashboard write-blocking for READER with no new guard needed)
@@ -333,40 +336,27 @@ Phase 8 (Admin hierarchy management panel) complete 2026-08-04, first V2 phase s
 - [x] 10-02: Frontend base builder — `useDashboards` hooks, frontend widget registry + `DashboardWidgetRenderer` (with an "entity unavailable" fallback), `DashboardCanvas`/`AddWidgetPanel`, `/dashboard/[id]` page, dynamic Sidebar dashboard selector — applied, `tsc --noEmit`/`next build` clean; **not click-tested in a real browser** (see `10-02-SUMMARY.md`)
 - [x] 10-03: Bulk-add — `packWidgets` row-packing helper (shared with `AddWidgetPanel`), `BulkAddPanel` (entity → telemetry-key checklist → widget type → "Add N widgets"), wired into the dashboard page — applied, `tsc --noEmit`/`next build` clean, packing math verified directly; **not click-tested in a real browser** (see `10-03-SUMMARY.md`)
 
-**Outstanding before this phase is fully done:** a real browser session to click through create → add widget (one-by-one and bulk) → save → reload, for both `/dashboard/new` and an existing dashboard, plus a working non-sysadmin test account to verify AC-3/AC-4's cross-customer scoping live.
+**Closed:** 10-01/10-02/10-03 are the phase's real deliverable — each individually verified (curl for 10-01, `tsc`/`next build`/dev-server checks for 10-02/10-03), none click-tested live. 10-04 was found **partially implemented** when this phase was closed out retroactively on 2026-08-28: only a fragment of its backend schema (`title`/`action` fields, `timeWindow` column) exists in the code, its frontend (`widget-actions.ts`, `TimeWindowPicker.tsx`, click wiring) was never built, and its own blocking human-verify checkpoint was never reached. See `10-04-SUMMARY.md` for the full accounting. 10-04's remaining scope — and 10-05 (dashboard states/tabs) and 10-06 (reusable entity aliases), both scoped but never planned — carry forward as deferred V2 items rather than staying open as active, unfinished plans (see Version 2 table below).
 
-#### Builder extensions (10-04 onward, planned 2026-08-05)
-
-A large chat-driven pass ran after 10-03 (see STATE.md Addendum 3) and surfaced a further set of
-builder gaps. Scoped interactively with the user, who explicitly **cut white-labeling/tenant
-theming and all react-grid-layout work (configurable column count + responsive breakpoints)** from
-this round. The remainder is split by data-model risk — three plans, not one, because states and
-aliases each change a different persisted shape:
-
-- [ ] 10-04: Widget titles (`config.title`), widget click actions (`config.action`, entity-details
-  navigation via a shared `widget-actions.ts` seam), and a dashboard-wide time window
-  (`Dashboard.timeWindow`, nullable for back-compat) that every timeseries widget inherits instead
-  of the hardcoded 1 hour in `defaultHistoryWindow()`. Carries a **blocking human-verify
-  checkpoint** — this is the first plan to force the browser click-through that Phase 10 has owed
-  since 10-01. See `10-04-PLAN.md`
-- [ ] 10-05: Dashboard states/tabs — several named views per dashboard (ThingsBoard's
-  "Overview / Live Monitor / History" shape) instead of N separate dashboards. Schema change:
-  widgets gain a state association. Unblocks `action: 'NAVIGATE_STATE'`, deliberately left out of
-  10-04's action enum so there is no dead option in the UI
-- [ ] 10-06: Reusable entity aliases — today `entityScope: 'ALL'` is effectively a single-filter
-  alias repeated inline in every widget's config. This defines an alias once at dashboard level
-  (filter by device type / relation / group) and references it from many widgets
+**Outstanding:** a real browser session to click through create → add widget (one-by-one and bulk) → save → reload, for both `/dashboard/new` and an existing dashboard, plus a working non-sysadmin test account to verify AC-3/AC-4's cross-customer scoping live. This is now shared debt with Phases 11 and 12 below — none of the three have been click-tested live either, so one browser pass should cover all of them together.
 
 **Note:** the "More dashboard widget types (gauges, other chart/card variants)" row in the Version 2
-table below is now **stale** — a `gauge` and a `value-cards` widget were both built in the same
-chat-driven pass, along with configurable table columns (`dataKeys`), a dynamic `entityScope: 'ALL'`
-binding, and a widget context menu/edit flow. None of it has a SUMMARY yet.
+table below is **stale** — a `gauge` and a `value-cards` widget were both built in the chat-driven
+pass that followed 10-03 (STATE.md "Addendum 3"), along with configurable table columns (`dataKeys`),
+a dynamic `entityScope: 'ALL'` binding, and a widget context menu/edit flow. That work has no SUMMARY
+of its own and predates Phase 10's close-out.
 
-### Phase 11: Telemetry unit system + new widget types
+### Phase 11: Editorial rebrand (frontend visual system)
+
+Full CONTEXT.md at `.paul/phases/11-editorial-rebrand/CONTEXT.md`. **Retroactive phase** — code applied 2026-08-22/24 by Ulises-I-M outside the PAUL loop (no `/paul:discuss`/`/paul:plan` beforehand), documented after the fact on 2026-08-28 to close the same gap already flagged once with Phase 10's "Addendum 3". Near-black + aqua-green (`#2ee89a`) palette, ten-role type system, Editorial design direction (Archivo, radius 0, `PageHeader`, `RuledTable`) applied across all ten authenticated screens, plus two-axis map marker state. See `.paul/phases/11-editorial-rebrand/11-01-SUMMARY.md`.
+
+**Outstanding:** not click-tested in a real browser — same caveat as Phases 10/12, see STATE.md.
+
+### Phase 12: Telemetry unit system + new widget types
 
 **Goal:** Every widget that renders a telemetry value can carry a real unit (catalog-backed, not free text limited to 5 of 17 types), rendered through one shared formatter instead of two duplicated ones — plus five new widgets (progress-bar gauge style, stacked bar, sparkline tile, a multi-key comparison chart, and a static label/text widget).
 **Depends on:** Phase 10 (extends `backend/src/dashboards/widget-registry.ts`, `frontend/src/dashboards/renderer/`, `frontend/src/dashboards/widget-config/`)
-**Reason:** User-requested, discussed interactively 2026-08-12 (dashboard widget-gallery categorization work led into "what other widgets can I add" and then into units). Plan explored via two Explore agents + a Plan agent, decisions locked via `AskUserQuestion` before planning. **Resequenced 2026-08-12: runs before the testing harness** (Phase 12, was postponed and un-numbered as `tbd-testing-harness`) — user explicitly chose to build this phase first and pick up testing after.
+**Reason:** User-requested, discussed interactively 2026-08-12 (dashboard widget-gallery categorization work led into "what other widgets can I add" and then into units). Plan explored via two Explore agents + a Plan agent, decisions locked via `AskUserQuestion` before planning. **Resequenced 2026-08-12: runs before the testing harness** (Phase 13, was postponed and un-numbered as `tbd-testing-harness`) — user explicitly chose to build this phase first and pick up testing after.
 
 **Scope:**
 - Unit catalog as a frontend-only code module (`frontend/src/lib/units.ts`) — no DB tables, no per-tenant catalog; stores the display **symbol** (`'°C'`), not an id, so every already-saved `DashboardWidget.config` stays valid with zero migration
@@ -378,17 +368,17 @@ binding, and a widget context menu/edit flow. None of it has a SUMMARY yet.
 - **Explicitly out of scope:** per-user/per-category unit preferences (no Prisma model, no settings UI — the catalog module needs no consumer to exist yet, additive later), unit conversion (`factor`/`offset`, would ride along with preferences when built), and an iframe/embed widget (clickjacking/exfiltration risk on customer-shared dashboards, no concrete use case yet)
 
 **Plans (all 5 created 2026-08-12 via /paul:plan, applied same day):**
-- [x] 11-01 (wave 1, no deps): Unit catalog (`frontend/src/lib/units.ts`) + `unit`/`decimals` moved onto the shared `presentation` fragment (all 17 types) + one formatter replacing the two duplicates (`formatTelemetryValue` vs `chart-shared.ts`'s `formatValue`) — the foundation every other plan in this phase builds on
-- [x] 11-02 (wave 2, depends on 11-01): Catalog-backed `UnitPicker` in the Add-widget config panel, replacing the free-text `<Input maxLength={12}>`, with auto-suggestion from the telemetry key name and a de-duplicated `SCALE_TYPES`
-- [x] 11-03 (wave 2, depends on 11-01): Three widgets as config flags on existing types — gauge `style: 'BAR'` (progress bar), bar-chart `stacked`, value-tile `sparkline` (SINGLE scope only)
-- [x] 11-04 (wave 3, depends on 11-01 + 11-02): Per-key `units` on value-cards/timeseries-table + new `multi-key-chart` ("Comparison Chart") widget type — dual Y-axis grouped by resolved unit, 3+ distinct units degrade via the existing omittedCount pattern
-- [x] 11-05 (wave 2, no deps, independent of the others): New `label` widget type — first widget with `entity: 'none'`, no datasource at all, plain text (no markdown dependency), activates a config-panel code path that has existed but never been exercised by any real type before this plan
+- [x] 12-01 (wave 1, no deps): Unit catalog (`frontend/src/lib/units.ts`) + `unit`/`decimals` moved onto the shared `presentation` fragment (all 17 types) + one formatter replacing the two duplicates (`formatTelemetryValue` vs `chart-shared.ts`'s `formatValue`) — the foundation every other plan in this phase builds on
+- [x] 12-02 (wave 2, depends on 12-01): Catalog-backed `UnitPicker` in the Add-widget config panel, replacing the free-text `<Input maxLength={12}>`, with auto-suggestion from the telemetry key name and a de-duplicated `SCALE_TYPES`
+- [x] 12-03 (wave 2, depends on 12-01): Three widgets as config flags on existing types — gauge `style: 'BAR'` (progress bar), bar-chart `stacked`, value-tile `sparkline` (SINGLE scope only)
+- [x] 12-04 (wave 3, depends on 12-01 + 12-02): Per-key `units` on value-cards/timeseries-table + new `multi-key-chart` ("Comparison Chart") widget type — dual Y-axis grouped by resolved unit, 3+ distinct units degrade via the existing omittedCount pattern
+- [x] 12-05 (wave 2, no deps, independent of the others): New `label` widget type — first widget with `entity: 'none'`, no datasource at all, plain text (no markdown dependency), activates a config-panel code path that has existed but never been exercised by any real type before this plan
 
-**Outstanding:** not yet click-tested in a real browser (same caveat as Phase 10) — no SUMMARY.md files written yet, see STATE.md.
+**Outstanding:** not yet click-tested in a real browser (same caveat as Phases 10/11) — no SUMMARY.md files written yet, see STATE.md.
 
-### Phase 12: Testing harness (backend + frontend, whole app)
+### Phase 13: Testing harness (backend + frontend, whole app)
 
-Full CONTEXT.md at `.paul/phases/12-testing-harness/CONTEXT.md` (originally discussed as "Phase 11" on 2026-08-05, postponed and un-numbered as `tbd-testing-harness`, resequenced to run after Phase 11/units-and-widgets on 2026-08-12). Not yet planned via `/paul:plan`.
+Full CONTEXT.md at `.paul/phases/13-testing-harness/CONTEXT.md` (originally discussed as "Phase 11" on 2026-08-05, postponed and un-numbered as `tbd-testing-harness`, resequenced to run after Phase 12/units-and-widgets on 2026-08-12). Not yet planned via `/paul:plan`.
 
 ## Version 2 (Not yet planned)
 
@@ -413,4 +403,4 @@ Deferred scope, pulled from PROJECT.md "Planned (Next — Version 2)" and STATE.
 
 ---
 *Roadmap created: 2026-07-30*
-*Last updated: 2026-08-12 (Phase 11 — units/widgets — applied; Phase 12 — testing harness — resequenced from "Phase 11"/`tbd-testing-harness`)*
+*Last updated: 2026-08-28 (Phase 10 closed — 10-01..03 real deliverable, 10-04 documented as partial; Phase 11 — editorial rebrand — inserted, retroactively documented, code shipped 2026-08-22/24; prior Phase 11/12 renumbered to 12/13)*

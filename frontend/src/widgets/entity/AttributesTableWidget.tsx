@@ -10,6 +10,7 @@ import {
   TableRow,
 } from '@heroui/react';
 import type { AttributesByScope, AttributeScope } from '@/types';
+import { tableClassNames } from '@/lib';
 
 export interface AttributesTableWidgetProps {
   data?: AttributesByScope;
@@ -24,12 +25,7 @@ const SCOPE_LABELS: Record<AttributeScope, string> = {
   SHARED_SCOPE: 'Shared attributes',
 };
 
-const TABLE_CLASSNAMES = {
-  wrapper: 'glass-card p-0 table-scroll overflow-x-auto',
-  th: 'bg-surface text-center text-xs font-semibold uppercase tracking-wider text-muted border-b border-border py-3',
-  td: 'text-center py-2.5 text-sm text-body',
-  tr: 'border-b border-border last:border-b-0',
-};
+const TABLE_CLASSNAMES = tableClassNames({ height: 'auto', surface: 'card' });
 
 export function AttributesTableWidget({ data, isLoading, isError, error }: AttributesTableWidgetProps) {
   if (isLoading) {
@@ -57,7 +53,7 @@ export function AttributesTableWidget({ data, isLoading, isError, error }: Attri
         const attributes = data?.[scope] ?? [];
         return (
           <div key={scope} className="flex flex-col gap-2">
-            <h3 className="text-sm font-semibold text-heading">{SCOPE_LABELS[scope]}</h3>
+            <h3 className="t-heading">{SCOPE_LABELS[scope]}</h3>
             {attributes.length === 0 ? (
               <p className="glass-card px-4 py-3 text-sm text-muted">
                 No attributes in this scope

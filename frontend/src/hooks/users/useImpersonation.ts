@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
-import { apiClient } from '@\/lib';
-import { startImpersonationSession, endImpersonationSession } from '@\/lib';
-import { toastError } from '@\/lib';
+import { apiClient } from '@/lib';
+import { startImpersonationSession, endImpersonationSession } from '@/lib';
+import { toastError } from '@/lib';
 
 interface ImpersonateResponse {
   sessionToken: string;

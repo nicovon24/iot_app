@@ -14,7 +14,7 @@ export function AdminBreadcrumbs({ rootLabel, trail, onNavigate }: AdminBreadcru
       <button
         type="button"
         onClick={() => onNavigate(-1)}
-        className={`flex items-center gap-1 rounded px-1.5 py-0.5 hover:bg-surface ${trail.length === 0 ? 'font-semibold text-heading' : ''}`}
+        className={`flex items-center gap-1 rounded px-1.5 py-0.5 hover:bg-tint ${trail.length === 0 ? 'font-semibold text-heading' : ''}`}
       >
         <Home size={12} /> {rootLabel}
       </button>
@@ -24,7 +24,7 @@ export function AdminBreadcrumbs({ rootLabel, trail, onNavigate }: AdminBreadcru
           <button
             type="button"
             onClick={() => onNavigate(i)}
-            className={`rounded px-1.5 py-0.5 hover:bg-surface ${i === trail.length - 1 ? 'font-semibold text-heading' : ''}`}
+            className={`rounded px-1.5 py-0.5 hover:bg-tint ${i === trail.length - 1 ? 'font-semibold text-heading' : ''}`}
           >
             {crumb.name}
           </button>

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Select, type SelectOption } from '@/components';
 import { Input } from '@/components';
-import { UNIT_CATEGORIES, resolveUnit } from '@\/lib';
+import { UNIT_CATEGORIES, resolveUnit } from '@/lib';
 
 const CUSTOM_VALUE = '__custom__';
 

@@ -36,7 +36,7 @@ export function BarChartWidget({ data, dataKey, title, heightClassName = 'h-64',
 
   return (
     <div className={`glass-card flex ${heightClassName} flex-col p-4`}>
-      {title && <h3 className="shrink-0 truncate pb-2 text-sm font-semibold text-heading">{title}</h3>}
+      {title && <h3 className="shrink-0 truncate pb-2 t-heading">{title}</h3>}
       <div className="min-h-0 flex-1">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useQueries } from '@tanstack/react-query';
-import { apiClient } from '@\/lib';
+import { apiClient } from '@/lib';
 import type { Attribute, AttributeScope, EntityRef, TelemetryLatest } from '@/types';
 import { TELEMETRY_POLL_MS, type CellValue } from './latest';
 

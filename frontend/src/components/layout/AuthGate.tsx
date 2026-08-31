@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getSessionToken, initSessionFromStorage } from '@\/lib';
+import { getSessionToken, initSessionFromStorage } from '@/lib';
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();

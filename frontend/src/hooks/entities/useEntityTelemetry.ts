@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '@\/lib';
+import { apiClient } from '@/lib';
 import { intervalForWindow } from '@/components';
 import type { EntityType, TelemetryLatest, TelemetryValue } from '@/types';
 

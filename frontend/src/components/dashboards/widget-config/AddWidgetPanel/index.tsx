@@ -9,7 +9,7 @@ import type { DatasourceScope } from '../pickers';
 import type { WidgetAction } from '../widget-actions';
 import { packWidgets } from '../../canvas/layout-utils';
 import { WIDGET_REGISTRY, SCALE_TYPES, type WidgetCategory, type WidgetType } from '../widget-registry';
-import { suggestUnit } from '@\/lib';
+import { suggestUnit } from '@/lib';
 import { CategoryStep } from './CategoryStep';
 import { GalleryStep } from './GalleryStep';
 import { ConfigureStep } from './ConfigureStep';
@@ -485,8 +485,7 @@ export function AddWidgetPanel({
             type="button"
             disabled={!canAdd}
             onClick={handleSubmit}
-            style={{ background: 'var(--gradient-accent)' }}
-            className="rounded-md px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
+            className="btn-accent rounded-md px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40"
           >
             {isEditing ? 'Save changes' : 'Add widget'}
           </button>

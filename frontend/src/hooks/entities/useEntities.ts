@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '@\/lib';
+import { apiClient } from '@/lib';
 import type { EntityRef, EntityType, PageData, UseEntitiesParams, UseEntitiesOptions } from '@/types';
 
 export type { UseEntitiesParams, UseEntitiesOptions } from '@/types';

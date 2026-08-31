@@ -4,11 +4,12 @@ import { useMemo, useState } from 'react';
 import { useCustomers } from '@/hooks';
 import { useCustomerHierarchy } from '@/hooks';
 import { usePermissions } from '@/hooks';
-import { DEFAULT_HIERARCHY_LEVELS } from '@\/lib';
+import { DEFAULT_HIERARCHY_LEVELS } from '@/lib';
 import { ClientWizard } from '@/widgets';
 import { AdminClientsColumn } from '@/widgets';
 import { AdminAssetPanel } from '@/widgets';
 import { AdminDevicePanel } from '@/widgets';
+import { PageHeader } from '@/components';
 import type { EntityRef } from '@/types';
 
 export default function AdminPage() {
@@ -66,13 +67,13 @@ export default function AdminPage() {
     }
   };
 
-  // One column per hierarchy level except the last � the last level (e.g. "Sensor") isn't
+  // One column per hierarchy level except the last — the last level (e.g. "Sensor") isn't
   // an Asset column, it's where real Devices get linked, shown by AdminDevicePanel instead.
   const assetHierarchyLevels = hierarchyLevels.slice(0, -1);
   const deviceLevelName = hierarchyLevels.at(-1)?.name ?? 'Sensor';
 
   // A level's column only has a parentId (and therefore data) once the level before it
-  // has a selection � otherwise it renders empty.
+  // has a selection — otherwise it renders empty.
   const assetLevels = assetHierarchyLevels.map((level) => {
     const parent = level.levelIndex === 0 ? selectedCustomer : assetTrail[level.levelIndex - 1];
     return {
@@ -84,17 +85,20 @@ export default function AdminPage() {
   });
 
   // Total number of Miller columns on screen right now (Clients + one per Asset
-  // hierarchy level + the trailing Devices column) � drives the grid below so all
+  // hierarchy level + the trailing Devices column) — drives the grid below so all
   // columns share the available width evenly instead of a fixed-width horizontal
   // scroll that clips the last column off-screen.
   const totalColumns = 1 + assetLevels.length + 1;
 
   return (
-    <div className="flex h-full w-full flex-col gap-4">
-      <h1 className="text-lg font-semibold text-heading">Admin</h1>
+    <div className="flex h-full w-full flex-col">
+      <PageHeader
+        title="Admin"
+        description="Drill from a client through its asset hierarchy to the devices at the leaves. Each column narrows the next."
+      />
 
       <div
-        className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-2 md:grid md:overflow-x-auto md:overflow-y-hidden"
+        className="rule-2 mt-[30px] flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-2 pt-5 md:grid md:overflow-x-auto md:overflow-y-hidden"
         style={{ gridTemplateColumns: `repeat(${totalColumns}, minmax(240px, 1fr))` }}
       >
         <AdminClientsColumn

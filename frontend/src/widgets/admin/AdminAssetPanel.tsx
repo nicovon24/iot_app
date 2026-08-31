@@ -18,22 +18,16 @@ import { ConfirmDialog } from '@/widgets';
 import { EditEntityDialog } from '@/widgets';
 import { Dialog, DialogHeader, DialogTitle, DialogCloseButton, DialogBody, DialogFooter } from '@/components';
 import { Tooltip } from '@/components';
-import { toastError, toastSuccess } from '@\/lib';
+import { tableClassNames, toastError, toastSuccess } from '@/lib';
 import type { EntityRef } from '@/types';
 
-const TABLE_CLASSNAMES = {
-  base: 'h-full min-h-0',
-  wrapper: 'h-full rounded-none border-0 bg-transparent p-0 shadow-none table-scroll overflow-auto',
-  th: 'bg-surface text-left text-xs font-semibold uppercase tracking-wider text-muted first:rounded-none last:rounded-none border-b border-border py-3',
-  td: 'text-left py-3 text-sm text-body group-data-[hover=true]:bg-surface',
-  tr: 'border-b border-border last:border-b-0 transition-colors',
-};
+const TABLE_CLASSNAMES = tableClassNames({ align: 'left' });
 
 export interface AdminAssetPanelProps {
-  /** Also doubles as the Asset's `type` on creation (e.g. "Site") � one level, one profile. */
+  /** Also doubles as the Asset's `type` on creation (e.g. "Site") — one level, one profile. */
   title: string;
   customerId?: string;
-  /** Undefined until the previous hierarchy level has a selection � the column then stays empty. */
+  /** Undefined until the previous hierarchy level has a selection — the column then stays empty. */
   parentId?: string;
   parentType: 'CUSTOMER' | 'ASSET';
   levelIndex: number;
@@ -96,9 +90,12 @@ export function AdminAssetPanel({
   };
 
   return (
-    <div className="glass-card flex h-96 shrink-0 flex-col gap-3 p-4 md:h-full md:min-h-0 md:w-full">
-      <div className="flex items-center justify-between">
-        <h2 className="truncate text-sm font-semibold text-heading" title={title}>
+    <div className="flex h-96 shrink-0 flex-col border-r border-border md:h-full md:min-h-0 md:w-full">
+      <div className="flex shrink-0 items-center justify-between gap-2 px-4 pb-3 pt-1">
+        <h2
+          className="truncate text-[10px] font-extrabold uppercase leading-none tracking-[0.16em] text-muted"
+          title={title}
+        >
           {title}
         </h2>
         {!readOnly && (
@@ -107,20 +104,19 @@ export function AdminAssetPanel({
             disabled={!parentId}
             onClick={() => setIsAdding((v) => !v)}
             title={parentId ? undefined : 'Select the previous level first'}
-            className="flex shrink-0 items-center gap-1 text-xs font-semibold hover:underline disabled:cursor-not-allowed disabled:opacity-40 disabled:no-underline"
-            style={{ color: 'var(--gradient-accent-from)' }}
+            className="t-action flex shrink-0 items-center gap-1 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <Plus size={12} /> Add
           </button>
         )}
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="table-scroll min-h-0 flex-1 overflow-y-auto">
         {parentId && isLoading && <TableRowsSkeleton rows={3} columns={2} />}
 
         {!isLoading && assets.length === 0 && (
-          <div className="flex h-full min-h-32 items-center justify-center">
-            <p className="text-sm text-muted">
+          <div className="flex h-full min-h-32 items-center justify-center px-4 text-center">
+            <p className="t-body">
               {parentId ? `No ${title} here.` : 'Select the previous level first.'}
             </p>
           </div>
@@ -136,7 +132,7 @@ export function AdminAssetPanel({
               {(asset) => (
                 <TableRow
                   key={asset.id}
-                  className={`group cursor-pointer ${selectedAssetId === asset.id ? 'bg-surface' : ''}`}
+                  className={`group cursor-pointer ${selectedAssetId === asset.id ? 'bg-tint-strong' : ''}`}
                 >
                   <TableCell className="font-medium text-heading" onClick={() => onSelect(asset)}>
                     {asset.name}
@@ -151,7 +147,7 @@ export function AdminAssetPanel({
                             e.stopPropagation();
                             setEditingAsset(asset);
                           }}
-                          className="rounded p-1 text-body hover:bg-surface"
+                          className="rounded p-1 text-body hover:bg-tint"
                           aria-label="Edit"
                         >
                           <Pencil size={13} />
@@ -166,7 +162,7 @@ export function AdminAssetPanel({
                             e.stopPropagation();
                             setPendingDelete(asset);
                           }}
-                          className="rounded p-1 text-red-600 hover:bg-surface"
+                          className="rounded p-1 text-danger hover:bg-tint"
                           aria-label="Delete"
                         >
                           <Trash2 size={13} />
@@ -209,7 +205,7 @@ export function AdminAssetPanel({
         </DialogHeader>
         <DialogBody className="flex flex-col gap-3">
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-body" htmlFor="new-asset-name">
+            <label className="t-field" htmlFor="new-asset-name">
               Name
             </label>
             <input
@@ -221,7 +217,7 @@ export function AdminAssetPanel({
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-body" htmlFor="new-asset-label">
+            <label className="t-field" htmlFor="new-asset-label">
               Label (optional)
             </label>
             <input
@@ -236,7 +232,7 @@ export function AdminAssetPanel({
           <button
             type="button"
             onClick={closeAddDialog}
-            className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-surface"
+            className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-tint"
           >
             Cancel
           </button>
@@ -244,9 +240,9 @@ export function AdminAssetPanel({
             type="button"
             disabled={!newName.trim() || createAsset.isPending}
             onClick={submitCreate}
-            className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:brightness-90 disabled:opacity-60"
+            className="rounded-md bg-accent-strong px-4 py-2 text-sm font-semibold text-on-accent transition hover:brightness-110 disabled:opacity-60"
           >
-            {createAsset.isPending ? 'Creating�' : 'Create'}
+            {createAsset.isPending ? 'Creating…' : 'Create'}
           </button>
         </DialogFooter>
       </Dialog>

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '@\/lib';
+import { apiClient } from '@/lib';
 import type { HierarchyLevel } from '@/types';
 
 export function useCustomerHierarchy(customerId?: string) {

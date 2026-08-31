@@ -1,7 +1,7 @@
 'use client';
 
 import { useQueries } from '@tanstack/react-query';
-import { apiClient } from '@\/lib';
+import { apiClient } from '@/lib';
 import type { EntityRef, TelemetryLatest } from '@/types';
 
 /** Telemetry columns are polled rather than pushed. See useLiveTelemetry for the socket route. */

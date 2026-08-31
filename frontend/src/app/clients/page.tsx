@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import { useCustomers, useDeleteCustomer, usePatchCustomer } from '@/hooks';
 import { usePermissions } from '@/hooks';
-import { EntityListWidget } from '@/widgets';
+import { EntityListWidget, metaCell, type EntityColumn } from '@/widgets';
 import { ConfirmDialog } from '@/widgets';
-import { toastError } from '@\/lib';
+import { PageHeader, StatusPill } from '@/components';
+import { toastError } from '@/lib';
 import type { EntityRef } from '@/types';
 
 export default function ClientsPage() {
@@ -20,19 +21,35 @@ export default function ClientsPage() {
     deleteCustomer.reset();
   };
 
-  return (
-    <div className="flex h-full w-full flex-col gap-4">
-      <div className="flex shrink-0 items-center justify-between">
-        <h1 className="text-lg font-semibold text-heading">Clients</h1>
-      </div>
+  const clientColumns: EntityColumn[] = [
+    {
+      key: 'parent',
+      header: 'Parent',
+      width: '1fr',
+      render: (c) => metaCell(c.parentCustomerId?.name),
+    },
+  ];
 
-      <div className="min-h-0 flex-1">
+  return (
+    <div className="flex h-full w-full flex-col">
+      <PageHeader
+        title="Clients"
+        description="Every customer this tenant serves. Deleting one releases the devices and assets assigned to it."
+        actions={
+          !isLoading && !isError ? (
+            <StatusPill label={`${data?.totalElements ?? 0} registered`} muted />
+          ) : undefined
+        }
+      />
+
+      <div className="rule-2 mt-[30px] min-h-0 flex-1">
         <EntityListWidget
           data={data}
           isLoading={isLoading}
           isError={isError}
           error={error}
           emptyLabel="No clients found"
+          columns={clientColumns}
           onDelete={(entity) => setPendingDelete(entity)}
           editableFields={['name']}
           readOnly={!canWrite}

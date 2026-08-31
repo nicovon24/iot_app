@@ -64,7 +64,7 @@ export function CheckboxList({
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-body">
+        <span className="t-field">
           {label}
           {selected.size > 0 && <span className="ml-1.5 text-xs font-normal text-muted">({selected.size} selected)</span>}
         </span>
@@ -90,7 +90,7 @@ export function CheckboxList({
         {visible.map((item) => (
           <label
             key={item.value}
-            className="flex cursor-pointer items-center gap-2 rounded px-1.5 py-1 text-sm text-body hover:bg-surface"
+            className="flex cursor-pointer items-center gap-2 rounded px-1.5 py-1 text-sm text-body hover:bg-tint"
           >
             <Checkbox checked={selected.has(item.value)} onChange={() => toggleOne(item.value)} />
             {item.label}

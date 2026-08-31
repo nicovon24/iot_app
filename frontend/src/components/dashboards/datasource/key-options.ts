@@ -1,7 +1,7 @@
 'use client';
 
 import { useQueries } from '@tanstack/react-query';
-import { apiClient } from '@\/lib';
+import { apiClient } from '@/lib';
 import type { Attribute, AttributeScope } from '@/types';
 import { ATTRIBUTE_SCOPES } from './table';
 

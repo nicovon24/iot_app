@@ -10,8 +10,8 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { seriesColor } from '@\/lib';
-import type { AxisGroup } from '@\/lib';
+import { seriesColor } from '@/lib';
+import type { AxisGroup } from '@/lib';
 import { TOOLTIP_STYLE, axisTick, formatTime, withUnit, mergeByTimestamp, type ChartSeries } from '../chart-shared';
 
 export interface MultiKeyChartWidgetProps {
@@ -54,9 +54,9 @@ export function MultiKeyChartWidget({ series, axes, omittedKeys = [], isLoading,
 
   return (
     <div className="glass-card flex h-full flex-col p-4">
-      {title && <h3 className="shrink-0 truncate pb-1 text-sm font-semibold text-heading">{title}</h3>}
+      {title && <h3 className="shrink-0 truncate pb-1 t-heading">{title}</h3>}
       {omittedKeys.length > 0 && (
-        <p className="mb-1 shrink-0 text-xs text-faint">
+        <p className="mb-1 shrink-0 t-meta">
           {omittedKeys.length} key{omittedKeys.length > 1 ? 's' : ''} not shown — too many distinct units
         </p>
       )}

@@ -26,7 +26,7 @@ export function Input({ label, icon, compact = false, className = '', ...props }
       )}
       <input
         {...props}
-        className={`w-full rounded-md border border-border bg-surface text-heading outline-none transition-colors placeholder:text-muted focus:border-accent disabled:cursor-not-allowed disabled:opacity-50 ${
+        className={`w-full rounded-md border border-border-strong bg-surface text-heading outline-none transition-colors placeholder:text-muted focus:border-accent disabled:cursor-not-allowed disabled:opacity-50 ${
           compact ? 'py-1.5 text-xs' : 'py-2 text-sm'
         } ${icon ? 'pl-8 pr-3' : 'px-3'} ${className}`}
       />
@@ -37,7 +37,7 @@ export function Input({ label, icon, compact = false, className = '', ...props }
 
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="text-sm font-medium text-body">{label}</span>
+      <span className="t-field">{label}</span>
       {field}
     </div>
   );
@@ -53,7 +53,7 @@ export function Checkbox({ className = '', ...props }: InputHTMLAttributes<HTMLI
     <input
       type="checkbox"
       {...props}
-      className={`h-3.5 w-3.5 shrink-0 cursor-pointer rounded border-border accent-accent ${className}`}
+      className={`h-3.5 w-3.5 shrink-0 cursor-pointer rounded border-border-strong accent-accent ${className}`}
     />
   );
 }
