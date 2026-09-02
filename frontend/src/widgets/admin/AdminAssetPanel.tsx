@@ -1,14 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
-} from '@heroui/react';
+import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@heroui/react';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { TableRowsSkeleton } from '@/components';
 import { useCreateAsset, useDeleteAsset } from '@/hooks';
@@ -16,7 +9,14 @@ import { usePatchAsset } from '@/hooks';
 import { useCustomerChildren, useAssetChildren, useInvalidateHierarchyChildren } from '@/hooks';
 import { ConfirmDialog } from '@/widgets';
 import { EditEntityDialog } from '@/widgets';
-import { Dialog, DialogHeader, DialogTitle, DialogCloseButton, DialogBody, DialogFooter } from '@/components';
+import {
+  Dialog,
+  DialogHeader,
+  DialogTitle,
+  DialogCloseButton,
+  DialogBody,
+  DialogFooter,
+} from '@/components';
 import { Tooltip } from '@/components';
 import { tableClassNames, toastError, toastSuccess } from '@/lib';
 import type { EntityRef } from '@/types';
@@ -72,7 +72,14 @@ export function AdminAssetPanel({
   const submitCreate = () => {
     if (!customerId || !parentId || !newName.trim()) return;
     createAsset.mutate(
-      { name: newName.trim(), type: title, label: newLabel.trim() || undefined, customerId, levelIndex, parentId },
+      {
+        name: newName.trim(),
+        type: title,
+        label: newLabel.trim() || undefined,
+        customerId,
+        levelIndex,
+        parentId,
+      },
       {
         onSuccess: () => {
           closeAddDialog();
@@ -140,34 +147,34 @@ export function AdminAssetPanel({
                   <TableCell>
                     <div className="flex justify-end gap-2">
                       {!readOnly && (
-                      <Tooltip label="Edit">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingAsset(asset);
-                          }}
-                          className="rounded p-1 text-body hover:bg-tint"
-                          aria-label="Edit"
-                        >
-                          <Pencil size={13} />
-                        </button>
-                      </Tooltip>
+                        <Tooltip label="Edit">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingAsset(asset);
+                            }}
+                            className="rounded p-1 text-body hover:bg-tint"
+                            aria-label="Edit"
+                          >
+                            <Pencil size={13} />
+                          </button>
+                        </Tooltip>
                       )}
                       {!readOnly && (
-                      <Tooltip label="Delete">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setPendingDelete(asset);
-                          }}
-                          className="rounded p-1 text-danger hover:bg-tint"
-                          aria-label="Delete"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </Tooltip>
+                        <Tooltip label="Delete">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setPendingDelete(asset);
+                            }}
+                            className="rounded p-1 text-danger hover:bg-tint"
+                            aria-label="Delete"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </Tooltip>
                       )}
                     </div>
                   </TableCell>

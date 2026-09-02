@@ -22,12 +22,18 @@ export class CreateAssetDto {
   @IsNotEmpty()
   customerId!: string;
 
-  @ApiProperty({ example: 0, description: "Which level of the Customer's hierarchy this Asset represents" })
+  @ApiProperty({
+    example: 0,
+    description: "Which level of the Customer's hierarchy this Asset represents",
+  })
   @IsInt()
   @Min(0)
   levelIndex!: number;
 
-  @ApiProperty({ description: 'Parent to attach to via a Contains relation — the Customer id (level 0) or an existing Asset id' })
+  @ApiProperty({
+    description:
+      'Parent to attach to via a Contains relation — the Customer id (level 0) or an existing Asset id',
+  })
   @IsString()
   @IsNotEmpty()
   parentId!: string;

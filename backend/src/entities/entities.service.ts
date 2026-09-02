@@ -1,9 +1,22 @@
-import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ThingsboardClientService } from '../thingsboard/thingsboard-client.service';
 import { RedisService } from '../thingsboard/redis.service';
 import { AppSession } from '../auth/auth.service';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
-import { EntityRef, EntityType, TbAsset, TbCustomer, TbDevice, TbPageData, TbRelation } from '../types';
+import {
+  EntityRef,
+  EntityType,
+  TbAsset,
+  TbCustomer,
+  TbDevice,
+  TbPageData,
+  TbRelation,
+} from '../types';
 import { EntityRefResolver, TB_NULL_CUSTOMER_ID } from './entity-ref-resolver';
 
 export function buildPageParams(pagination?: PaginationQueryDto): string {
@@ -16,7 +29,10 @@ export function buildPageParams(pagination?: PaginationQueryDto): string {
   return params.toString();
 }
 
-export function applyClientSidePagination<T>(items: T[], pagination?: PaginationQueryDto): TbPageData<T> {
+export function applyClientSidePagination<T>(
+  items: T[],
+  pagination?: PaginationQueryDto,
+): TbPageData<T> {
   const pageSize = pagination?.pageSize;
   const page = pagination?.page ?? 0;
   if (!pageSize) {
@@ -49,7 +65,10 @@ export class EntitiesService {
    * list endpoints for CUSTOMER_USER sessions — TENANT_ADMIN/SYS_ADMIN stay unscoped.
    */
   async resolveScopedCustomerIds(rootCustomerId: string): Promise<string[]> {
-    const page = await this.tb.request<TbPageData<TbCustomer>>('GET', '/api/customers?pageSize=1000&page=0');
+    const page = await this.tb.request<TbPageData<TbCustomer>>(
+      'GET',
+      '/api/customers?pageSize=1000&page=0',
+    );
     const all = page.data;
     const result = new Set<string>([rootCustomerId]);
     let added = true;
@@ -83,7 +102,10 @@ export class EntitiesService {
     const scopedCustomerIds = await this.resolveScopedCustomerIds(customerId);
 
     if (type === 'CUSTOMER') {
-      const page = await this.tb.request<TbPageData<TbCustomer>>('GET', '/api/customers?pageSize=1000&page=0');
+      const page = await this.tb.request<TbPageData<TbCustomer>>(
+        'GET',
+        '/api/customers?pageSize=1000&page=0',
+      );
       const filtered = page.data.filter((c) => scopedCustomerIds.includes(c.id.id));
       const mapped = await this.refResolver.mapWithRefs(filtered, 'CUSTOMER');
       return applyClientSidePagination(mapped, pagination);
@@ -92,7 +114,10 @@ export class EntitiesService {
     const path = type === 'DEVICE' ? 'devices' : 'assets';
     const perCustomer = await Promise.all(
       scopedCustomerIds.map((cid) =>
-        this.tb.request<TbPageData<TbDevice | TbAsset>>('GET', `/api/customer/${cid}/${path}?pageSize=1000&page=0`),
+        this.tb.request<TbPageData<TbDevice | TbAsset>>(
+          'GET',
+          `/api/customer/${cid}/${path}?pageSize=1000&page=0`,
+        ),
       ),
     );
     const merged = perCustomer.flatMap((p) => p.data);
@@ -103,11 +128,17 @@ export class EntitiesService {
     return applyClientSidePagination(mapped, pagination);
   }
 
-  private async listUnscoped(type: EntityType, pagination?: PaginationQueryDto): Promise<TbPageData<EntityRef>> {
+  private async listUnscoped(
+    type: EntityType,
+    pagination?: PaginationQueryDto,
+  ): Promise<TbPageData<EntityRef>> {
     const query = buildPageParams(pagination);
 
     if (type === 'DEVICE') {
-      const page = await this.tb.request<TbPageData<TbDevice>>('GET', `/api/tenant/devices?${query}`);
+      const page = await this.tb.request<TbPageData<TbDevice>>(
+        'GET',
+        `/api/tenant/devices?${query}`,
+      );
       return { ...page, data: await this.refResolver.mapWithRefs(page.data, 'DEVICE') };
     }
 
@@ -121,7 +152,11 @@ export class EntitiesService {
   }
 
   async getById(id: string, type: EntityType): Promise<EntityRef> {
-    const path = { DEVICE: `/api/device/${id}`, ASSET: `/api/asset/${id}`, CUSTOMER: `/api/customer/${id}` }[type];
+    const path = {
+      DEVICE: `/api/device/${id}`,
+      ASSET: `/api/asset/${id}`,
+      CUSTOMER: `/api/customer/${id}`,
+    }[type];
     const entity = await this.tb.request<TbDevice | TbAsset | TbCustomer | null>('GET', path);
     if (!entity) {
       throw new NotFoundException(`${type} ${id} not found`);
@@ -140,7 +175,11 @@ export class EntitiesService {
     if (type === 'CUSTOMER') {
       return id;
     }
-    const path = { DEVICE: `/api/device/${id}`, ASSET: `/api/asset/${id}`, CUSTOMER: `/api/customer/${id}` }[type];
+    const path = {
+      DEVICE: `/api/device/${id}`,
+      ASSET: `/api/asset/${id}`,
+      CUSTOMER: `/api/customer/${id}`,
+    }[type];
     const entity = await this.tb.request<TbDevice | TbAsset>('GET', path);
     const customerId = entity.customerId?.id;
     return customerId && customerId !== TB_NULL_CUSTOMER_ID ? customerId : null;
@@ -154,7 +193,11 @@ export class EntitiesService {
    * (e.g. AssetsService.linkDevice) apply the same rule CustomerScopeGuard enforces on
    * `:id`-scoped routes, for a body field (`deviceId`) the guard itself never sees.
    */
-  async isInScope(session: AppSession | null, entityId: string, entityType: EntityType): Promise<boolean> {
+  async isInScope(
+    session: AppSession | null,
+    entityId: string,
+    entityType: EntityType,
+  ): Promise<boolean> {
     if (!session) return true;
     if (session.authority === 'TENANT_ADMIN' || session.authority === 'SYS_ADMIN') return true;
     if (!session.customerId) return false;
@@ -174,7 +217,9 @@ export class EntitiesService {
    */
   async claimDevice(deviceId: string, session: AppSession | null): Promise<EntityRef> {
     if (!session || session.authority === 'TENANT_ADMIN' || session.authority === 'SYS_ADMIN') {
-      throw new ForbiddenException('Claiming a device is only for Customer Users — tenant admins can assign devices directly');
+      throw new ForbiddenException(
+        'Claiming a device is only for Customer Users — tenant admins can assign devices directly',
+      );
     }
     if (!session.customerId) {
       throw new ForbiddenException('Session has no customer scope');
@@ -188,7 +233,11 @@ export class EntitiesService {
   }
 
   async createAsset(name: string, assetType: string, label?: string): Promise<EntityRef> {
-    const created = await this.tb.request<TbAsset>('POST', '/api/asset', { name, type: assetType, label });
+    const created = await this.tb.request<TbAsset>('POST', '/api/asset', {
+      name,
+      type: assetType,
+      label,
+    });
     const [mapped] = await this.refResolver.mapWithRefs([created], 'ASSET');
     return mapped;
   }
@@ -196,7 +245,9 @@ export class EntitiesService {
   async createCustomer(title: string, parentCustomerId?: string): Promise<EntityRef> {
     const created = await this.tb.request<TbCustomer>('POST', '/api/customer', {
       title,
-      ...(parentCustomerId ? { parentCustomerId: { id: parentCustomerId, entityType: 'CUSTOMER' } } : {}),
+      ...(parentCustomerId
+        ? { parentCustomerId: { id: parentCustomerId, entityType: 'CUSTOMER' } }
+        : {}),
     });
     const [mapped] = await this.refResolver.mapWithRefs([created], 'CUSTOMER');
     return mapped;
@@ -223,7 +274,10 @@ export class EntitiesService {
     await this.tb.request('DELETE', `/api/asset/${id}`);
   }
 
-  async updateAsset(id: string, updates: { name?: string; type?: string; label?: string }): Promise<EntityRef> {
+  async updateAsset(
+    id: string,
+    updates: { name?: string; type?: string; label?: string },
+  ): Promise<EntityRef> {
     const existing = await this.tb.request<TbAsset>('GET', `/api/asset/${id}`);
     const updated = await this.tb.request<TbAsset>('POST', '/api/asset', {
       ...existing,
@@ -271,7 +325,12 @@ export class EntitiesService {
   }
 
   /** Removes a real ThingsBoard "Contains" relation (unlink, does not delete either entity). */
-  async deleteRelation(fromId: string, fromType: 'ASSET', toId: string, toType: 'DEVICE'): Promise<void> {
+  async deleteRelation(
+    fromId: string,
+    fromType: 'ASSET',
+    toId: string,
+    toType: 'DEVICE',
+  ): Promise<void> {
     const params = new URLSearchParams({
       fromId,
       fromType,
@@ -288,9 +347,15 @@ export class EntitiesService {
    * Powers the admin hierarchy browser — Customer→Asset (level 0) and Asset→Asset/Device chains
    * are both expressed as Contains relations, unlike the Customer→sub-Customer tree (parentCustomerId).
    */
-  async getRelationChildren(fromId: string, fromType: 'CUSTOMER' | 'ASSET'): Promise<{ assets: EntityRef[]; devices: EntityRef[] }> {
+  async getRelationChildren(
+    fromId: string,
+    fromType: 'CUSTOMER' | 'ASSET',
+  ): Promise<{ assets: EntityRef[]; devices: EntityRef[] }> {
     const params = new URLSearchParams({ fromId, fromType, relationTypeGroup: 'COMMON' });
-    const relations = await this.tb.request<TbRelation[]>('GET', `/api/relations?${params.toString()}`);
+    const relations = await this.tb.request<TbRelation[]>(
+      'GET',
+      `/api/relations?${params.toString()}`,
+    );
     const contains = relations.filter((r) => r.type === 'Contains');
     const assetIds = contains.filter((r) => r.to.entityType === 'ASSET').map((r) => r.to.id);
     const deviceIds = contains.filter((r) => r.to.entityType === 'DEVICE').map((r) => r.to.id);

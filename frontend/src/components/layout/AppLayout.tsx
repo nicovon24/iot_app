@@ -11,7 +11,17 @@ import { endImpersonation } from '@/hooks';
 
 // These pages render their own full-height/full-width widgets (tables, map), so they get
 // an edge-to-edge main area instead of the centered card used by simpler settings pages.
-const FULL_BLEED_PATHS = ['/', '/dashboard', '/devices', '/alarms', '/assets', '/map', '/admin', '/clients', '/users'];
+const FULL_BLEED_PATHS = [
+  '/',
+  '/dashboard',
+  '/devices',
+  '/alarms',
+  '/assets',
+  '/map',
+  '/admin',
+  '/clients',
+  '/users',
+];
 
 // Full width but with natural page scroll, unlike FULL_BLEED_PATHS which own their
 // height/scroll internally (fixed-height list widgets).
@@ -32,11 +42,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const [impersonation, setImpersonation] = useState<ImpersonationMeta | null>(null);
 
   useEffect(() => {
+    // Reads localStorage, which isn't available during render (SSR + hydration).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setImpersonation(getImpersonationMeta());
   }, []);
 
   // Close the mobile drawer automatically on navigation.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMobileOpen(false);
   }, [pathname]);
 
@@ -83,8 +96,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           )}
 
           {/* The rail is a drawer below md, so the only chrome the page keeps is the
-            * control that opens it. It floats rather than occupying a bar, which is
-            * what keeps the layout identical on both sides of the breakpoint. */}
+           * control that opens it. It floats rather than occupying a bar, which is
+           * what keeps the layout identical on both sides of the breakpoint. */}
           <button
             type="button"
             aria-label="Open menu"
@@ -98,7 +111,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <main className="flex-1 overflow-hidden px-10 pb-0 pt-[34px]">
               <div className="h-full w-full">{children}</div>
             </main>
-          ) : WIDE_SCROLL_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`)) ? (
+          ) : WIDE_SCROLL_PATHS.some(
+              (path) => pathname === path || pathname.startsWith(`${path}/`),
+            ) ? (
             <main className="flex-1 overflow-y-auto px-10 pb-8 pt-[34px]">
               <div className="w-full">{children}</div>
             </main>

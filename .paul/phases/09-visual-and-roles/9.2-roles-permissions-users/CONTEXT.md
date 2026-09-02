@@ -44,5 +44,5 @@
 
 ---
 
-*This file is temporary. It informs planning but is not required.*
-*Created by /paul:discuss, consumed by /paul:plan.*
+_This file is temporary. It informs planning but is not required._
+_Created by /paul:discuss, consumed by /paul:plan._

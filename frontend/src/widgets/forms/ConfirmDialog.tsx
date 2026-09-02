@@ -15,7 +15,15 @@ export interface ConfirmDialogProps {
   onClose: () => void;
 }
 
-export function ConfirmDialog({ isOpen, title, description, isPending, error, onConfirm, onClose }: ConfirmDialogProps) {
+export function ConfirmDialog({
+  isOpen,
+  title,
+  description,
+  isPending,
+  error,
+  onConfirm,
+  onClose,
+}: ConfirmDialogProps) {
   const errorMessage = error instanceof ApiError ? error.message : error ? 'Unknown error' : null;
 
   return (

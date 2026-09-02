@@ -29,25 +29,25 @@ export default function DevicesPage() {
       />
 
       <div className="rule-2 mt-[30px] min-h-0 flex-1 pt-0">
-      <EntityListWidget
-        data={data}
-        isLoading={isLoading}
-        isError={isError}
-        error={error}
-        emptyLabel="No devices found"
-        onRowClick={(entity) => router.push(`/entities/${entity.id}?type=${entity.type}`)}
-        editableFields={['label']}
-        readOnly={!canWrite}
-        editTitle="Edit Device"
-        isEditPending={patchDevice.isPending}
-        editError={patchDevice.error}
-        onEditSave={(entity, values) =>
-          patchDevice.mutate(
-            { id: entity.id, dto: { label: values.label ?? '' } },
-            { onError: (error) => toastError("Couldn't update Device", error) },
-          )
-        }
-      />
+        <EntityListWidget
+          data={data}
+          isLoading={isLoading}
+          isError={isError}
+          error={error}
+          emptyLabel="No devices found"
+          onRowClick={(entity) => router.push(`/entities/${entity.id}?type=${entity.type}`)}
+          editableFields={['label']}
+          readOnly={!canWrite}
+          editTitle="Edit Device"
+          isEditPending={patchDevice.isPending}
+          editError={patchDevice.error}
+          onEditSave={(entity, values) =>
+            patchDevice.mutate(
+              { id: entity.id, dto: { label: values.label ?? '' } },
+              { onError: (error) => toastError("Couldn't update Device", error) },
+            )
+          }
+        />
       </div>
     </div>
   );

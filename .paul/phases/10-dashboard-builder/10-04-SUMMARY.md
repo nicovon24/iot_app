@@ -2,7 +2,7 @@
 phase: 10-dashboard-builder
 plan: 04
 type: Summary
-about: "iot-app"
+about: 'iot-app'
 ---
 
 # 10-04 Summary — Widget titles, click actions, time window (PARTIAL — written retroactively 2026-08-28)
@@ -25,13 +25,13 @@ about: "iot-app"
 
 ## Acceptance Criteria Results
 
-| Criterion | Status | Notes |
-|-----------|--------|-------|
-| AC-1: Custom title overrides generated one | Fail | Backend accepts the field; nothing in the UI sets or renders it |
-| AC-2: Widget click action navigates | Fail | Not built at all |
-| AC-3: Dashboard time window drives charts | Fail | Column exists but nothing reads or writes it end to end |
+| Criterion                                            | Status           | Notes                                                                                                                                                                           |
+| ---------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AC-1: Custom title overrides generated one           | Fail             | Backend accepts the field; nothing in the UI sets or renders it                                                                                                                 |
+| AC-2: Widget click action navigates                  | Fail             | Not built at all                                                                                                                                                                |
+| AC-3: Dashboard time window drives charts            | Fail             | Column exists but nothing reads or writes it end to end                                                                                                                         |
 | AC-4: Time window survives unset value (back-compat) | Pass (vacuously) | Column is nullable and nothing depends on it yet, so no existing dashboard is broken — but this is because the feature was never wired up, not because back-compat was verified |
-| AC-5: Invalid config rejected atomically | Untested | `title`/`action` Zod validation exists but no script/curl run confirmed the reject-overlong-title path from the plan's own verify steps |
+| AC-5: Invalid config rejected atomically             | Untested         | `title`/`action` Zod validation exists but no script/curl run confirmed the reject-overlong-title path from the plan's own verify steps                                         |
 
 ## Why this happened (best available explanation)
 

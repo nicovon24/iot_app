@@ -2,7 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Dialog, DialogHeader, DialogTitle, DialogCloseButton, DialogBody, DialogFooter } from '@/components';
+import {
+  Dialog,
+  DialogHeader,
+  DialogTitle,
+  DialogCloseButton,
+  DialogBody,
+  DialogFooter,
+} from '@/components';
 import { ApiError } from '@/lib';
 import type { EntityRef } from '@/types';
 
@@ -42,8 +49,10 @@ export function EditEntityDialog({
     for (const field of fields) {
       initial[field] = (entity[field] as string | undefined) ?? '';
     }
+    // Seeds form state from the just-opened entity; re-runs only when a different entity
+    // is opened (see deps), not on every keystroke.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setValues(initial);
-    // Re-seed only when a different entity is opened, not on every keystroke.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entity?.id]);
 
@@ -58,54 +67,54 @@ export function EditEntityDialog({
           if (!isPending && canSubmit) onSubmit(values);
         }}
       >
-      <DialogHeader>
-        <DialogTitle>{title}</DialogTitle>
-        <DialogCloseButton />
-      </DialogHeader>
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogCloseButton />
+        </DialogHeader>
 
-      <DialogBody className="flex flex-col gap-3">
-        {fields.map((field) => (
-          <div key={field} className="flex flex-col gap-1">
-            <label className="t-field" htmlFor={`edit-entity-${field}`}>
-              {FIELD_LABEL[field]}
-            </label>
-            <input
-              id={`edit-entity-${field}`}
-              autoFocus={field === fields[0]}
-              value={values[field] ?? ''}
-              onChange={(e) => setValues((prev) => ({ ...prev, [field]: e.target.value }))}
-              className="rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-heading outline-none focus:border-accent"
-            />
-          </div>
-        ))}
+        <DialogBody className="flex flex-col gap-3">
+          {fields.map((field) => (
+            <div key={field} className="flex flex-col gap-1">
+              <label className="t-field" htmlFor={`edit-entity-${field}`}>
+                {FIELD_LABEL[field]}
+              </label>
+              <input
+                id={`edit-entity-${field}`}
+                autoFocus={field === fields[0]}
+                value={values[field] ?? ''}
+                onChange={(e) => setValues((prev) => ({ ...prev, [field]: e.target.value }))}
+                className="rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-heading outline-none focus:border-accent"
+              />
+            </div>
+          ))}
 
-        {errorMessage && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="rounded-md border border-danger/30 bg-danger/10 p-3 text-sm text-danger"
+          {errorMessage && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="rounded-md border border-danger/30 bg-danger/10 p-3 text-sm text-danger"
+            >
+              {errorMessage}
+            </motion.div>
+          )}
+        </DialogBody>
+
+        <DialogFooter>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-tint"
           >
-            {errorMessage}
-          </motion.div>
-        )}
-      </DialogBody>
-
-      <DialogFooter>
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-tint"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={isPending || !canSubmit}
-          className="btn-accent rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-60"
-        >
-          {isPending ? 'Saving…' : 'Save'}
-        </button>
-      </DialogFooter>
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={isPending || !canSubmit}
+            className="btn-accent rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-60"
+          >
+            {isPending ? 'Saving…' : 'Save'}
+          </button>
+        </DialogFooter>
       </form>
     </Dialog>
   );

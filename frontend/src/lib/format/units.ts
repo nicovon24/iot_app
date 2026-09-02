@@ -16,8 +16,8 @@ export const UNIT_CATEGORIES: Record<string, { label: string; units: CatalogUnit
   temperature: {
     label: 'Temperature',
     units: [
-      { symbol: '°C', label: 'Celsius', decimals: 1 },
       { symbol: '°F', label: 'Fahrenheit', decimals: 1 },
+      { symbol: '°C', label: 'Celsius', decimals: 1 },
     ],
   },
   percentage: {
@@ -116,13 +116,15 @@ const UNIT_BY_SYMBOL: Record<string, CatalogUnit> = Object.fromEntries(
 export function resolveUnit(stored?: string): { symbol: string; decimals?: number } | undefined {
   if (!stored) return undefined;
   const known = UNIT_BY_SYMBOL[stored];
-  return known ? { symbol: stored, decimals: known.decimals } : { symbol: stored, decimals: undefined };
+  return known
+    ? { symbol: stored, decimals: known.decimals }
+    : { symbol: stored, decimals: undefined };
 }
 
 /** telemetryKey → suggested unit, by case-insensitive substring match. Generalises the two
  * hardcoded lookup tables (DIAL_DEFAULTS, SCALE_PLACEHOLDERS) that predate this catalog. */
 const SUGGESTIONS: Array<[substring: string, unit: string]> = [
-  ['temp', '°C'],
+  ['temp', '°F'],
   ['humid', '%'],
   ['batt', '%'],
   ['rssi', 'dBm'],

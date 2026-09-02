@@ -20,7 +20,10 @@ export class AlarmsService {
     pagination?: PaginationQueryDto,
   ): Promise<TbPageData<TbAlarm>> {
     const query = buildPageParams(pagination);
-    return this.tb.request<TbPageData<TbAlarm>>('GET', `/api/alarm/${entityType}/${entityId}?${query}`);
+    return this.tb.request<TbPageData<TbAlarm>>(
+      'GET',
+      `/api/alarm/${entityType}/${entityId}?${query}`,
+    );
   }
 
   /**

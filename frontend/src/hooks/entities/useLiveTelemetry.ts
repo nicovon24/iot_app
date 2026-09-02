@@ -1,7 +1,10 @@
 import { useEffect } from 'react';
 import { createWsClient, type SubscribeTarget, type WsFrame } from '@/lib';
 
-export function useLiveTelemetry(target: SubscribeTarget | undefined, onFrame: (frame: WsFrame) => void) {
+export function useLiveTelemetry(
+  target: SubscribeTarget | undefined,
+  onFrame: (frame: WsFrame) => void,
+) {
   useEffect(() => {
     if (!target) return;
 

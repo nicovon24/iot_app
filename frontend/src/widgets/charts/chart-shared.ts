@@ -18,7 +18,8 @@ export const axisTick = (v: number) => formatTelemetryValue(v) ?? '';
 
 /** Tooltip values carry the unit — a hovered number is read out of the surrounding context, so
  * repeating the unit there (unlike on every axis tick) is the useful place for it. */
-export const withUnit = (unit?: string) => (v: number | string) => formatTelemetryValue(v, { unit }) ?? '';
+export const withUnit = (unit?: string) => (v: number | string) =>
+  formatTelemetryValue(v, { unit }) ?? '';
 
 /** Tooltip chrome, identical across every chart so they read as one system.
  *

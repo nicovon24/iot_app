@@ -107,7 +107,12 @@ export class ThingsboardClientService {
   }
 
   /** Same request contract as `request()`, but authenticated with a caller-supplied user token instead of the cached service-account token — no refresh-on-401 (the caller's session is invalid, not the service account's). */
-  async requestWithToken<T>(userToken: string, method: string, path: string, body?: unknown): Promise<T> {
+  async requestWithToken<T>(
+    userToken: string,
+    method: string,
+    path: string,
+    body?: unknown,
+  ): Promise<T> {
     const response = await fetch(`${this.config.thingsboardUrl}${path}`, {
       method,
       headers: {

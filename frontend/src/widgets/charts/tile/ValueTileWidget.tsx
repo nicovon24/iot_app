@@ -28,13 +28,21 @@ export function ValueTileWidget({ label, value, unit, ts, sparklineData }: Value
         className="t-display"
       >
         {displayValue ?? '—'}
-        {displayValue && unit ? <span className="ml-1 text-base font-normal text-body">{unit}</span> : null}
+        {displayValue && unit ? (
+          <span className="ml-1 text-base font-normal text-body">{unit}</span>
+        ) : null}
       </motion.span>
       {sparklineData && sparklineData.length > 0 && (
         <div className="h-8 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={sparklineData}>
-              <Line type="monotone" dataKey="value" stroke="var(--color-accent)" strokeWidth={1.5} dot={false} />
+              <Line
+                type="monotone"
+                dataKey="value"
+                stroke="var(--color-accent)"
+                strokeWidth={1.5}
+                dot={false}
+              />
             </LineChart>
           </ResponsiveContainer>
         </div>

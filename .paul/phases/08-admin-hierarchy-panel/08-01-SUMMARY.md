@@ -39,9 +39,9 @@ key-decisions:
 duration: ~40min (including a delayed verification pass — code was written in a prior session turn, verification completed this turn)
 started: 2026-08-03T00:00:00Z
 completed: 2026-08-04T00:00:00Z
-description: "Backend: sub-customer breadcrumbs (parentCustomerId), Contains-relation tree reads, Asset PATCH, Device assign/unassign"
+description: 'Backend: sub-customer breadcrumbs (parentCustomerId), Contains-relation tree reads, Asset PATCH, Device assign/unassign'
 type: Summary
-about: "iot-app"
+about: 'iot-app'
 ---
 
 # Phase 8 Plan 01: Admin Panel Backend Summary
@@ -50,13 +50,13 @@ about: "iot-app"
 
 ## Acceptance Criteria Results
 
-| Criterion | Status | Notes |
-|-----------|--------|-------|
-| AC-1: Sub-customer breadcrumbs are resolvable | Pass | Created a real sub-customer ("Sub Client Verify 08") under "Test" with `parentCustomerId`; `GET /customers` returned it with `parentCustomerId: {id, name: "Test"}` fully resolved, not a bare id |
-| AC-2: Contains-relation children are readable, split by type | Pass | Created a level-0 Asset under the sub-customer and a level-1 child Asset under that; `GET /customers/:id/children` correctly returned the level-0 Asset under `assets` (empty `devices`); `GET /assets/:id/children` on the level-0 Asset correctly returned the level-1 Asset under `assets` |
-| AC-3: A Device can be assigned to and unassigned from an Asset | Pass | `POST /assets/:id/devices {deviceId}` with a real Device (`industrial-pump-001`) → 201, confirmed in the Asset's `children.devices`; `DELETE /assets/:id/devices/:deviceId` → 204, confirmed gone from `children.devices` |
-| AC-4: An Asset's name/type/label can be updated | Pass | `PATCH /assets/:id {name: "Renamed L1 Asset"}` → the name updated; the unrelated `type`/profile (`assetProfileId.name: "area"`) was correctly preserved unchanged |
-| AC-5: Asset deletion is blocked when it has children | Pass | `DELETE` on the level-0 Asset while its level-1 child still existed → 400 `"Cannot delete this Asset — it still has 1 child Asset(s) and 0 linked Device(s). Remove them first."`; after deleting the child, the same delete succeeded (204) |
+| Criterion                                                      | Status | Notes                                                                                                                                                                                                                                                                                         |
+| -------------------------------------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AC-1: Sub-customer breadcrumbs are resolvable                  | Pass   | Created a real sub-customer ("Sub Client Verify 08") under "Test" with `parentCustomerId`; `GET /customers` returned it with `parentCustomerId: {id, name: "Test"}` fully resolved, not a bare id                                                                                             |
+| AC-2: Contains-relation children are readable, split by type   | Pass   | Created a level-0 Asset under the sub-customer and a level-1 child Asset under that; `GET /customers/:id/children` correctly returned the level-0 Asset under `assets` (empty `devices`); `GET /assets/:id/children` on the level-0 Asset correctly returned the level-1 Asset under `assets` |
+| AC-3: A Device can be assigned to and unassigned from an Asset | Pass   | `POST /assets/:id/devices {deviceId}` with a real Device (`industrial-pump-001`) → 201, confirmed in the Asset's `children.devices`; `DELETE /assets/:id/devices/:deviceId` → 204, confirmed gone from `children.devices`                                                                     |
+| AC-4: An Asset's name/type/label can be updated                | Pass   | `PATCH /assets/:id {name: "Renamed L1 Asset"}` → the name updated; the unrelated `type`/profile (`assetProfileId.name: "area"`) was correctly preserved unchanged                                                                                                                             |
+| AC-5: Asset deletion is blocked when it has children           | Pass   | `DELETE` on the level-0 Asset while its level-1 child still existed → 400 `"Cannot delete this Asset — it still has 1 child Asset(s) and 0 linked Device(s). Remove them first."`; after deleting the child, the same delete succeeded (204)                                                  |
 
 ## Accomplishments
 
@@ -66,15 +66,15 @@ about: "iot-app"
 
 ## Files Created/Modified
 
-| File | Change | Purpose |
-|------|--------|---------|
-| `backend/src/types/entities.types.ts` | Modified | `EntityRef` gains `parentCustomerId?: EntityRefLink` |
-| `backend/src/entities/entities.service.ts` | Modified | `parentCustomerId` resolution in `toEntityRefs`/`collectRefs`; new `getRelationChildren()`, `updateAsset()`, `deleteRelation()`; `createRelation()` widened to `toType: 'ASSET' \| 'DEVICE'` |
-| `backend/src/assets/assets.service.ts` | Modified | `delete()` now guards on children; new `update()`, `linkDevice()`, `unlinkDevice()` |
-| `backend/src/assets/assets.controller.ts` | Modified | New `PATCH /assets/:id`, `GET /assets/:id/children`, `POST`/`DELETE /assets/:id/devices(/:deviceId)` |
-| `backend/src/customers/customers.controller.ts` | Modified | New `GET /customers/:id/children` |
-| `backend/src/assets/dto/update-asset.dto.ts` | Created | `UpdateAssetDto` (name/type/label, all optional) |
-| `backend/src/assets/dto/link-device.dto.ts` | Created | `LinkDeviceDto` (`deviceId`) |
+| File                                            | Change   | Purpose                                                                                                                                                                                      |
+| ----------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `backend/src/types/entities.types.ts`           | Modified | `EntityRef` gains `parentCustomerId?: EntityRefLink`                                                                                                                                         |
+| `backend/src/entities/entities.service.ts`      | Modified | `parentCustomerId` resolution in `toEntityRefs`/`collectRefs`; new `getRelationChildren()`, `updateAsset()`, `deleteRelation()`; `createRelation()` widened to `toType: 'ASSET' \| 'DEVICE'` |
+| `backend/src/assets/assets.service.ts`          | Modified | `delete()` now guards on children; new `update()`, `linkDevice()`, `unlinkDevice()`                                                                                                          |
+| `backend/src/assets/assets.controller.ts`       | Modified | New `PATCH /assets/:id`, `GET /assets/:id/children`, `POST`/`DELETE /assets/:id/devices(/:deviceId)`                                                                                         |
+| `backend/src/customers/customers.controller.ts` | Modified | New `GET /customers/:id/children`                                                                                                                                                            |
+| `backend/src/assets/dto/update-asset.dto.ts`    | Created  | `UpdateAssetDto` (name/type/label, all optional)                                                                                                                                             |
+| `backend/src/assets/dto/link-device.dto.ts`     | Created  | `LinkDeviceDto` (`deviceId`)                                                                                                                                                                 |
 
 ## Verification Method
 
@@ -87,6 +87,7 @@ None functionally. One verification-sequencing correction: the first sub-custome
 ## Next Phase Readiness
 
 **Ready:**
+
 - All 5 endpoints/capabilities 08-02 (frontend) needs are live-verified against real ThingsBoard Cloud
 - No backend changes anticipated for 08-02 — it's pure frontend composition on top of this plan's endpoints
 
@@ -95,6 +96,7 @@ None functionally. One verification-sequencing correction: the first sub-custome
 **Blockers:** None. 08-02 (frontend admin panel) can proceed.
 
 ---
-*Built with PAUL Framework · iot_app*
-*Phase: 08-admin-hierarchy-panel, Plan: 01*
-*Completed: 2026-08-04*
+
+_Built with PAUL Framework · iot_app_
+_Phase: 08-admin-hierarchy-panel, Plan: 01_
+_Completed: 2026-08-04_

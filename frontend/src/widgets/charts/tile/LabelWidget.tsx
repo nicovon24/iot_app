@@ -10,7 +10,9 @@ export interface LabelWidgetProps {
 export function LabelWidget({ text, align = 'left' }: LabelWidgetProps) {
   return (
     <div className="glass-card flex h-full items-center p-4">
-      <p className={`whitespace-pre-wrap text-sm text-body ${align === 'center' ? 'w-full text-center' : ''}`}>
+      <p
+        className={`whitespace-pre-wrap text-sm text-body ${align === 'center' ? 'w-full text-center' : ''}`}
+      >
         {text}
       </p>
     </div>

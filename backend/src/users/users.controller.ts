@@ -1,4 +1,16 @@
-import { BadRequestException, Body, Controller, Delete, ForbiddenException, Get, HttpCode, Param, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  ForbiddenException,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { AppSession, AuthService } from '../auth/auth.service';
 import { CurrentSession } from '../common/decorators/current-session.decorator';
@@ -33,7 +45,8 @@ export class UsersController {
   @Get()
   @ApiOperation({
     summary: 'List Customer Users, sysadmin-only',
-    description: 'Scoped to one customer if customerId is given; otherwise every Customer User across the whole tenant.',
+    description:
+      'Scoped to one customer if customerId is given; otherwise every Customer User across the whole tenant.',
   })
   @ApiQuery({ name: 'customerId', required: false })
   async list(@Query('customerId') customerId?: string): Promise<EntityRef[]> {
@@ -48,7 +61,9 @@ export class UsersController {
 
   @Delete(':id')
   @HttpCode(204)
-  @ApiOperation({ summary: 'Delete a Customer User; the tenant admin account can never be deleted here' })
+  @ApiOperation({
+    summary: 'Delete a Customer User; the tenant admin account can never be deleted here',
+  })
   @ApiResponse({ status: 204 })
   @ApiResponse({ status: 400, description: 'Cannot delete the tenant admin account' })
   async delete(@Param('id', ParseTbIdPipe) id: string): Promise<void> {
@@ -57,7 +72,9 @@ export class UsersController {
 
   @Post(':id/impersonate')
   @HttpCode(201)
-  @ApiOperation({ summary: 'Sysadmin "Login as" — mints a new session scoped to the target Customer User' })
+  @ApiOperation({
+    summary: 'Sysadmin "Login as" — mints a new session scoped to the target Customer User',
+  })
   @ApiResponse({ status: 201 })
   async impersonate(
     @Param('id', ParseTbIdPipe) id: string,

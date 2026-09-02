@@ -44,7 +44,10 @@ export default function AlarmsPage() {
             label="Severity"
             value={severity ?? ALL}
             onChange={(v) => setSeverity(v === ALL ? undefined : (v as AlarmSeverity))}
-            options={[{ value: ALL, label: 'All severities' }, ...SEVERITIES.map((s) => ({ value: s, label: s }))]}
+            options={[
+              { value: ALL, label: 'All severities' },
+              ...SEVERITIES.map((s) => ({ value: s, label: s })),
+            ]}
           />
         </div>
 
@@ -53,7 +56,10 @@ export default function AlarmsPage() {
             label="Status"
             value={status ?? ALL}
             onChange={(v) => setStatus(v === ALL ? undefined : (v as AlarmStatus))}
-            options={[{ value: ALL, label: 'All statuses' }, ...STATUSES.map((s) => ({ value: s, label: s }))]}
+            options={[
+              { value: ALL, label: 'All statuses' },
+              ...STATUSES.map((s) => ({ value: s, label: s })),
+            ]}
           />
         </div>
       </div>

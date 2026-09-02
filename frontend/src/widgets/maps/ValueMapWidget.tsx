@@ -77,7 +77,9 @@ export function ValueMapWidget({
   if (isLoading && entries.length === 0) return <Centered text="Loading…" />;
   if (entries.length === 0) return <Centered text="No entities with location data" />;
 
-  const values = entries.map((e) => e.value).filter((v): v is number => v !== undefined && Number.isFinite(v));
+  const values = entries
+    .map((e) => e.value)
+    .filter((v): v is number => v !== undefined && Number.isFinite(v));
   const min = values.length > 0 ? Math.min(...values) : 0;
   const max = values.length > 0 ? Math.max(...values) : 0;
   const tile = MAP_TILE_CONFIG[tileStyle];
@@ -85,9 +87,7 @@ export function ValueMapWidget({
   return (
     <div className="glass-card flex h-full flex-col overflow-hidden p-0">
       {title && (
-        <h3 className="shrink-0 truncate border-b border-border px-4 py-3 t-heading">
-          {title}
-        </h3>
+        <h3 className="shrink-0 truncate border-b border-border px-4 py-3 t-heading">{title}</h3>
       )}
 
       <div className="relative min-h-0 flex-1">
@@ -106,7 +106,7 @@ export function ValueMapWidget({
                 <div className="flex w-[184px] flex-col gap-2.5">
                   <div className="flex items-center gap-2 pr-4">
                     {/* Echoes the marker's own heat colour, tying the popup to the pin it came
-                      * from when several sit close together. */}
+                     * from when several sit close together. */}
                     <span
                       aria-hidden
                       className="h-2 w-2 shrink-0 rounded-full"
@@ -145,7 +145,11 @@ export function ValueMapWidget({
         <div className="pointer-events-none absolute bottom-2 left-2 z-[1000] flex items-center gap-1.5 rounded-md border border-border bg-surface-card px-2 py-1.5 text-[10px] text-body shadow-lg backdrop-blur-md">
           <span>{formatTelemetryValue(String(min)) ?? min}</span>
           {HEAT_COLORS.map((color) => (
-            <span key={color} className="h-[9px] w-[9px] rounded-[2px]" style={{ background: color }} />
+            <span
+              key={color}
+              className="h-[9px] w-[9px] rounded-[2px]"
+              style={{ background: color }}
+            />
           ))}
           <span>
             {formatTelemetryValue(String(max)) ?? max}

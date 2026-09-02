@@ -42,52 +42,56 @@ export function AdminClientsColumn({
 
   return (
     <>
-    <MillerColumn
-      title="Clients"
-      action={
-        !readOnly && (
-          <button
-            type="button"
-            onClick={onAddClient}
-            className="t-action flex items-center gap-1"
-          >
-            <Plus size={12} /> Add
-          </button>
-        )
-      }
-    >
-      <div className="px-4 pb-2">
-        <AdminBreadcrumbs rootLabel="Root" trail={trail.map((c) => ({ id: c.id, name: c.name }))} onNavigate={onNavigateTrail} />
-      </div>
-
-      {isLoading && <TableRowsSkeleton rows={3} columns={2} />}
-
-      {!isLoading && customers.length === 0 && <MillerEmpty label="No Clients here." />}
-
-      {!isLoading &&
-        customers.map((customer) => (
-          <MillerRow
-            key={customer.id}
-            label={customer.name}
-            selected={selectedCustomerId === customer.id}
-            onSelect={() => onSelect(customer)}
-            actions={
-              !readOnly && (
-                <Tooltip label="Delete">
-                  <button
-                    type="button"
-                    onClick={() => setPendingDelete(customer)}
-                    className="text-faint transition-colors duration-fast ease-out hover:text-danger"
-                    aria-label="Delete"
-                  >
-                    <Trash2 size={13} strokeWidth={1.75} />
-                  </button>
-                </Tooltip>
-              )
-            }
+      <MillerColumn
+        title="Clients"
+        action={
+          !readOnly && (
+            <button
+              type="button"
+              onClick={onAddClient}
+              className="t-action flex items-center gap-1"
+            >
+              <Plus size={12} /> Add
+            </button>
+          )
+        }
+      >
+        <div className="px-4 pb-2">
+          <AdminBreadcrumbs
+            rootLabel="Root"
+            trail={trail.map((c) => ({ id: c.id, name: c.name }))}
+            onNavigate={onNavigateTrail}
           />
-        ))}
-    </MillerColumn>
+        </div>
+
+        {isLoading && <TableRowsSkeleton rows={3} columns={2} />}
+
+        {!isLoading && customers.length === 0 && <MillerEmpty label="No Clients here." />}
+
+        {!isLoading &&
+          customers.map((customer) => (
+            <MillerRow
+              key={customer.id}
+              label={customer.name}
+              selected={selectedCustomerId === customer.id}
+              onSelect={() => onSelect(customer)}
+              actions={
+                !readOnly && (
+                  <Tooltip label="Delete">
+                    <button
+                      type="button"
+                      onClick={() => setPendingDelete(customer)}
+                      className="text-faint transition-colors duration-fast ease-out hover:text-danger"
+                      aria-label="Delete"
+                    >
+                      <Trash2 size={13} strokeWidth={1.75} />
+                    </button>
+                  </Tooltip>
+                )
+              }
+            />
+          ))}
+      </MillerColumn>
 
       <ConfirmDialog
         isOpen={!!pendingDelete}

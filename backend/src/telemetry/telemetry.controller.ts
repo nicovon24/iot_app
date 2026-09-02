@@ -25,11 +25,16 @@ export class TelemetryController {
 
   @Get('latest')
   @ApiOperation({
-    summary: 'Latest telemetry values, Redis-cached (~3s TTL). Values are always strings, never JS numbers.',
+    summary:
+      'Latest telemetry values, Redis-cached (~3s TTL). Values are always strings, never JS numbers.',
   })
   @ApiParam({ name: 'id' })
   @ApiQuery({ name: 'type', enum: ENTITY_TYPES })
-  @ApiQuery({ name: 'keys', required: false, description: 'Comma-separated keys; omit for all keys' })
+  @ApiQuery({
+    name: 'keys',
+    required: false,
+    description: 'Comma-separated keys; omit for all keys',
+  })
   async getLatest(
     @Param('id', ParseTbIdPipe) id: string,
     @Query('type', new ParseEnumPipe(ENTITY_TYPES)) type: EntityType,
@@ -43,7 +48,7 @@ export class TelemetryController {
     summary:
       'Historical telemetry. Omit "limit" to get everything ThingsBoard would return (no backend-invented cap). ' +
       'Pass "agg" + "interval" (ms) for real bucketed aggregation — e.g. agg=AVG&interval=300000 for a value every 5 minutes. ' +
-      'Aggregation is always forwarded to ThingsBoard\'s own aggregation API, never computed locally.',
+      "Aggregation is always forwarded to ThingsBoard's own aggregation API, never computed locally.",
   })
   @ApiParam({ name: 'id' })
   @ApiQuery({ name: 'type', enum: ENTITY_TYPES })
@@ -51,8 +56,17 @@ export class TelemetryController {
   @ApiQuery({ name: 'startTs', description: 'Unix ms' })
   @ApiQuery({ name: 'endTs', description: 'Unix ms' })
   @ApiQuery({ name: 'agg', required: false, enum: ['MIN', 'MAX', 'AVG', 'SUM', 'COUNT', 'NONE'] })
-  @ApiQuery({ name: 'interval', required: false, description: 'Bucket size in ms — required together with "agg"' })
-  @ApiQuery({ name: 'limit', required: false, description: 'Max points; omit for ThingsBoard\'s own default (unbounded from this API\'s perspective)' })
+  @ApiQuery({
+    name: 'interval',
+    required: false,
+    description: 'Bucket size in ms — required together with "agg"',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description:
+      "Max points; omit for ThingsBoard's own default (unbounded from this API's perspective)",
+  })
   async getTimeseries(
     @Param('id', ParseTbIdPipe) id: string,
     @Query('type', new ParseEnumPipe(ENTITY_TYPES)) type: EntityType,
@@ -63,10 +77,17 @@ export class TelemetryController {
     @Query('interval') interval?: string,
     @Query('limit') limit?: string,
   ): Promise<Record<string, TelemetryValue[]>> {
-    return this.telemetryService.getTimeseries(id, type, keys.split(','), Number(startTs), Number(endTs), {
-      agg,
-      intervalMs: interval ? Number(interval) : undefined,
-      limit: limit ? Number(limit) : undefined,
-    });
+    return this.telemetryService.getTimeseries(
+      id,
+      type,
+      keys.split(','),
+      Number(startTs),
+      Number(endTs),
+      {
+        agg,
+        intervalMs: interval ? Number(interval) : undefined,
+        limit: limit ? Number(limit) : undefined,
+      },
+    );
   }
 }

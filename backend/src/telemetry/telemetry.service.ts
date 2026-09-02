@@ -24,10 +24,17 @@ export class TelemetryService {
   ) {}
 
   async getKeys(entityId: string, entityType: EntityType): Promise<string[]> {
-    return this.tb.request<string[]>('GET', `/api/plugins/telemetry/${entityType}/${entityId}/keys/timeseries`);
+    return this.tb.request<string[]>(
+      'GET',
+      `/api/plugins/telemetry/${entityType}/${entityId}/keys/timeseries`,
+    );
   }
 
-  async getLatest(entityId: string, entityType: EntityType, keys?: string[]): Promise<TelemetryLatest> {
+  async getLatest(
+    entityId: string,
+    entityType: EntityType,
+    keys?: string[],
+  ): Promise<TelemetryLatest> {
     const sortedKeys = keys ? [...keys].sort().join(',') : 'all';
     const cacheKey = `latest:${entityType}:${entityId}:${sortedKeys}`;
     const cached = await this.redis.get(cacheKey);
@@ -62,7 +69,9 @@ export class TelemetryService {
     const { agg, intervalMs, limit } = options ?? {};
 
     if (agg && !intervalMs) {
-      throw new BadRequestException('"interval" (ms) is required when "agg" is set — aggregation needs a bucket size');
+      throw new BadRequestException(
+        '"interval" (ms) is required when "agg" is set — aggregation needs a bucket size',
+      );
     }
 
     const params = new URLSearchParams({

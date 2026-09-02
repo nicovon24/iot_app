@@ -1,0 +1,8 @@
+node_modules
+dist
+.next
+backend/dist
+frontend/.next
+package-lock.json
+.claude
+.codex

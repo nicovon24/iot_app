@@ -37,7 +37,11 @@ export function useTypeConfig() {
 
   /** Writes every declared field for `widgetType` into a config object, same shouldSave/toConfig
    * rules the old hand-written buildConfig branches used. */
-  function buildInto(widgetType: WidgetType | undefined, scope: 'SINGLE' | 'ALL', config: Record<string, unknown>) {
+  function buildInto(
+    widgetType: WidgetType | undefined,
+    scope: 'SINGLE' | 'ALL',
+    config: Record<string, unknown>,
+  ) {
     const fields = widgetType ? (TYPE_CONFIG_FIELDS[widgetType] ?? []) : [];
     for (const f of fields) {
       const value = get(widgetType, f.key);

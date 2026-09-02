@@ -1,9 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ArrayMinSize, IsInt, IsNotEmpty, IsOptional, IsString, Min, ValidateNested } from 'class-validator';
+import {
+  ArrayMinSize,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Min,
+  ValidateNested,
+} from 'class-validator';
 
 export class HierarchyLevelDto {
-  @ApiProperty({ example: 0, description: 'Order of this level within the hierarchy, starting at 0' })
+  @ApiProperty({
+    example: 0,
+    description: 'Order of this level within the hierarchy, starting at 0',
+  })
   @IsInt()
   @Min(0)
   levelIndex!: number;
@@ -20,7 +31,10 @@ export class CreateCustomerDto {
   @IsNotEmpty()
   name!: string;
 
-  @ApiProperty({ required: false, description: 'Existing Customer id — creates this Customer as its sub-customer' })
+  @ApiProperty({
+    required: false,
+    description: 'Existing Customer id — creates this Customer as its sub-customer',
+  })
   @IsOptional()
   @IsString()
   parentCustomerId?: string;

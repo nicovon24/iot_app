@@ -72,11 +72,20 @@ const ALARM_COLUMNS: RuledColumn<Alarm>[] = [
     width: '150px',
     // Locale-formatted rather than raw: this is the one column a person reads as a time,
     // not as an identifier, so it keeps the reader's own conventions.
-    render: (alarm) => <span className="t-meta truncate">{new Date(alarm.startTs).toLocaleString()}</span>,
+    render: (alarm) => (
+      <span className="t-meta truncate">{new Date(alarm.startTs).toLocaleString()}</span>
+    ),
   },
 ];
 
-export function AlarmsListWidget({ alarms, isLoading, isError, error, emptyLabel, title }: AlarmsListWidgetProps) {
+export function AlarmsListWidget({
+  alarms,
+  isLoading,
+  isError,
+  error,
+  emptyLabel,
+  title,
+}: AlarmsListWidgetProps) {
   const table = (
     <RuledTable
       columns={ALARM_COLUMNS}

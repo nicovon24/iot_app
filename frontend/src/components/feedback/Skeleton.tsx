@@ -17,11 +17,16 @@ const shimmerTransition = {
  * block with a soft gradient band sweeping across it on a loop. */
 export function Skeleton({ className = '', style }: SkeletonProps) {
   return (
-    <div aria-hidden className={`relative overflow-hidden rounded-md bg-accent/[0.07] ${className}`} style={style}>
+    <div
+      aria-hidden
+      className={`relative overflow-hidden rounded-md bg-accent/[0.07] ${className}`}
+      style={style}
+    >
       <motion.div
         className="absolute inset-0"
         style={{
-          background: 'linear-gradient(90deg, transparent 0%, rgba(52, 211, 153, 0.1) 50%, transparent 100%)',
+          background:
+            'linear-gradient(90deg, transparent 0%, rgba(52, 211, 153, 0.1) 50%, transparent 100%)',
           width: '60%',
         }}
         animate={{ x: ['-100%', '100%'] }}

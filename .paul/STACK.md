@@ -65,11 +65,13 @@
 Plan → Apply → Unify loop. Replaces the earlier GSD evaluation — lighter on tokens for a solo-dev project of this size (no parallel subagent orchestration overhead).
 
 **Install (local, this repo only):**
+
 ```bash
 npx paul-framework --local
 ```
 
 **Core commands:**
+
 ```
 /paul:init      # builds PROJECT.md from requirements
 /paul:plan      # creates a plan, auto-detects scope (quick-fix / standard / complex)
@@ -81,18 +83,18 @@ npx paul-framework --local
 
 ## Claude Code Plugins
 
-| Plugin | Install | What it does |
-|---|---|---|
-| ponytail | `/plugin marketplace add DietrichGebert/ponytail`<br>`/plugin install ponytail@ponytail` | Minimizes the code the agent writes (YAGNI ladder) |
-| caveman | `claude plugin marketplace add JuliusBrussee/caveman`<br>`claude plugin install caveman@caveman` | Compresses the agent's prose (~65% fewer output tokens) |
+| Plugin      | Install                                                                                                   | What it does                                                                                                                                                                                                                                                                     |
+| ----------- | --------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ponytail    | `/plugin marketplace add DietrichGebert/ponytail`<br>`/plugin install ponytail@ponytail`                  | Minimizes the code the agent writes (YAGNI ladder)                                                                                                                                                                                                                               |
+| caveman     | `claude plugin marketplace add JuliusBrussee/caveman`<br>`claude plugin install caveman@caveman`          | Compresses the agent's prose (~65% fewer output tokens)                                                                                                                                                                                                                          |
 | supermemory | `/plugin marketplace add supermemoryai/claude-supermemory`<br>`/plugin install supermemory --scope local` | Persistent memory across sessions — remembers project conventions, decisions, entity model (tenant→client→location→area→asset→sensor) without re-explaining every session. **Self-hosted preferred** given the project handles real client/industry data (see MCP section below) |
 
-*Cursor equivalent (rules only, no dynamic commands): `.cursor/rules/` — copy from each repo, or `npx skills add JuliusBrussee/caveman -a cursor`*
+_Cursor equivalent (rules only, no dynamic commands): `.cursor/rules/` — copy from each repo, or `npx skills add JuliusBrussee/caveman -a cursor`_
 
 ## Skills
 
-| Skill | Install | What it does |
-|---|---|---|
+| Skill                         | Install                                                                                                    | What it does                                                                                                                                                                                                                         |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | architecture-decision-records | `npx skills add affaan-m/everything-claude-code --skill architecture-decision-records --agent claude-code` | Detects architectural decisions during the session and writes them as structured ADR docs in `docs/adr/`. Session-level, on-demand — complements (doesn't replace) the `adr-analysis` MCP below, which does static codebase scanning |
 
 ## MCP Servers
@@ -102,7 +104,16 @@ npx paul-framework --local
   "mcpServers": {
     "thingsboard": {
       "command": "docker",
-      "args": ["run", "-i", "--rm", "-e", "THINGSBOARD_URL", "-e", "THINGSBOARD_API_KEY", "thingsboard/mcp"],
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "THINGSBOARD_URL",
+        "-e",
+        "THINGSBOARD_API_KEY",
+        "thingsboard/mcp"
+      ],
       "env": {
         "THINGSBOARD_URL": "https://thingsboard.cloud",
         "THINGSBOARD_API_KEY": "${THINGSBOARD_API_KEY}"
@@ -117,7 +128,14 @@ npx paul-framework --local
     },
     "github": {
       "command": "docker",
-      "args": ["run", "-i", "--rm", "-e", "GITHUB_PERSONAL_ACCESS_TOKEN", "ghcr.io/github/github-mcp-server"],
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "GITHUB_PERSONAL_ACCESS_TOKEN",
+        "ghcr.io/github/github-mcp-server"
+      ],
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
       }
@@ -134,6 +152,7 @@ npx paul-framework --local
 **adr-analysis MCP**: dropped — token overhead per turn not worth it for a solo-dev project this size. The `architecture-decision-records` **skill** (session-level, on-demand) covers ADR capture instead — see Skills table above.
 
 **Postgres MCP** (recommended addition, config not yet defined):
+
 ```json
 "postgres": {
   "command": "npx",

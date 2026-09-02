@@ -29,9 +29,13 @@ export function GaugeShell({ label, value, unit, ts, children }: GaugeShellProps
       <div className="flex shrink-0 flex-col items-center">
         <span className="t-metric">
           {hasValue ? (formatTelemetryValue(String(value)) ?? value) : '—'}
-          {hasValue && unit ? <span className="ml-1 text-base font-normal text-body">{unit}</span> : null}
+          {hasValue && unit ? (
+            <span className="ml-1 text-base font-normal text-body">{unit}</span>
+          ) : null}
         </span>
-        <span className="t-meta">{ts ? new Date(ts).toLocaleTimeString() : 'Waiting for data…'}</span>
+        <span className="t-meta">
+          {ts ? new Date(ts).toLocaleTimeString() : 'Waiting for data…'}
+        </span>
       </div>
     </div>
   );

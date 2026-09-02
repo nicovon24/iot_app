@@ -1,1 +1,9 @@
-cd backend && npx tsc --noEmit
+npx lint-staged
+
+if git diff --cached --name-only | grep -qE '^backend/.*\.ts$'; then
+  npm run typecheck --workspace=backend || exit 1
+fi
+
+if git diff --cached --name-only | grep -qE '^frontend/.*\.tsx?$'; then
+  npm run typecheck --workspace=frontend || exit 1
+fi

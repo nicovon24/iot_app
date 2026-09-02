@@ -1,6 +1,14 @@
 import { ThingsboardClientService } from '../thingsboard/thingsboard-client.service';
 import { RedisService } from '../thingsboard/redis.service';
-import { EntityRef, EntityRefLink, EntityType, TbAsset, TbCustomer, TbDevice, TbPageData } from '../types';
+import {
+  EntityRef,
+  EntityRefLink,
+  EntityType,
+  TbAsset,
+  TbCustomer,
+  TbDevice,
+  TbPageData,
+} from '../types';
 
 export type RefKind = 'tenant' | 'customer' | 'assetProfile';
 
@@ -32,7 +40,9 @@ export class EntityRefResolver {
    * would reintroduce N+1). Individual failures degrade to a missing map entry (toEntityRef
    * then renders `{id}` with no name/label) rather than failing the whole batch.
    */
-  private async resolveRefs(refs: { id: string; kind: RefKind }[]): Promise<Map<string, EntityRefLink>> {
+  private async resolveRefs(
+    refs: { id: string; kind: RefKind }[],
+  ): Promise<Map<string, EntityRefLink>> {
     const result = new Map<string, EntityRefLink>();
     const byKind = new Map<RefKind, Set<string>>();
     for (const { id, kind } of refs) {
@@ -56,13 +66,20 @@ export class EntityRefResolver {
         // One call resolves every uncached customer id at once — TB has no per-customer-name
         // batch endpoint, but a single full-page fetch is far cheaper than N individual GETs.
         try {
-          const page = await this.tb.request<TbPageData<TbCustomer>>('GET', '/api/customers?pageSize=1000&page=0');
+          const page = await this.tb.request<TbPageData<TbCustomer>>(
+            'GET',
+            '/api/customers?pageSize=1000&page=0',
+          );
           for (const id of uncached) {
             const customer = page.data.find((c) => c.id.id === id);
             if (customer) {
               const link: EntityRefLink = { id, name: customer.title };
               result.set(`customer:${id}`, link);
-              await this.redis.set(`refname:customer:${id}`, JSON.stringify(link), REF_CACHE_TTL_SECONDS);
+              await this.redis.set(
+                `refname:customer:${id}`,
+                JSON.stringify(link),
+                REF_CACHE_TTL_SECONDS,
+              );
             }
           }
         } catch {
@@ -77,10 +94,17 @@ export class EntityRefResolver {
       await Promise.all(
         uncached.map(async (id) => {
           try {
-            const entity = await this.tb.request<{ title?: string; name?: string }>('GET', `${path}/${id}`);
+            const entity = await this.tb.request<{ title?: string; name?: string }>(
+              'GET',
+              `${path}/${id}`,
+            );
             const link: EntityRefLink = { id, name: entity.title ?? entity.name };
             result.set(`${kind}:${id}`, link);
-            await this.redis.set(`refname:${kind}:${id}`, JSON.stringify(link), REF_CACHE_TTL_SECONDS);
+            await this.redis.set(
+              `refname:${kind}:${id}`,
+              JSON.stringify(link),
+              REF_CACHE_TTL_SECONDS,
+            );
           } catch {
             // Stale/deleted reference — degrade to {id} only, don't fail the whole batch.
           }
@@ -101,48 +125,75 @@ export class EntityRefResolver {
       const label = 'label' in entity ? entity.label : undefined;
       const tenantId = entity.tenantId?.id;
       const rawCustomerId = 'customerId' in entity ? entity.customerId?.id : undefined;
-      const customerId = rawCustomerId && rawCustomerId !== TB_NULL_CUSTOMER_ID ? rawCustomerId : undefined;
+      const customerId =
+        rawCustomerId && rawCustomerId !== TB_NULL_CUSTOMER_ID ? rawCustomerId : undefined;
       const assetProfileId = 'assetProfileId' in entity ? entity.assetProfileId?.id : undefined;
       const ownerId = entity.ownerId?.id;
       const ownerKind: RefKind | undefined =
-        entity.ownerId?.entityType === 'TENANT' ? 'tenant' : entity.ownerId?.entityType === 'CUSTOMER' ? 'customer' : undefined;
-      const parentCustomerId = 'parentCustomerId' in entity ? entity.parentCustomerId?.id : undefined;
+        entity.ownerId?.entityType === 'TENANT'
+          ? 'tenant'
+          : entity.ownerId?.entityType === 'CUSTOMER'
+            ? 'customer'
+            : undefined;
+      const parentCustomerId =
+        'parentCustomerId' in entity ? entity.parentCustomerId?.id : undefined;
 
       return {
         id: entity.id.id,
         type,
         name,
         label,
-        tenantId: tenantId ? refMap.get(`tenant:${tenantId}`) ?? { id: tenantId } : undefined,
-        customerId: customerId ? refMap.get(`customer:${customerId}`) ?? { id: customerId } : undefined,
-        assetProfileId: assetProfileId ? refMap.get(`assetProfile:${assetProfileId}`) ?? { id: assetProfileId } : undefined,
-        ownerId: ownerId ? (ownerKind ? refMap.get(`${ownerKind}:${ownerId}`) : undefined) ?? { id: ownerId } : undefined,
-        parentCustomerId: parentCustomerId ? refMap.get(`customer:${parentCustomerId}`) ?? { id: parentCustomerId } : undefined,
+        tenantId: tenantId ? (refMap.get(`tenant:${tenantId}`) ?? { id: tenantId }) : undefined,
+        customerId: customerId
+          ? (refMap.get(`customer:${customerId}`) ?? { id: customerId })
+          : undefined,
+        assetProfileId: assetProfileId
+          ? (refMap.get(`assetProfile:${assetProfileId}`) ?? { id: assetProfileId })
+          : undefined,
+        ownerId: ownerId
+          ? ((ownerKind ? refMap.get(`${ownerKind}:${ownerId}`) : undefined) ?? { id: ownerId })
+          : undefined,
+        parentCustomerId: parentCustomerId
+          ? (refMap.get(`customer:${parentCustomerId}`) ?? { id: parentCustomerId })
+          : undefined,
         additionalInfo: entity.additionalInfo,
       };
     });
   }
 
   /** Collects every unique {id,kind} reference needed to enrich this batch of raw entities. */
-  private collectRefs(entities: (TbDevice | TbAsset | TbCustomer)[]): { id: string; kind: RefKind }[] {
+  private collectRefs(
+    entities: (TbDevice | TbAsset | TbCustomer)[],
+  ): { id: string; kind: RefKind }[] {
     const refs: { id: string; kind: RefKind }[] = [];
     for (const entity of entities) {
       if (entity.tenantId?.id) refs.push({ id: entity.tenantId.id, kind: 'tenant' });
-      if ('customerId' in entity && entity.customerId?.id && entity.customerId.id !== TB_NULL_CUSTOMER_ID) {
+      if (
+        'customerId' in entity &&
+        entity.customerId?.id &&
+        entity.customerId.id !== TB_NULL_CUSTOMER_ID
+      ) {
         refs.push({ id: entity.customerId.id, kind: 'customer' });
       }
-      if ('assetProfileId' in entity && entity.assetProfileId?.id) refs.push({ id: entity.assetProfileId.id, kind: 'assetProfile' });
-      if ('parentCustomerId' in entity && entity.parentCustomerId?.id) refs.push({ id: entity.parentCustomerId.id, kind: 'customer' });
+      if ('assetProfileId' in entity && entity.assetProfileId?.id)
+        refs.push({ id: entity.assetProfileId.id, kind: 'assetProfile' });
+      if ('parentCustomerId' in entity && entity.parentCustomerId?.id)
+        refs.push({ id: entity.parentCustomerId.id, kind: 'customer' });
       if (entity.ownerId?.id) {
-        if (entity.ownerId.entityType === 'TENANT') refs.push({ id: entity.ownerId.id, kind: 'tenant' });
-        else if (entity.ownerId.entityType === 'CUSTOMER') refs.push({ id: entity.ownerId.id, kind: 'customer' });
+        if (entity.ownerId.entityType === 'TENANT')
+          refs.push({ id: entity.ownerId.id, kind: 'tenant' });
+        else if (entity.ownerId.entityType === 'CUSTOMER')
+          refs.push({ id: entity.ownerId.id, kind: 'customer' });
       }
     }
     return refs;
   }
 
   /** Resolves refs for a batch and maps it in one call — the entry point EntitiesService uses. */
-  async mapWithRefs(entities: (TbDevice | TbAsset | TbCustomer)[], type: EntityType): Promise<EntityRef[]> {
+  async mapWithRefs(
+    entities: (TbDevice | TbAsset | TbCustomer)[],
+    type: EntityType,
+  ): Promise<EntityRef[]> {
     const refMap = await this.resolveRefs(this.collectRefs(entities));
     return this.toEntityRefs(entities, type, refMap);
   }

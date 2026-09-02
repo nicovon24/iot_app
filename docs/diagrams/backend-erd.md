@@ -6,7 +6,7 @@
 
 The entire data model today lives in ThingsBoard (Customers, Devices, Assets, Users, attributes, time series) and is consumed via `ThingsboardClientService` — there's no own PostgreSQL in production yet.
 
-Therefore **a real ERD of own entities cannot be generated**, because none exist. What follows is the model *planned* for Phase 4 ("Client creation wizard & static hierarchy"), as described in `.paul/ROADMAP.md` / `.paul/STATE.md` — explicitly marked as pending, not implemented.
+Therefore **a real ERD of own entities cannot be generated**, because none exist. What follows is the model _planned_ for Phase 4 ("Client creation wizard & static hierarchy"), as described in `.paul/ROADMAP.md` / `.paul/STATE.md` — explicitly marked as pending, not implemented.
 
 ## Pending / planned — Phase 4 (not started)
 

@@ -33,7 +33,9 @@ assert.ok(
   'every coordinate is finite',
 );
 assert.ok(
-  trail.every((p) => p.latitude > 52.4 && p.latitude < 52.6 && p.longitude > 13.2 && p.longitude < 13.5),
+  trail.every(
+    (p) => p.latitude > 52.4 && p.latitude < 52.6 && p.longitude > 13.2 && p.longitude < 13.5,
+  ),
   'every point sits within greater Berlin',
 );
 
@@ -42,13 +44,19 @@ assert.ok(
   trail.every((p, i) => i === 0 || p.ts > trail[i - 1].ts),
   'timestamps ascend',
 );
-assert.ok(trail[0].ts >= startTs && trail[trail.length - 1].ts <= endTs, 'points stay in the window');
+assert.ok(
+  trail[0].ts >= startTs && trail[trail.length - 1].ts <= endTs,
+  'points stay in the window',
+);
 
 // The point of the shape: most samples cluster at stops, which is what builds heat. An even
 // spread would render as a uniform smear and defeat the widget.
 const nearAStop = trail.filter((p) => STOPS.some((s) => metresApart(p, s) < 300)).length;
 const clustered = nearAStop / trail.length;
-assert.ok(clustered > 0.6, `expected most points parked at stops, got ${Math.round(clustered * 100)}%`);
+assert.ok(
+  clustered > 0.6,
+  `expected most points parked at stops, got ${Math.round(clustered * 100)}%`,
+);
 
 // Every stop must actually be visited, or the trail is a subset of the route it claims.
 for (const stop of STOPS) {
@@ -64,4 +72,6 @@ const atMitte = trail.filter((p) => metresApart(p, STOPS[0]) < 150);
 const distinct = new Set(atMitte.map((p) => `${p.latitude.toFixed(5)},${p.longitude.toFixed(5)}`));
 assert.ok(distinct.size > atMitte.length * 0.9, 'parked samples scatter rather than repeat');
 
-console.log(`seed-movement checks passed (${trail.length} points, ${Math.round(clustered * 100)}% at stops)`);
+console.log(
+  `seed-movement checks passed (${trail.length} points, ${Math.round(clustered * 100)}% at stops)`,
+);

@@ -45,7 +45,13 @@ export class CustomerScopeGuard implements CanActivate {
       return true;
     }
 
-    const inScope = await isEntityInScope(session, params.id, query.type, this.entitiesService, this.tb);
+    const inScope = await isEntityInScope(
+      session,
+      params.id,
+      query.type,
+      this.entitiesService,
+      this.tb,
+    );
     if (!inScope) {
       throw new ForbiddenException('Entity is outside your customer hierarchy');
     }

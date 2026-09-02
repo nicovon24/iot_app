@@ -37,4 +37,5 @@ Chat-driven, outside PAUL. No `CONTEXT.md`/`PLAN.md` existed before the work; th
 - **No browser click-through reported for any of the ten screens.** Same gap already open for Phase 10 (dashboard builder) and Phase 11 (units/widgets) — this phase adds to that debt rather than creating a new, separate one.
 
 ---
-*This file is retroactive: written after the code shipped, not before. It exists to close the documentation gap, not to inform a not-yet-done implementation.*
+
+_This file is retroactive: written after the code shipped, not before. It exists to close the documentation gap, not to inform a not-yet-done implementation._

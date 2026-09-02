@@ -26,13 +26,13 @@ iot_app/
 
 Always start with `.paul/STATE.md` — it tells you exactly where the project is, what was just done, and what's next. Then:
 
-| Task type | Read |
-| :--- | :--- |
-| Any session | `.paul/STATE.md` → `.paul/PROJECT.md` if you need the "why" |
-| Backend feature / NestJS | `.paul/rules/api.md` |
-| Deploy / environment | `.paul/rules/infrastructure.md` |
-| Testing | `.paul/rules/testing.md` |
-| Architecture / entity model / DB design | `.paul/ARCHITECTURE.md` |
+| Task type                                          | Read                                                                   |
+| :------------------------------------------------- | :--------------------------------------------------------------------- |
+| Any session                                        | `.paul/STATE.md` → `.paul/PROJECT.md` if you need the "why"            |
+| Backend feature / NestJS                           | `.paul/rules/api.md`                                                   |
+| Deploy / environment                               | `.paul/rules/infrastructure.md`                                        |
+| Testing                                            | `.paul/rules/testing.md`                                               |
+| Architecture / entity model / DB design            | `.paul/ARCHITECTURE.md`                                                |
 | Codebase/architecture question about existing code | `graphify query "<question>"` (see `.claude/skills/graphify/SKILL.md`) |
 
 ## The PAUL Workflow (how this project runs)

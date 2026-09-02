@@ -10,8 +10,11 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
+    // Reads localStorage, which isn't available during render (SSR + hydration) — this
+    // one-time sync-on-mount is the legitimate exception to react-hooks/set-state-in-effect.
     initSessionFromStorage();
     if (getSessionToken()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAuthenticated(true);
     } else {
       router.push('/login');

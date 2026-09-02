@@ -36,13 +36,19 @@ const SCOPE_SHORT: Record<string, string> = {
   SHARED_SCOPE: 'shared',
 };
 
-function Shell({ children, note, title }: { children: React.ReactNode; note?: string; title?: string }) {
+function Shell({
+  children,
+  note,
+  title,
+}: {
+  children: React.ReactNode;
+  note?: string;
+  title?: string;
+}) {
   return (
     <div className="glass-card flex h-full flex-col p-0">
       {title && (
-        <h3 className="shrink-0 truncate border-b border-border px-4 py-3 t-heading">
-          {title}
-        </h3>
+        <h3 className="shrink-0 truncate border-b border-border px-4 py-3 t-heading">{title}</h3>
       )}
       {note && <p className="shrink-0 border-b border-border px-4 py-2 t-meta">{note}</p>}
       <div className="table-scroll min-h-0 flex-1 overflow-auto">{children}</div>
@@ -66,7 +72,9 @@ function formatCell(column: ResolvedColumn, cell: CellValue | undefined) {
   if (asDate) return asDate;
   // Telemetry is numeric-ish and gets the shared rounding/unit treatment; an attribute can be
   // any JSON scalar, so it's shown verbatim.
-  return column.source === 'TELEMETRY' ? (formatTelemetryValue(cell.value) ?? cell.value) : cell.value;
+  return column.source === 'TELEMETRY'
+    ? (formatTelemetryValue(cell.value) ?? cell.value)
+    : cell.value;
 }
 
 export function EntityDataTableWidget({
@@ -85,7 +93,10 @@ export function EntityDataTableWidget({
   // read-only dashboard viewers too, who have no edit panel to act on that instruction.
   if (columns.length === 0) return <Centered text="No columns configured for this table" />;
 
-  const note = omittedCount > 0 ? `Showing ${rows.length} of ${rows.length + omittedCount} entities` : undefined;
+  const note =
+    omittedCount > 0
+      ? `Showing ${rows.length} of ${rows.length + omittedCount} entities`
+      : undefined;
 
   if (mode === 'LIST') {
     const entityId = rows[0].id;
@@ -111,7 +122,9 @@ export function EntityDataTableWidget({
                     {SOURCE_LABEL[column.source]}
                     {column.scope ? ` · ${SCOPE_SHORT[column.scope]}` : ''}
                   </td>
-                  <td className="px-3 py-2 text-body">{display ?? <span className="text-faint">—</span>}</td>
+                  <td className="px-3 py-2 text-body">
+                    {display ?? <span className="text-faint">—</span>}
+                  </td>
                   <td className="px-3 py-2 text-faint">
                     {cell?.ts ? new Date(cell.ts).toLocaleString() : '—'}
                   </td>
@@ -131,7 +144,10 @@ export function EntityDataTableWidget({
           <tr>
             <Th sticky>Entity</Th>
             {columns.map((column) => (
-              <Th key={column.id} title={`${SOURCE_LABEL[column.source]}${column.scope ? ` · ${SCOPE_SHORT[column.scope]}` : ''}`}>
+              <Th
+                key={column.id}
+                title={`${SOURCE_LABEL[column.source]}${column.scope ? ` · ${SCOPE_SHORT[column.scope]}` : ''}`}
+              >
                 {column.label}
               </Th>
             ))}
@@ -159,7 +175,9 @@ export function EntityDataTableWidget({
                 onEntityClick ? 'cursor-pointer transition-colors hover:bg-tint' : ''
               }`}
             >
-              <td className="sticky left-0 z-10 bg-surface px-3 py-2 font-medium text-heading">{row.name}</td>
+              <td className="sticky left-0 z-10 bg-surface px-3 py-2 font-medium text-heading">
+                {row.name}
+              </td>
               {columns.map((column) => {
                 const display = formatCell(column, values[row.id]?.[column.id]);
                 return (
@@ -176,7 +194,15 @@ export function EntityDataTableWidget({
   );
 }
 
-function Th({ children, sticky, title }: { children: React.ReactNode; sticky?: boolean; title?: string }) {
+function Th({
+  children,
+  sticky,
+  title,
+}: {
+  children: React.ReactNode;
+  sticky?: boolean;
+  title?: string;
+}) {
   return (
     <th
       title={title}

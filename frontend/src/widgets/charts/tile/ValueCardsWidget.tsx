@@ -87,7 +87,9 @@ export function ValueCardsWidget({
                 }
               : {})}
             className={`flex flex-col gap-2 rounded-lg border border-border p-3 ${
-              onEntityClick ? 'cursor-pointer transition-colors hover:border-accent hover:bg-tint' : ''
+              onEntityClick
+                ? 'cursor-pointer transition-colors hover:border-accent hover:bg-tint'
+                : ''
             }`}
           >
             <span className="truncate text-xs font-semibold text-heading" title={entry.name}>

@@ -6,6 +6,7 @@ backend/dist
 .claude/settings.local.json
 .claude/settings.json
 .mcp.json
+.codex/
 graphify-out/
 *.log
 NOTES.md

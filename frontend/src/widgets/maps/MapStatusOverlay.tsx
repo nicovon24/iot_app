@@ -13,8 +13,7 @@ import type { FleetEntityType } from './fleet-positions';
  * opacity would either hide the map or lose its own edge. Everywhere else the hairline alone
  * does the job, because everywhere else the ground is a known colour.
  */
-const PANEL =
-  'border border-rule bg-[rgba(5,9,7,.86)] px-[18px] py-3.5 backdrop-blur-[10px]';
+const PANEL = 'border border-rule bg-[rgba(5,9,7,.86)] px-[18px] py-3.5 backdrop-blur-[10px]';
 
 function Stat({
   icon: Icon,
@@ -39,7 +38,13 @@ function Stat({
         <Icon
           size={13}
           strokeWidth={1.75}
-          className={tone === 'alert' && lit ? 'text-danger' : tone === 'alert' ? 'text-muted' : 'text-accent'}
+          className={
+            tone === 'alert' && lit
+              ? 'text-danger'
+              : tone === 'alert'
+                ? 'text-muted'
+                : 'text-accent'
+          }
         />
         <span className="t-label !tracking-[0.18em] !text-muted">{label}</span>
       </div>
@@ -55,7 +60,15 @@ function Stat({
 }
 
 /** One legend entry. `color` paints the swatch; `hollow` mirrors the marker's offline form. */
-function LegendRow({ label, color, hollow = false }: { label: string; color: string; hollow?: boolean }) {
+function LegendRow({
+  label,
+  color,
+  hollow = false,
+}: {
+  label: string;
+  color: string;
+  hollow?: boolean;
+}) {
   return (
     <span className="flex items-center gap-[9px]">
       <span
@@ -64,9 +77,11 @@ function LegendRow({ label, color, hollow = false }: { label: string; color: str
         style={hollow ? { border: `2px solid ${color}` } : { background: color }}
       />
       {/* Always --color-muted, never the swatch's own colour: this panel is translucent over
-        * map tiles, and an amber label on the light Streets basemap falls under 4.5:1. The
-        * swatch carries the colour, the label only has to be readable. */}
-      <span className="font-mono text-[10px] leading-none tracking-[0.1em] text-muted">{label}</span>
+       * map tiles, and an amber label on the light Streets basemap falls under 4.5:1. The
+       * swatch carries the colour, the label only has to be readable. */}
+      <span className="font-mono text-[10px] leading-none tracking-[0.1em] text-muted">
+        {label}
+      </span>
     </span>
   );
 }
@@ -91,8 +106,8 @@ export function MapStatusOverlay({ scope }: { scope: FleetEntityType }) {
     <div className="pointer-events-none absolute bottom-6 left-6 z-[1000] flex items-end gap-3.5">
       <div className={`relative flex gap-[34px] ${PANEL}`}>
         {/* Two corner brackets rather than four: an instrument's registration marks, and the
-          * one flourish the system allows itself. Offset by 1px so they sit on the border
-          * rather than inside it. */}
+         * one flourish the system allows itself. Offset by 1px so they sit on the border
+         * rather than inside it. */}
         <span
           aria-hidden
           className="absolute -left-px -top-px h-[9px] w-[9px] border-l-2 border-t-2 border-accent"
@@ -114,8 +129,8 @@ export function MapStatusOverlay({ scope }: { scope: FleetEntityType }) {
         <LegendRow label="Warning" color={LEVEL_COLORS.warning} />
         <LegendRow label="Indeterminate" color={LEVEL_COLORS.indeterminate} />
         {/* Hollow, and in the neutral: offline is the other axis of the mark, not a fifth
-          * severity. Counted only when something is actually in that state — a legend line for
-          * an empty state is one the reader has to rule out. */}
+         * severity. Counted only when something is actually in that state — a legend line for
+         * an empty state is one the reader has to rule out. */}
         <LegendRow
           label={offline > 0 ? `Offline (${offline})` : 'Offline'}
           color="var(--color-muted)"

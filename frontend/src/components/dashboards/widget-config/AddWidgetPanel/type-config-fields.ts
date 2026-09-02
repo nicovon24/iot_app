@@ -29,11 +29,20 @@ function field<V>(spec: FieldSpec<V>): FieldSpec<V> {
   return spec;
 }
 
-const AGGREGATED_TYPES: WidgetType[] = ['line-chart', 'bar-chart', 'timeseries-table', 'calendar-heatmap'];
+const AGGREGATED_TYPES: WidgetType[] = [
+  'line-chart',
+  'bar-chart',
+  'timeseries-table',
+  'calendar-heatmap',
+];
 
 /** Field specs, keyed by widget type. A field only appears for the types it actually applies to —
  * ConfigureStep still decides whether to *render* the control (that's a UI-layout concern), this
  * table only owns state lifecycle + config serialization. */
+// Heterogeneous registry: each entry's FieldSpec<V> has its own V, and FieldSpec's contravariant
+// `shouldSave`/`toConfig` params make `unknown` reject valid assignments here (see the individual
+// `field<V>()` calls below for the real per-entry types).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const TYPE_CONFIG_FIELDS: Partial<Record<WidgetType, FieldSpec<any>[]>> = {};
 
 for (const t of AGGREGATED_TYPES) {
@@ -42,7 +51,7 @@ for (const t of AGGREGATED_TYPES) {
     field<'AVG' | 'MIN' | 'MAX' | 'SUM' | 'COUNT'>({
       key: 'agg',
       default: 'AVG',
-      fromConfig: (c) => (c.agg as any) ?? 'AVG',
+      fromConfig: (c) => (c.agg as 'AVG' | 'MIN' | 'MAX' | 'SUM' | 'COUNT' | undefined) ?? 'AVG',
       shouldSave: (v) => v !== 'AVG',
       toConfig: (v) => ({ agg: v }),
     }),
@@ -54,7 +63,7 @@ TYPE_CONFIG_FIELDS.gauge = [
   field<'DIAL' | 'THERMOMETER' | 'RADIAL' | 'BAR'>({
     key: 'gaugeStyle',
     default: 'DIAL',
-    fromConfig: (c) => (c.style as any) ?? 'DIAL',
+    fromConfig: (c) => (c.style as 'DIAL' | 'THERMOMETER' | 'RADIAL' | 'BAR' | undefined) ?? 'DIAL',
     shouldSave: (v) => v !== 'DIAL',
     toConfig: (v) => ({ style: v }),
   }),
@@ -64,7 +73,9 @@ TYPE_CONFIG_FIELDS.donut = [
   field<'ALARM_SEVERITY' | 'ALARM_STATUS' | 'ENTITY_TYPE'>({
     key: 'groupBy',
     default: 'ALARM_SEVERITY',
-    fromConfig: (c) => (c.groupBy as any) ?? 'ALARM_SEVERITY',
+    fromConfig: (c) =>
+      (c.groupBy as 'ALARM_SEVERITY' | 'ALARM_STATUS' | 'ENTITY_TYPE' | undefined) ??
+      'ALARM_SEVERITY',
     shouldSave: () => true,
     toConfig: (v) => ({ groupBy: v }),
   }),
@@ -74,7 +85,7 @@ TYPE_CONFIG_FIELDS.scatter = [
   field<'HISTORY' | 'FLEET'>({
     key: 'scatterMode',
     default: 'HISTORY',
-    fromConfig: (c) => (c.mode as any) ?? 'HISTORY',
+    fromConfig: (c) => (c.mode as 'HISTORY' | 'FLEET' | undefined) ?? 'HISTORY',
     shouldSave: (v) => v !== 'HISTORY',
     toConfig: (v) => ({ mode: v }),
   }),
@@ -99,7 +110,7 @@ TYPE_CONFIG_FIELDS['line-chart'] = [
   field<'linear' | 'step'>({
     key: 'interpolation',
     default: 'linear',
-    fromConfig: (c) => (c.interpolation as any) ?? 'linear',
+    fromConfig: (c) => (c.interpolation as 'linear' | 'step' | undefined) ?? 'linear',
     shouldSave: (v) => v === 'step',
     toConfig: (v) => ({ interpolation: v }),
   }),
@@ -154,7 +165,7 @@ TYPE_CONFIG_FIELDS.label = [
   field<'left' | 'center'>({
     key: 'align',
     default: 'left',
-    fromConfig: (c) => (c.align as any) ?? 'left',
+    fromConfig: (c) => (c.align as 'left' | 'center' | undefined) ?? 'left',
     shouldSave: (v) => v !== 'left',
     toConfig: (v) => ({ align: v }),
   }),

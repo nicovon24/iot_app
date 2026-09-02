@@ -61,7 +61,10 @@ export function useFleetConnectivity(
     }
     const active = attrs.find((a) => a.key === 'active');
     // A device whose profile never set the attribute has no answer to give.
-    byId.set(entity.id, active === undefined ? 'unknown' : active.value === true ? 'online' : 'offline');
+    byId.set(
+      entity.id,
+      active === undefined ? 'unknown' : active.value === true ? 'online' : 'offline',
+    );
   });
 
   return byId;

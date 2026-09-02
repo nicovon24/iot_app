@@ -155,7 +155,9 @@ export function alarmLevel(severity: string): AlarmLevel {
 export function highestSeverity(severities: string[]): AlarmSeverity | null {
   let best: AlarmSeverity | null = null;
   for (const raw of severities) {
-    const s = (SEVERITY_RANK[raw as AlarmSeverity] === undefined ? 'INDETERMINATE' : raw) as AlarmSeverity;
+    const s = (
+      SEVERITY_RANK[raw as AlarmSeverity] === undefined ? 'INDETERMINATE' : raw
+    ) as AlarmSeverity;
     if (best === null || SEVERITY_RANK[s] > SEVERITY_RANK[best]) best = s;
   }
   return best;

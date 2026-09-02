@@ -86,7 +86,8 @@ function datasource<T extends z.ZodRawShape>(extra: T = {} as T) {
       ...extra,
     })
     .refine((c) => Boolean(c.entityId) !== (c.entityScope === 'ALL'), {
-      message: 'set exactly one of entityId (a single entity) or entityScope: "ALL" (every entity of entityType)',
+      message:
+        'set exactly one of entityId (a single entity) or entityScope: "ALL" (every entity of entityType)',
       path: ['entityId'],
     });
 }

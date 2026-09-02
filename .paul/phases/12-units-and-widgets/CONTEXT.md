@@ -47,27 +47,41 @@ Orden: unidades primero (prioridad del usuario), widgets nuevos después. Cada f
 **Sin `factor`/`offset`/`baseUnit` todavía** — no tienen consumidor sin conversión; se agregan cuando exista.
 
 **Campo unit al fragmento compartido** — `backend/src/dashboards/widget-registry.ts`, agregar a `presentation` (línea ~49):
+
 ```ts
 unit: z.string().trim().min(1).max(24).optional(),
 decimals: z.number().int().min(0).max(6).optional(),
 ```
+
 Borrar `unit` de `scale` (:128, duplicado), de `calendar-heatmap` (:207) y `value-map` (:245) — ya lo heredan de `presentation`, mismo nombre/tipo, cero migración. Scatter mantiene `xUnit`/`yUnit` propios (dos ejes). `frontend/src/dashboards/renderer/shared.tsx:30-60` (`EntityWidgetConfig`) ya tiene `unit?`, agregar `decimals?`.
 
 **Un formatter** — `frontend/src/lib/format.ts`:
+
 ```ts
-export interface MeasureFormat { unit?: string; decimals?: number }
-export function formatTelemetryValue(raw: string|number|undefined, opts?: MeasureFormat): string|undefined
+export interface MeasureFormat {
+  unit?: string;
+  decimals?: number;
+}
+export function formatTelemetryValue(
+  raw: string | number | undefined,
+  opts?: MeasureFormat,
+): string | undefined;
 ```
+
 El segundo parámetro hoy es `maxDecimals = 2` y ningún call site lo usa (verificado en los 13) — ensanchar a objeto no rompe nada.
 
 Borrar `formatValue` de `frontend/src/widgets/charts/chart-shared.ts:14-16`, reemplazar por:
+
 ```ts
 export const axisTick = (v: number) => formatTelemetryValue(v) ?? '';
-export const withUnit = (unit?: string) => (v: number|string) => formatTelemetryValue(v, { unit }) ?? '';
+export const withUnit = (unit?: string) => (v: number | string) =>
+  formatTelemetryValue(v, { unit }) ?? '';
 ```
+
 Eje sin unidad (chartjunk repetido), tooltip con unidad (`ScatterChartWidget.tsx:93,109` ya usa este patrón para el label del eje).
 
 **Call sites a actualizar:**
+
 - `formatValue` → `axisTick`/`withUnit(unit)` en `LineChartWidget.tsx:60,63`, `BarChartWidget.tsx:44,47`, `MultiSeriesLineChartWidget.tsx:70,73`, `MultiSeriesBarChartWidget.tsx:64,67`, `ScatterChartWidget.tsx:70,105,125`.
 - Threadear `unit` como prop en esos mismos componentes + `YAxis label={{value: unit, angle:-90, position:'insideLeft'}}`, pasado desde `ChartCells.tsx` (`LineChartCell`, `BarChartCell`, `ScatterCell`).
 - `CardCells.tsx:40-45` — `ValueTileCell` ya puede pasar `unit={config.unit}` a `ValueTileWidget` (el prop ya existe, solo no se pasaba).
@@ -75,6 +89,7 @@ Eje sin unidad (chartjunk repetido), tooltip con unidad (`ScatterChartWidget.tsx
 **Nota:** value-cards y las tablas son multi-key (`[temperature, pressure]`), un solo `unit` no alcanza — quedan para Fase 4 junto con el gráfico de comparación.
 
 **Verificación:**
+
 - `npx tsx src/lib/units.check.ts` (nuevo, assert-based): símbolos únicos entre categorías, `resolveUnit` con conocido/desconocido/undefined, `suggestUnit('batteryLevel') === '%'`.
 - Extender `frontend/src/lib/format.check.ts`: redondeo con `decimals`, string no numérico pasa sin sufijo.
 - Manual: dashboard guardado con `unit:'%'` en battery sigue igual; nuevo line-chart con unit configurado muestra label en eje y tooltip.
@@ -118,9 +133,11 @@ Nuevo caso en `WidgetPreview.tsx` (switch exhaustivo, el compilador avisa si fal
 ### Fase 5 — Label / texto estático
 
 Tipo nuevo, `entity: 'none'`, `telemetryKey: 'none'`. Schema propio (no `optionalDatasource()`, que aceptaría un `entityId` inservible):
+
 ```ts
 label: z.object({ text: z.string().trim().min(1).max(2000), align: z.enum(['left','center']).optional(), ...presentation }),
 ```
+
 El branch `entity === 'none'` en `ConfigureStep.tsx:315` ("This widget needs no further configuration") existe pero nunca se ejecutó — verificar manualmente que funciona, no asumir. Agregar `<textarea>` para `text` ahí.
 
 Render: `<p className="whitespace-pre-wrap">{text}</p>` — React escapea por defecto, texto plano es XSS-safe sin nada extra. **Sin librería de markdown** — se justifica el día que se quieran links/tablas, y ahí sí con sanitizer (`dompurify`), no antes.
@@ -140,5 +157,5 @@ Categoría: meterlo en `Cards` para no crear una categoría de un solo widget.
 
 ---
 
-*This file is temporary. It informs planning but is not required.*
-*Created from an approved Claude Code plan, consumed by `/paul:plan`.*
+_This file is temporary. It informs planning but is not required._
+_Created from an approved Claude Code plan, consumed by `/paul:plan`._

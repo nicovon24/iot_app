@@ -11,7 +11,13 @@ export interface CountTileWidgetProps {
   icon: LucideIcon;
 }
 
-export function CountTileWidget({ label, value, isLoading, accent = 'info', icon: Icon }: CountTileWidgetProps) {
+export function CountTileWidget({
+  label,
+  value,
+  isLoading,
+  accent = 'info',
+  icon: Icon,
+}: CountTileWidgetProps) {
   return (
     <div className="glass-card flex items-center gap-3 px-5 py-4">
       {isLoading ? (
@@ -20,7 +26,9 @@ export function CountTileWidget({ label, value, isLoading, accent = 'info', icon
         <span
           aria-hidden
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
-          style={{ background: `linear-gradient(135deg, var(--gradient-${accent}-from), var(--gradient-${accent}-to))` }}
+          style={{
+            background: `linear-gradient(135deg, var(--gradient-${accent}-from), var(--gradient-${accent}-to))`,
+          }}
         >
           <Icon size={18} strokeWidth={1.75} style={{ color: `var(--gradient-${accent}-ink)` }} />
         </span>

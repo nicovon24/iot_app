@@ -19,7 +19,8 @@ export default function AdminPage() {
   const { canWrite } = usePermissions();
 
   const customersQuery = useCustomers();
-  const allCustomers = customersQuery.data?.data ?? [];
+  const customersData = customersQuery.data?.data;
+  const allCustomers = useMemo(() => customersData ?? [], [customersData]);
 
   const selectedCustomer = customerTrail.at(-1);
 
@@ -37,7 +38,9 @@ export default function AdminPage() {
   // Asset columns are shown. Falls back to the default structure so the full set of columns
   // (Clients, Site, Area, Asset, Sensor) is always visible, even before a Client is selected.
   const hierarchyQuery = useCustomerHierarchy(selectedCustomer?.id);
-  const hierarchyLevels = hierarchyQuery.data?.length ? hierarchyQuery.data : DEFAULT_HIERARCHY_LEVELS;
+  const hierarchyLevels = hierarchyQuery.data?.length
+    ? hierarchyQuery.data
+    : DEFAULT_HIERARCHY_LEVELS;
 
   const activeNode: { id: string; type: 'CUSTOMER' | 'ASSET'; name: string } | null =
     assetTrail.length > 0

@@ -35,8 +35,22 @@ export function BatteryWidget({ label, value, min, max, unit, ts }: BatteryWidge
 
   return (
     <GaugeShell label={label} value={value} unit={unit} ts={ts}>
-      <svg viewBox="0 0 100 46" className="min-h-0 w-full flex-1" role="img" aria-label={`${label}: ${value ?? 'no data'}`}>
-        <rect x={2} y={6} width={84} height={34} rx={6} fill="none" stroke="var(--color-border)" strokeWidth={4} />
+      <svg
+        viewBox="0 0 100 46"
+        className="min-h-0 w-full flex-1"
+        role="img"
+        aria-label={`${label}: ${value ?? 'no data'}`}
+      >
+        <rect
+          x={2}
+          y={6}
+          width={84}
+          height={34}
+          rx={6}
+          fill="none"
+          stroke="var(--color-border)"
+          strokeWidth={4}
+        />
         <rect x={88} y={17} width={8} height={12} rx={2} fill="var(--color-border)" />
         {hasValue && ratio > 0 && (
           <rect x={7} y={11} width={74 * ratio} height={24} rx={3} fill={bandColor(ratio)} />

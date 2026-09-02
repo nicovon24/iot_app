@@ -60,7 +60,9 @@ export function useEntityTableData(
       queryFn: async () => {
         const perScope = await Promise.all(
           ATTRIBUTE_SCOPES.map((scope) =>
-            apiClient.get<Attribute[]>(`/entities/${entity.id}/attributes?type=${entityType}&scope=${scope}`),
+            apiClient.get<Attribute[]>(
+              `/entities/${entity.id}/attributes?type=${entityType}&scope=${scope}`,
+            ),
           ),
         );
         return { CLIENT_SCOPE: perScope[0], SERVER_SCOPE: perScope[1], SHARED_SCOPE: perScope[2] };
@@ -72,7 +74,10 @@ export function useEntityTableData(
   const telemetryResults = useQueries({
     queries: entities.map((entity) => ({
       queryKey: ['telemetry', 'latest', entity.id, undefined],
-      queryFn: () => apiClient.get<TelemetryLatest>(`/entities/${entity.id}/telemetry/latest?type=${entityType}`),
+      queryFn: () =>
+        apiClient.get<TelemetryLatest>(
+          `/entities/${entity.id}/telemetry/latest?type=${entityType}`,
+        ),
       enabled: needsTelemetry,
       refetchInterval: TELEMETRY_POLL_MS,
     })),

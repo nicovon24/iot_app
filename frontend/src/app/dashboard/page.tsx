@@ -105,90 +105,98 @@ export default function DashboardsPage() {
 
             {dashboards.length === 0 ? (
               <div className="flex h-40 flex-col items-center justify-center gap-3 border border-dashed border-border text-center">
-                <span aria-hidden className="badge-quiet flex h-11 w-11 items-center justify-center">
+                <span
+                  aria-hidden
+                  className="badge-quiet flex h-11 w-11 items-center justify-center"
+                >
                   <LayoutDashboard size={20} strokeWidth={1.75} />
                 </span>
                 <p className="t-body text-muted">
-                  {canWrite ? 'No dashboards yet — create your first one.' : 'No dashboards shared with you yet.'}
+                  {canWrite
+                    ? 'No dashboards yet — create your first one.'
+                    : 'No dashboards shared with you yet.'}
                 </p>
               </div>
             ) : (
               dashboards.map((dashboard) => (
-              <div
-                key={dashboard.id}
-                role="button"
-                tabIndex={0}
-                onClick={() => router.push(`/dashboard/${dashboard.id}`)}
-                onKeyDown={(e) => {
-                  if (e.key !== 'Enter' && e.key !== ' ') return;
-                  e.preventDefault();
-                  router.push(`/dashboard/${dashboard.id}`);
-                }}
-                className="group glass-card relative flex cursor-pointer flex-col gap-3 px-[18px] py-4 transition-colors duration-fast ease-out hover:border-accent-strong hover:bg-tint"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <span
-                    aria-hidden
-                    className="flex h-9 w-9 shrink-0 items-center justify-center border border-border text-accent"
-                  >
-                    <LayoutDashboard size={17} strokeWidth={1.75} />
-                  </span>
+                <div
+                  key={dashboard.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => router.push(`/dashboard/${dashboard.id}`)}
+                  onKeyDown={(e) => {
+                    if (e.key !== 'Enter' && e.key !== ' ') return;
+                    e.preventDefault();
+                    router.push(`/dashboard/${dashboard.id}`);
+                  }}
+                  className="group glass-card relative flex cursor-pointer flex-col gap-3 px-[18px] py-4 transition-colors duration-fast ease-out hover:border-accent-strong hover:bg-tint"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <span
+                      aria-hidden
+                      className="flex h-9 w-9 shrink-0 items-center justify-center border border-border text-accent"
+                    >
+                      <LayoutDashboard size={17} strokeWidth={1.75} />
+                    </span>
 
-                  {canWrite && (
-                    // stopPropagation so the card's own navigation doesn't fire underneath.
-                    <div className="flex items-center gap-0.5 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100">
-                      <Tooltip label="Edit dashboard" side="top">
-                        <button
-                          type="button"
-                          aria-label="Edit dashboard"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            router.push(`/dashboard/${dashboard.id}`);
-                          }}
-                          className="flex h-7 w-7 items-center justify-center rounded text-muted transition-colors hover:bg-border hover:text-heading"
-                        >
-                          <Pencil size={13} />
-                        </button>
-                      </Tooltip>
-                      <Tooltip label="Delete dashboard" side="top">
-                        <button
-                          type="button"
-                          aria-label="Delete dashboard"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setPendingRemoval(dashboard);
-                          }}
-                          className="flex h-7 w-7 items-center justify-center rounded text-muted transition-colors hover:bg-danger-strong hover:text-white"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </Tooltip>
-                    </div>
-                  )}
-                </div>
+                    {canWrite && (
+                      // stopPropagation so the card's own navigation doesn't fire underneath.
+                      <div className="flex items-center gap-0.5 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100">
+                        <Tooltip label="Edit dashboard" side="top">
+                          <button
+                            type="button"
+                            aria-label="Edit dashboard"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/dashboard/${dashboard.id}`);
+                            }}
+                            className="flex h-7 w-7 items-center justify-center rounded text-muted transition-colors hover:bg-border hover:text-heading"
+                          >
+                            <Pencil size={13} />
+                          </button>
+                        </Tooltip>
+                        <Tooltip label="Delete dashboard" side="top">
+                          <button
+                            type="button"
+                            aria-label="Delete dashboard"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setPendingRemoval(dashboard);
+                            }}
+                            className="flex h-7 w-7 items-center justify-center rounded text-muted transition-colors hover:bg-danger-strong hover:text-white"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </Tooltip>
+                      </div>
+                    )}
+                  </div>
 
-                <div className="flex flex-col gap-1">
-                  <span className="truncate t-heading" title={dashboard.title}>
-                    {dashboard.title}
-                  </span>
-                  <span className="text-xs text-muted">
-                    {dashboard._count?.widgets ?? 0} widget{(dashboard._count?.widgets ?? 0) === 1 ? '' : 's'}
-                  </span>
-                </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="truncate t-heading" title={dashboard.title}>
+                      {dashboard.title}
+                    </span>
+                    <span className="text-xs text-muted">
+                      {dashboard._count?.widgets ?? 0} widget
+                      {(dashboard._count?.widgets ?? 0) === 1 ? '' : 's'}
+                    </span>
+                  </div>
 
-                <div className="flex items-center gap-1.5 t-meta">
-                  {dashboard.visibility === 'PRIVATE' ? (
-                    <>
-                      <Lock size={12} /> Private
-                    </>
-                  ) : (
-                    <>
-                      <Users size={12} />
-                      {dashboard.customerScope === 'ALL' ? 'All clients' : `${dashboard.customerAccess.length} client(s)`}
-                    </>
-                  )}
+                  <div className="flex items-center gap-1.5 t-meta">
+                    {dashboard.visibility === 'PRIVATE' ? (
+                      <>
+                        <Lock size={12} /> Private
+                      </>
+                    ) : (
+                      <>
+                        <Users size={12} />
+                        {dashboard.customerScope === 'ALL'
+                          ? 'All clients'
+                          : `${dashboard.customerAccess.length} client(s)`}
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
               ))
             )}
           </div>

@@ -42,7 +42,8 @@ export default function UsersPage() {
       key: 'client',
       header: 'Client',
       width: '170px',
-      render: (user) => metaCell(user.customerId?.id ? customerNameById.get(user.customerId.id) : undefined),
+      render: (user) =>
+        metaCell(user.customerId?.id ? customerNameById.get(user.customerId.id) : undefined),
     },
     { key: 'role', header: 'Role', width: '150px', render: (user) => metaCell(roleOf(user)) },
   ];
@@ -85,12 +86,16 @@ export default function UsersPage() {
       </div>
 
       {/* The same component Devices and Assets render, not a lookalike — so a future change to
-        * row styling lands on all three at once. Users differ only in what the generic slots
-        * are fed: role instead of entity type, client name instead of customer, and an extra
-        * "Login as" action alongside Delete. */}
+       * row styling lands on all three at once. Users differ only in what the generic slots
+       * are fed: role instead of entity type, client name instead of customer, and an extra
+       * "Login as" action alongside Delete. */}
       <div className="mt-4 min-h-0 flex-1">
         <EntityListWidget
-          data={users ? { data: users, totalPages: 1, totalElements: users.length, hasNext: false } : undefined}
+          data={
+            users
+              ? { data: users, totalPages: 1, totalElements: users.length, hasNext: false }
+              : undefined
+          }
           isLoading={isUsersLoading}
           isError={isError}
           error={error}
@@ -115,7 +120,11 @@ export default function UsersPage() {
       </div>
 
       {customerId && (
-        <CreateUserDialog isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} customerId={customerId} />
+        <CreateUserDialog
+          isOpen={isCreateOpen}
+          onClose={() => setIsCreateOpen(false)}
+          customerId={customerId}
+        />
       )}
 
       <ConfirmDialog

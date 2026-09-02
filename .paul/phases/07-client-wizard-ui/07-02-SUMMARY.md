@@ -46,12 +46,12 @@ about: "iot-app"
 
 ## Acceptance Criteria Results
 
-| Criterion | Status | Notes |
-|-----------|--------|-------|
-| AC-1: Add Asset entry point is discoverable | Pass | `/assets` gained an "Add Asset" button (same `bg-accent` visual weight as 07-01's "Create Client"), opening `AddAssetModal` |
-| AC-2: Customer + level + parent selection is constrained to real data | Pass | Client `Select` from `useCustomers()`; level `Select` from `useCustomerHierarchy(customerId)` (real `GET /customers/:id/hierarchy`, `enabled` gated on a Client being picked); parent is implicit Customer for level 0, or a `Select` of real Assets client-filtered by `customerId` for level 1+ — verified live with a real 2-level hierarchy |
-| AC-3: Submit creates a real linked Asset | Pass | Verified live: `POST /assets` created a real level-0 Asset (parent = Customer) and a real level-1 Asset (parent = the level-0 Asset); `GET /assets` confirmed both listed under the correct Customer after creation |
-| AC-4: Validation errors surface clearly | Pass (by code review; no live 400/403 hit) | Same `ApiError`-based inline banner pattern as 07-01; additionally, submit is client-side disabled (not just error-handled) when level 1+ has no available parent Asset, preventing a guaranteed-invalid request rather than just displaying its error after the fact |
+| Criterion                                                             | Status                                     | Notes                                                                                                                                                                                                                                                                                                                                           |
+| --------------------------------------------------------------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AC-1: Add Asset entry point is discoverable                           | Pass                                       | `/assets` gained an "Add Asset" button (same `bg-accent` visual weight as 07-01's "Create Client"), opening `AddAssetModal`                                                                                                                                                                                                                     |
+| AC-2: Customer + level + parent selection is constrained to real data | Pass                                       | Client `Select` from `useCustomers()`; level `Select` from `useCustomerHierarchy(customerId)` (real `GET /customers/:id/hierarchy`, `enabled` gated on a Client being picked); parent is implicit Customer for level 0, or a `Select` of real Assets client-filtered by `customerId` for level 1+ — verified live with a real 2-level hierarchy |
+| AC-3: Submit creates a real linked Asset                              | Pass                                       | Verified live: `POST /assets` created a real level-0 Asset (parent = Customer) and a real level-1 Asset (parent = the level-0 Asset); `GET /assets` confirmed both listed under the correct Customer after creation                                                                                                                             |
+| AC-4: Validation errors surface clearly                               | Pass (by code review; no live 400/403 hit) | Same `ApiError`-based inline banner pattern as 07-01; additionally, submit is client-side disabled (not just error-handled) when level 1+ has no available parent Asset, preventing a guaranteed-invalid request rather than just displaying its error after the fact                                                                           |
 
 ## Accomplishments
 
@@ -61,17 +61,18 @@ about: "iot-app"
 
 ## Files Created/Modified
 
-| File | Change | Purpose |
-|------|--------|---------|
-| `frontend/src/types/asset.ts` | Created | `CreateAssetRequest` type mirroring backend DTO |
-| `frontend/src/hooks/useCustomerHierarchy.ts` | Created | Reads a Customer's real ordered hierarchy levels |
-| `frontend/src/hooks/useCreateAsset.ts` | Created | Mutation wrapping `POST /assets` + cache invalidation |
-| `frontend/src/widgets/AddAssetModal.tsx` | Created | The full Add-Asset form/modal |
-| `frontend/src/app/assets/page.tsx` | Modified | Added the "Add Asset" button + modal wiring |
+| File                                         | Change   | Purpose                                               |
+| -------------------------------------------- | -------- | ----------------------------------------------------- |
+| `frontend/src/types/asset.ts`                | Created  | `CreateAssetRequest` type mirroring backend DTO       |
+| `frontend/src/hooks/useCustomerHierarchy.ts` | Created  | Reads a Customer's real ordered hierarchy levels      |
+| `frontend/src/hooks/useCreateAsset.ts`       | Created  | Mutation wrapping `POST /assets` + cache invalidation |
+| `frontend/src/widgets/AddAssetModal.tsx`     | Created  | The full Add-Asset form/modal                         |
+| `frontend/src/app/assets/page.tsx`           | Modified | Added the "Add Asset" button + modal wiring           |
 
 ## Verification Method
 
 No headless-browser tool available in this environment (same constraint as every prior phase). Verified via:
+
 - `npx tsc --noEmit` — clean after every task
 - Direct `curl` calls against the real backend (real ThingsBoard Cloud session) reproducing the modal's exact two paths: a level-0 Asset (`parentId = customerId`) and a level-1 Asset (`parentId` = the just-created level-0 Asset's id) — both succeeded, both confirmed via `GET /assets`/`GET /assets/:id` showing correct final `customerId`
 - Final interactive visual/click-through confirmation (Select cascading behavior, disabled-submit state) deferred to the user's own browser check
@@ -83,16 +84,19 @@ None. Both tasks executed as specified.
 ## Next Phase Readiness
 
 **Ready:**
+
 - Phase 7 (final V1 phase) is functionally complete: Client creation wizard (07-01) + Asset creation flow (07-02), both verified against real ThingsBoard Cloud data, zero backend changes
 - V1's core requirement ("Client creation wizard... the only wizard in V1" plus the user's mid-session request for Asset creation) is satisfied
 
 **Concerns:**
+
 - Same as every prior phase: no automated browser/screenshot verification tool — interactive modal behavior (Select cascading, disabled states) not independently confirmed in a real browser
 - Devices remain read-only by explicit design (Phase 4.3) and explicit user decision this session — no UI or backend work attempted for Device creation/linking, correctly deferred to V2
 
 **Blockers:** None. Ready for `/paul:unify` to close Phase 7 and transition PROJECT.md/ROADMAP.md/STATE.md.
 
 ---
-*Built with PAUL Framework · iot_app*
-*Phase: 07-client-wizard-ui, Plan: 02*
-*Completed: 2026-08-03*
+
+_Built with PAUL Framework · iot_app_
+_Phase: 07-client-wizard-ui, Plan: 02_
+_Completed: 2026-08-03_

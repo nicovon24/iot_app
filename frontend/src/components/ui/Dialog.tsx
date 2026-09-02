@@ -50,7 +50,11 @@ export function Dialog({ isOpen, onClose, children, widthClassName = 'max-w-sm' 
 }
 
 export function DialogHeader({ children }: { children: ReactNode }) {
-  return <div className="flex items-center justify-between gap-4 border-b border-border px-6 py-4">{children}</div>;
+  return (
+    <div className="flex items-center justify-between gap-4 border-b border-border px-6 py-4">
+      {children}
+    </div>
+  );
 }
 
 export function DialogTitle({ children }: { children: ReactNode }) {
@@ -58,15 +62,31 @@ export function DialogTitle({ children }: { children: ReactNode }) {
 }
 
 export function DialogDescription({ children }: { children: ReactNode }) {
-  return <RadixDialog.Description className="mt-1 t-body text-muted">{children}</RadixDialog.Description>;
+  return (
+    <RadixDialog.Description className="mt-1 t-body text-muted">{children}</RadixDialog.Description>
+  );
 }
 
-export function DialogBody({ children, className = '' }: { children: ReactNode; className?: string }) {
+export function DialogBody({
+  children,
+  className = '',
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
   return <div className={`px-6 py-4 ${className}`}>{children}</div>;
 }
 
-export function DialogFooter({ children, className = 'justify-end' }: { children: ReactNode; className?: string }) {
-  return <div className={`flex gap-2 border-t border-border px-6 py-4 ${className}`}>{children}</div>;
+export function DialogFooter({
+  children,
+  className = 'justify-end',
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={`flex gap-2 border-t border-border px-6 py-4 ${className}`}>{children}</div>
+  );
 }
 
 export function DialogCloseButton() {

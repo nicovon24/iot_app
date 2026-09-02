@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { EntitiesService } from '../entities/entities.service';
 import { EntityRef, TbPageData } from '../types';
@@ -88,9 +99,13 @@ export class CustomersController {
   }
 
   @Get(':id/children')
-  @ApiOperation({ summary: 'Direct level-0 Assets attached to this Customer via real TB Contains relations' })
+  @ApiOperation({
+    summary: 'Direct level-0 Assets attached to this Customer via real TB Contains relations',
+  })
   @ApiParam({ name: 'id' })
-  async getChildren(@Param('id', ParseTbIdPipe) id: string): Promise<{ assets: EntityRef[]; devices: EntityRef[] }> {
+  async getChildren(
+    @Param('id', ParseTbIdPipe) id: string,
+  ): Promise<{ assets: EntityRef[]; devices: EntityRef[] }> {
     return this.entitiesService.getRelationChildren(id, 'CUSTOMER');
   }
 }

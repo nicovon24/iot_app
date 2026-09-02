@@ -33,7 +33,9 @@ export function Sidebar({
 
   useEffect(() => {
     if (mobile) return;
+    // Reads localStorage, which isn't available during render (SSR + hydration).
     const stored = window.localStorage.getItem(SIDEBAR_STORAGE_KEY);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (stored) setExpanded(stored === 'true');
   }, [mobile]);
 
@@ -54,7 +56,9 @@ export function Sidebar({
 
   return (
     <motion.aside
-      animate={mobile ? { x: visible ? 0 : '-100%' } : { width: visible ? (expanded ? 246 : 68) : 0 }}
+      animate={
+        mobile ? { x: visible ? 0 : '-100%' } : { width: visible ? (expanded ? 246 : 68) : 0 }
+      }
       initial={mobile ? { x: '-100%' } : false}
       transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
       className={
@@ -63,9 +67,11 @@ export function Sidebar({
           : 'relative flex h-full shrink-0 flex-col overflow-hidden border-r border-border bg-surface-raised'
       }
     >
-      <div className={`flex shrink-0 items-center gap-3 ${isExpanded ? 'px-6 pb-5 pt-6' : 'justify-center py-6'}`}>
+      <div
+        className={`flex shrink-0 items-center gap-3 ${isExpanded ? 'px-6 pb-5 pt-6' : 'justify-center py-6'}`}
+      >
         {/* The mark is a colour logo on a monochrome rail; desaturating and lifting it keeps
-          * the rail one material instead of parking a sticker at the top of it. */}
+         * the rail one material instead of parking a sticker at the top of it. */}
         <Image
           src="/logo.png"
           alt="IoTArg logo"
@@ -99,8 +105,8 @@ export function Sidebar({
           return (
             <div key={group}>
               {/* A hairline opens each group but not the first — the rail's own top
-                * padding already does that one. Collapsed, the label disappears and the
-                * hairline is all that survives to keep the grouping legible. */}
+               * padding already does that one. Collapsed, the label disappears and the
+               * hairline is all that survives to keep the grouping legible. */}
               {groupIndex > 0 && <div className="mx-[10px] my-4 h-px bg-border" />}
               {isExpanded ? (
                 <div className="t-label-lg px-[10px] pb-[10px]">{group}</div>
@@ -125,7 +131,11 @@ export function Sidebar({
                     }`}
                   >
                     <Icon size={16} strokeWidth={1.75} className="shrink-0" />
-                    {isExpanded && <span className="flex-1 truncate text-[13.5px] leading-none">{item.label}</span>}
+                    {isExpanded && (
+                      <span className="flex-1 truncate text-[13.5px] leading-none">
+                        {item.label}
+                      </span>
+                    )}
                   </div>
                 );
 
@@ -139,7 +149,11 @@ export function Sidebar({
                   </Link>
                 );
 
-                return <div key={item.href}>{isExpanded ? inner : <Tooltip label={tooltipLabel}>{inner}</Tooltip>}</div>;
+                return (
+                  <div key={item.href}>
+                    {isExpanded ? inner : <Tooltip label={tooltipLabel}>{inner}</Tooltip>}
+                  </div>
+                );
               })}
             </div>
           );
@@ -147,7 +161,7 @@ export function Sidebar({
       </nav>
 
       {/* The rail's foot. Identity lives here rather than in a top bar, which is what
-        * lets the header go away entirely and gives every page its full height back. */}
+       * lets the header go away entirely and gives every page its full height back. */}
       <div
         className={`flex shrink-0 items-center gap-[11px] border-t border-border py-4 ${
           isExpanded ? 'px-6' : 'flex-col px-2'
@@ -160,7 +174,10 @@ export function Sidebar({
           {(email ?? '?').charAt(0).toUpperCase()}
         </span>
         {isExpanded && (
-          <span className="min-w-0 flex-1 truncate text-[12px] leading-none text-nav" title={email ?? undefined}>
+          <span
+            className="min-w-0 flex-1 truncate text-[12px] leading-none text-nav"
+            title={email ?? undefined}
+          >
             {email ?? 'Signed in'}
           </span>
         )}
@@ -186,7 +203,11 @@ export function Sidebar({
               isExpanded ? '' : 'justify-center'
             }`}
           >
-            {expanded ? <PanelLeftClose size={16} strokeWidth={1.75} /> : <PanelLeftOpen size={16} strokeWidth={1.75} />}
+            {expanded ? (
+              <PanelLeftClose size={16} strokeWidth={1.75} />
+            ) : (
+              <PanelLeftOpen size={16} strokeWidth={1.75} />
+            )}
             {isExpanded && <span className="t-label">Collapse</span>}
           </button>
         </div>

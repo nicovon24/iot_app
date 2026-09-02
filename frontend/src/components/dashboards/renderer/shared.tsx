@@ -22,7 +22,9 @@ export const ENTITY_POLL_MS = 60_000;
 export function WidgetUnavailable({ reason }: { reason?: string }) {
   return (
     <div className="glass-card flex h-full min-h-24 items-center justify-center p-4 text-center">
-      <p className="text-sm text-muted">{reason ?? 'Entity unavailable — it may have been deleted'}</p>
+      <p className="text-sm text-muted">
+        {reason ?? 'Entity unavailable — it may have been deleted'}
+      </p>
     </div>
   );
 }

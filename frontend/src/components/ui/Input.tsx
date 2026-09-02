@@ -22,7 +22,9 @@ export function Input({ label, icon, compact = false, className = '', ...props }
   const field = (
     <div className="relative">
       {icon && (
-        <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted">{icon}</span>
+        <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted">
+          {icon}
+        </span>
       )}
       <input
         {...props}

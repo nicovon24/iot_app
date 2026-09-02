@@ -33,10 +33,13 @@ export default function AssetsPage() {
         title="Assets"
         description={
           <>
-            {total} {total === 1 ? 'asset' : 'assets'} in the hierarchy. Click a row to open its detail.
+            {total} {total === 1 ? 'asset' : 'assets'} in the hierarchy. Click a row to open its
+            detail.
           </>
         }
-        actions={!isLoading && !isError ? <StatusPill label={`${total} registered`} muted /> : undefined}
+        actions={
+          !isLoading && !isError ? <StatusPill label={`${total} registered`} muted /> : undefined
+        }
       />
 
       <div className="rule-2 mt-[30px] min-h-0 flex-1">

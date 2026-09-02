@@ -10,7 +10,10 @@ import { EntityType, TbCustomer } from '../../types';
  * Reuses AuthService.getSession() — the same Redis-backed lookup SessionAuthGuard uses
  * for REST — so WS and REST auth never drift into two different implementations.
  */
-export async function resolveWsSession(sessionToken: string, authService: AuthService): Promise<AppSession | null> {
+export async function resolveWsSession(
+  sessionToken: string,
+  authService: AuthService,
+): Promise<AppSession | null> {
   return authService.getSession(sessionToken);
 }
 

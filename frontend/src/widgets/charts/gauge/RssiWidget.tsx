@@ -27,7 +27,12 @@ export function RssiWidget({ label, value, min, max, unit, ts }: RssiWidgetProps
 
   return (
     <GaugeShell label={label} value={value} unit={unit} ts={ts}>
-      <svg viewBox="0 0 100 46" className="min-h-0 w-full flex-1" role="img" aria-label={`${label}: ${value ?? 'no data'}`}>
+      <svg
+        viewBox="0 0 100 46"
+        className="min-h-0 w-full flex-1"
+        role="img"
+        aria-label={`${label}: ${value ?? 'no data'}`}
+      >
         {Array.from({ length: BARS }, (_, i) => {
           const height = 8 + i * 8;
           return (

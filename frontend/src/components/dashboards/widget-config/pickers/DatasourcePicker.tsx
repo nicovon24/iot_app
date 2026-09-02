@@ -51,7 +51,10 @@ export function DatasourcePicker({
           label="Entity type"
           value={entityKind}
           onChange={(v) => onEntityKindChange(v as 'DEVICE' | 'ASSET')}
-          options={entityKinds.map((k) => ({ value: k, label: k === 'DEVICE' ? 'Device' : 'Asset' }))}
+          options={entityKinds.map((k) => ({
+            value: k,
+            label: k === 'DEVICE' ? 'Device' : 'Asset',
+          }))}
         />
       )}
 
@@ -115,7 +118,9 @@ function ScopeButton({
         active ? 'border-accent bg-surface' : 'border-border hover:bg-tint'
       }`}
     >
-      <span className={`text-sm font-medium ${active ? 'text-heading' : 'text-muted'}`}>{label}</span>
+      <span className={`text-sm font-medium ${active ? 'text-heading' : 'text-muted'}`}>
+        {label}
+      </span>
       <span className="t-meta">{hint}</span>
     </button>
   );

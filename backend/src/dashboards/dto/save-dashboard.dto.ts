@@ -52,7 +52,8 @@ export class SaveDashboardDto {
   customerScope!: 'ALL' | 'SPECIFIC';
 
   @ApiPropertyOptional({
-    description: 'TB customer ids this dashboard is assigned to. Required when visibility=SHARED and customerScope=SPECIFIC. Ignored otherwise.',
+    description:
+      'TB customer ids this dashboard is assigned to. Required when visibility=SHARED and customerScope=SPECIFIC. Ignored otherwise.',
     type: [String],
   })
   @IsArray()

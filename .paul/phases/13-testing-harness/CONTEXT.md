@@ -1,8 +1,16 @@
 # Phase Context
 
-**Phase:** 12 — Testing harness (backend + frontend, whole app)
+**Phase:** 13 — Testing harness (backend + frontend, whole app)
 **Generated:** 2026-08-05
-**Status:** Ready for planning — resequenced 2026-08-12: runs after Phase 12 (units/widgets, already applied). Renumbered 2026-08-28 from its prior directory name `12-testing-harness` to `13-testing-harness` to make room for the retroactively-documented editorial rebrand as Phase 11 — no content change, only the phase number.
+**Status:** In progress — batch 1 done outside the PAUL loop (chat-driven, 2026-09-02), never formally planned via `/paul:plan`. Resequenced 2026-08-12: runs after Phase 12 (units/widgets, already applied). Renumbered 2026-08-28 from its prior directory name `12-testing-harness` to `13-testing-harness` to make room for the retroactively-documented editorial rebrand as Phase 11 — no content change, only the phase number. Considered renaming back to `12` on 2026-09-02 but `12` is taken by the already-applied units-and-widgets phase — stays `13`, no renumbering.
+
+## Progress (batch 1, 2026-09-02, chat-driven — not a formal PLAN.md)
+
+- **Backend**: Jest configured (`jest.config.js`, `tsconfig.build.json` to keep specs out of the production `dist/`). Tests written for all 4 security guards (`SessionAuthGuard`, `CustomerScopeGuard`, `ReaderBlockGuard`, `RolesGuard`) plus `ws-auth.util.ts`'s `isEntityInScope`/`isDescendantCustomer` (including the documented 404-as-not-descendant edge case and a cycle-detection case) and a regression test pinning the `APP_GUARD` registration order in `app.module.ts` — this is exactly the class of bug (guard-ordering) that shipped once for real, per the Decisions table below. 41 tests, all passing.
+- **Frontend**: Vitest configured (`vitest.config.mts`). The 9 pre-existing `*.check.ts` self-checks (run manually via `tsx`, never in CI) were migrated to real `*.test.ts` files with the same assertions and domain comments preserved, then deleted. 95 tests, all passing.
+- **CI**: both `npm run test` steps wired into `.github/workflows/ci.yml`'s `backend`/`frontend` jobs (CI itself, plus ESLint/Prettier/Husky, was also added the same session — see the root `CONTRIBUTING.md`).
+- **Still not covered**: `ThingsboardClientService` and business services (`DashboardsService`, etc.), React components/hooks, and any end-to-end flow.
+- **Playwright/e2e — not started.** No package installed, no config, no smoke suite. This was scoped in the original Approach section below as a deliberately later addition once the unit/integration layer proved out; batch 1 only did that first layer. Next real step for this phase.
 
 ## Goals
 
@@ -52,5 +60,5 @@ Two reasonable orders, both defensible for a solo project:
 
 ---
 
-*This file is temporary. It informs planning but is not required.*
-*Created by /paul:discuss, consumed by /paul:plan.*
+_This file is temporary. It informs planning but is not required._
+_Created by /paul:discuss, consumed by /paul:plan._

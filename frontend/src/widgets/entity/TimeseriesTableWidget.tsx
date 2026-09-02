@@ -36,7 +36,13 @@ function buildRows(keys: string[], byKey: Record<string, TelemetryValue[]>) {
     .map(([ts, values]) => ({ ts, values }));
 }
 
-export function TimeseriesTableWidget({ keys, byKey, isLoading, title, units }: TimeseriesTableWidgetProps) {
+export function TimeseriesTableWidget({
+  keys,
+  byKey,
+  isLoading,
+  title,
+  units,
+}: TimeseriesTableWidgetProps) {
   const rows = buildRows(keys, byKey);
 
   if (isLoading && rows.length === 0) return <Centered text="Loading…" />;
@@ -46,9 +52,7 @@ export function TimeseriesTableWidget({ keys, byKey, isLoading, title, units }: 
   return (
     <div className="glass-card flex h-full flex-col p-0">
       {title && (
-        <h3 className="shrink-0 truncate border-b border-border px-4 py-3 t-heading">
-          {title}
-        </h3>
+        <h3 className="shrink-0 truncate border-b border-border px-4 py-3 t-heading">{title}</h3>
       )}
       <div className="table-scroll min-h-0 flex-1 overflow-auto">
         <table className="w-full border-collapse text-sm">

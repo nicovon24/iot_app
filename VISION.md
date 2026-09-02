@@ -17,9 +17,9 @@ Use **ThingsBoard as the IoT data engine**. Expose a solid, scalable API on top.
 
 ## Stages
 
-| Stage | Scope |
-| :--- | :--- |
-| **Stage 1** | NestJS service — ThingsBoard auth, devices, assets, telemetry, attributes |
+| Stage       | Scope                                                                                  |
+| :---------- | :------------------------------------------------------------------------------------- |
+| **Stage 1** | NestJS service — ThingsBoard auth, devices, assets, telemetry, attributes              |
 | **Stage 2** | Dynamic frontend — telemetry explorer, aggregation, user/admin-configurable dashboards |
 
 ## Initial Data Source

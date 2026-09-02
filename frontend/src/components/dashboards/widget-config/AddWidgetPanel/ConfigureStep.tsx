@@ -2,7 +2,13 @@
 
 import { Select } from '@/components';
 import { Input, Checkbox } from '@/components';
-import { DatasourcePicker, type DatasourceScope, DataKeysPicker, CheckboxList, UnitPicker } from '../pickers';
+import {
+  DatasourcePicker,
+  type DatasourceScope,
+  DataKeysPicker,
+  CheckboxList,
+  UnitPicker,
+} from '../pickers';
 import type { DataKey } from '../../use-widget-datasource';
 import type { WidgetAction } from '../widget-actions';
 import { SCALE_TYPES, type WidgetTypeMeta, type WidgetType } from '../widget-registry';
@@ -10,15 +16,21 @@ import { SCALE_TYPES, type WidgetTypeMeta, type WidgetType } from '../widget-reg
 type Aggregation = 'AVG' | 'MIN' | 'MAX' | 'SUM' | 'COUNT';
 
 /** Widget types whose history query is aggregated into buckets. */
-const AGGREGATED_TYPES: WidgetType[] = ['line-chart', 'bar-chart', 'timeseries-table', 'calendar-heatmap'];
+const AGGREGATED_TYPES: WidgetType[] = [
+  'line-chart',
+  'bar-chart',
+  'timeseries-table',
+  'calendar-heatmap',
+];
 
 /** Placeholders showing what each dial falls back to when its scale is left blank —
  * mirrors DIAL_DEFAULTS in renderer/CardCells. */
-const SCALE_PLACEHOLDERS: Partial<Record<WidgetType, { min: string; max: string; unit: string }>> = {
-  battery: { min: '0', max: '100', unit: '%' },
-  rssi: { min: '-120', max: '-30', unit: 'dBm' },
-  gauge: { min: 'Auto', max: 'Auto', unit: 'none' },
-};
+const SCALE_PLACEHOLDERS: Partial<Record<WidgetType, { min: string; max: string; unit: string }>> =
+  {
+    battery: { min: '0', max: '100', unit: '%' },
+    rssi: { min: '-120', max: '-30', unit: 'dBm' },
+    gauge: { min: 'Auto', max: 'Auto', unit: 'none' },
+  };
 
 const SEVERITY_OPTIONS = ['CRITICAL', 'MAJOR', 'MINOR', 'WARNING', 'INDETERMINATE'];
 const STATUS_OPTIONS = ['ACTIVE_UNACK', 'ACTIVE_ACK', 'CLEARED_UNACK', 'CLEARED_ACK'];
@@ -164,7 +176,9 @@ export function ConfigureStep(props: ConfigureStepProps) {
             decimals={props.decimals}
             onDecimalsChange={props.onDecimalsChange}
           />
-          {!props.scaleValid && <span className="text-xs text-danger">Min must be less than max.</span>}
+          {!props.scaleValid && (
+            <span className="text-xs text-danger">Min must be less than max.</span>
+          )}
         </div>
       )}
 
@@ -180,7 +194,10 @@ export function ConfigureStep(props: ConfigureStepProps) {
       {tab === 'data' && widgetType === 'bar-chart' && props.scope === 'ALL' && (
         <div className="flex flex-col gap-1">
           <label className="flex items-center gap-2 text-sm text-body">
-            <Checkbox checked={props.stacked} onChange={(e) => props.onStackedChange(e.target.checked)} />
+            <Checkbox
+              checked={props.stacked}
+              onChange={(e) => props.onStackedChange(e.target.checked)}
+            />
             Stack bars
           </label>
           <span className="t-meta">
@@ -191,7 +208,10 @@ export function ConfigureStep(props: ConfigureStepProps) {
 
       {tab === 'data' && widgetType === 'value-tile' && props.scope === 'SINGLE' && (
         <label className="flex items-center gap-2 text-sm text-body">
-          <Checkbox checked={props.sparkline} onChange={(e) => props.onSparklineChange(e.target.checked)} />
+          <Checkbox
+            checked={props.sparkline}
+            onChange={(e) => props.onSparklineChange(e.target.checked)}
+          />
           Sparkline
         </label>
       )}
@@ -379,7 +399,9 @@ export function ConfigureStep(props: ConfigureStepProps) {
             onChange={props.onTelemetryKeysChange}
             searchable
             searchPlaceholder="Search keys…"
-            emptyLabel={props.keyOptions.isLoading ? 'Loading keys…' : 'No telemetry keys reported yet'}
+            emptyLabel={
+              props.keyOptions.isLoading ? 'Loading keys…' : 'No telemetry keys reported yet'
+            }
             maxHeightClassName="max-h-52"
           />
         ) : (
@@ -392,30 +414,41 @@ export function ConfigureStep(props: ConfigureStepProps) {
           />
         ))}
 
-      {tab === 'data' && meta.multiTelemetryKeys && meta.telemetryKey === 'none' && props.telemetryKeys.size > 0 && (
-        <div className="flex flex-col gap-2">
-          <span className="t-field">Units</span>
-          {Array.from(props.telemetryKeys).map((key) => (
-            <div key={key} className="flex items-center gap-2">
-              <span className="w-32 shrink-0 truncate text-xs text-muted" title={key}>
-                {key}
-              </span>
-              <div className="flex-1">
-                <UnitPicker
-                  value={props.unitsByKey[key] ?? ''}
-                  onChange={(v) => props.onUnitsByKeyChange(key, v)}
-                  showDecimals={false}
-                />
+      {tab === 'data' &&
+        meta.multiTelemetryKeys &&
+        meta.telemetryKey === 'none' &&
+        props.telemetryKeys.size > 0 && (
+          <div className="flex flex-col gap-2">
+            <span className="t-field">Units</span>
+            {Array.from(props.telemetryKeys).map((key) => (
+              <div key={key} className="flex items-center gap-2">
+                <span className="w-32 shrink-0 truncate text-xs text-muted" title={key}>
+                  {key}
+                </span>
+                <div className="flex-1">
+                  <UnitPicker
+                    value={props.unitsByKey[key] ?? ''}
+                    onChange={(v) => props.onUnitsByKeyChange(key, v)}
+                    showDecimals={false}
+                  />
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
     </div>
   );
 }
 
-function TabButton({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
+function TabButton({
+  active,
+  onClick,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+}) {
   return (
     <button
       type="button"

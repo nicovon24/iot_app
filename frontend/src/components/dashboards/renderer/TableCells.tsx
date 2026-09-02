@@ -22,11 +22,7 @@ export function TimeseriesTableCell({ config }: { config: EntityWidgetConfig }) 
   const keys = config.telemetryKeys ?? [];
   // Same memoization requirement as the charts: a rolling window recomputed every render makes
   // a new query key every render and the query never settles.
-  const window = useMemo(
-    () => resolveHistoryWindow(timeWindow),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [timeWindow],
-  );
+  const window = useMemo(() => resolveHistoryWindow(timeWindow), [timeWindow]);
   // Only the first entity is rendered (rows are timestamps, so a second entity has nowhere to
   // go), and the fetch is narrowed to match — an ALL-scope config reaching here through an old
   // save would otherwise fan out one request per device and display one of them.

@@ -1,7 +1,7 @@
 ---
 phase: 08-admin-hierarchy-panel
 type: Context
-about: "iot-app"
+about: 'iot-app'
 ---
 
 # Phase 8 Discussion: Admin hierarchy management panel (V2)
@@ -9,6 +9,7 @@ about: "iot-app"
 ## Goals
 
 User asked (chat session, 2026-08-03/04, after V1 shipped) to:
+
 1. Remove the "Create Client" button from `/clients` and the "Add Asset" button from `/assets`.
 2. Build a new **Admin** section with a full hierarchy browser: Customers (with breadcrumb navigation into sub-clients) → their Assets (nested tree, drill-down) → real ThingsBoard Devices assigned to the selected Asset — all scoped to whichever Client/sub-client is currently selected.
 3. From this admin view: add/delete Customers, add/delete/edit Assets, and **assign/unassign** real Devices to the last (deepest-selected) element of the hierarchy.
@@ -60,4 +61,5 @@ Still to build, all in `frontend/src/`:
 - Whether the whole panel needs sysadmin-only gating — no `/auth/me`-equivalent exists yet (same gap noted in Phase 7), so likely stays UI-visible-to-all with server-side 403s surfacing on privileged actions, same pattern as the rest of the app.
 
 ---
-*Context saved for handoff to /paul:plan 8*
+
+_Context saved for handoff to /paul:plan 8_

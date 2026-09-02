@@ -129,51 +129,50 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
   return (
     <Dialog isOpen={isOpen} onClose={close}>
       <form onSubmit={handleFormSubmit}>
-      <DialogHeader>
-        <div className="flex w-full flex-col gap-4 pt-1">
-          <div className="flex items-center justify-between">
-            <h2 className="t-heading text-base">Create Client</h2>
-            <DialogCloseButton />
-          </div>
-          <div className="flex items-center gap-2">
-            {STEPS.map((s, i) => (
-              <div key={s.n} className="flex flex-1 items-center gap-2">
-                <div className="flex flex-col items-center gap-1.5">
-                  <motion.div
-                    animate={{
-                      backgroundColor: step >= s.n ? 'var(--color-accent)' : 'var(--color-surface)',
-                      borderColor: step >= s.n ? 'var(--color-accent)' : 'var(--color-border)',
-                      color: step >= s.n ? '#fff' : 'var(--color-muted)',
-                    }}
-                    transition={{ duration: 0.25 }}
-                    className="flex h-7 w-7 items-center justify-center rounded-full border text-xs font-semibold"
-                  >
-                    {step > s.n ? <Check size={14} /> : s.n}
-                  </motion.div>
-                  <span
-                    className={`t-label ${step === s.n ? '!text-accent' : ''}`}
-                  >
-                    {s.label}
-                  </span>
-                </div>
-                {i < STEPS.length - 1 && (
-                  <div className="relative mb-4 h-px flex-1 bg-border">
+        <DialogHeader>
+          <div className="flex w-full flex-col gap-4 pt-1">
+            <div className="flex items-center justify-between">
+              <h2 className="t-heading text-base">Create Client</h2>
+              <DialogCloseButton />
+            </div>
+            <div className="flex items-center gap-2">
+              {STEPS.map((s, i) => (
+                <div key={s.n} className="flex flex-1 items-center gap-2">
+                  <div className="flex flex-col items-center gap-1.5">
                     <motion.div
-                      className="absolute inset-y-0 left-0 bg-accent-strong"
-                      initial={false}
-                      animate={{ width: step > s.n ? '100%' : '0%' }}
-                      transition={{ duration: 0.3 }}
-                    />
+                      animate={{
+                        backgroundColor:
+                          step >= s.n ? 'var(--color-accent)' : 'var(--color-surface)',
+                        borderColor: step >= s.n ? 'var(--color-accent)' : 'var(--color-border)',
+                        color: step >= s.n ? '#fff' : 'var(--color-muted)',
+                      }}
+                      transition={{ duration: 0.25 }}
+                      className="flex h-7 w-7 items-center justify-center rounded-full border text-xs font-semibold"
+                    >
+                      {step > s.n ? <Check size={14} /> : s.n}
+                    </motion.div>
+                    <span className={`t-label ${step === s.n ? '!text-accent' : ''}`}>
+                      {s.label}
+                    </span>
                   </div>
-                )}
-              </div>
-            ))}
+                  {i < STEPS.length - 1 && (
+                    <div className="relative mb-4 h-px flex-1 bg-border">
+                      <motion.div
+                        className="absolute inset-y-0 left-0 bg-accent-strong"
+                        initial={false}
+                        animate={{ width: step > s.n ? '100%' : '0%' }}
+                        transition={{ duration: 0.3 }}
+                      />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </DialogHeader>
+        </DialogHeader>
 
-      <DialogBody>
-        <div className="min-h-40 overflow-hidden">
+        <DialogBody>
+          <div className="min-h-40 overflow-hidden">
             <AnimatePresence mode="wait" custom={direction} initial={false}>
               {step === 1 && (
                 <motion.div
@@ -222,7 +221,9 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
                   transition={{ duration: 0.2 }}
                   className="flex flex-col gap-3"
                 >
-                  <p className="text-sm text-muted">Ordered hierarchy levels (e.g. Site ? Area ? Asset ? Sensor).</p>
+                  <p className="text-sm text-muted">
+                    Ordered hierarchy levels (e.g. Site ? Area ? Asset ? Sensor).
+                  </p>
 
                   <div className="flex flex-col gap-2">
                     <AnimatePresence initial={false}>
@@ -324,8 +325,8 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
                     </div>
                   </div>
                   <div className="rounded-md border border-danger/30 bg-danger/10 p-3 text-sm text-danger">
-                    The hierarchy cannot be changed after the Client is created. Review it carefully before
-                    submitting.
+                    The hierarchy cannot be changed after the Client is created. Review it carefully
+                    before submitting.
                   </div>
                   {errorMessage && (
                     <motion.div
@@ -340,9 +341,9 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
               )}
             </AnimatePresence>
           </div>
-      </DialogBody>
+        </DialogBody>
 
-      <DialogFooter className="justify-between">
+        <DialogFooter className="justify-between">
           {step > 1 ? (
             <button
               type="button"
@@ -378,7 +379,7 @@ export function ClientWizard({ isOpen, onClose, parentCustomerId }: ClientWizard
               {createCustomer.isPending ? 'Creating…' : 'Create Client'}
             </motion.button>
           )}
-      </DialogFooter>
+        </DialogFooter>
       </form>
     </Dialog>
   );

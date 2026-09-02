@@ -27,7 +27,12 @@ const SCOPE_LABELS: Record<AttributeScope, string> = {
 
 const TABLE_CLASSNAMES = tableClassNames({ height: 'auto', surface: 'card' });
 
-export function AttributesTableWidget({ data, isLoading, isError, error }: AttributesTableWidgetProps) {
+export function AttributesTableWidget({
+  data,
+  isLoading,
+  isError,
+  error,
+}: AttributesTableWidgetProps) {
   if (isLoading) {
     return (
       <div className="flex h-40 items-center justify-center">
@@ -55,9 +60,7 @@ export function AttributesTableWidget({ data, isLoading, isError, error }: Attri
           <div key={scope} className="flex flex-col gap-2">
             <h3 className="t-heading">{SCOPE_LABELS[scope]}</h3>
             {attributes.length === 0 ? (
-              <p className="glass-card px-4 py-3 text-sm text-muted">
-                No attributes in this scope
-              </p>
+              <p className="glass-card px-4 py-3 text-sm text-muted">No attributes in this scope</p>
             ) : (
               <Table aria-label={SCOPE_LABELS[scope]} classNames={TABLE_CLASSNAMES}>
                 <TableHeader>

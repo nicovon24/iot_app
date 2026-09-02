@@ -9,7 +9,10 @@ export type { MeasureFormat } from '@/types';
  * telemetry values are untyped strings by design (.paul/rules/api.md), this only affects how
  * they're rendered, never the underlying value/type.
  */
-export function formatTelemetryValue(raw: string | number | undefined, opts?: MeasureFormat): string | undefined {
+export function formatTelemetryValue(
+  raw: string | number | undefined,
+  opts?: MeasureFormat,
+): string | undefined {
   if (raw === undefined) return undefined;
   const num = Number(raw);
   if (Number.isNaN(num)) return String(raw);

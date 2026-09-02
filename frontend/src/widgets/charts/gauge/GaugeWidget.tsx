@@ -41,7 +41,15 @@ function arcPath(fromDeg: number, toDeg: number, radius: number) {
   return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArc} 1 ${end.x} ${end.y}`;
 }
 
-export function GaugeWidget({ label, value, min, max, unit, ts, style = 'DIAL' }: GaugeWidgetProps) {
+export function GaugeWidget({
+  label,
+  value,
+  min,
+  max,
+  unit,
+  ts,
+  style = 'DIAL',
+}: GaugeWidgetProps) {
   const hasValue = value !== undefined && Number.isFinite(value);
   // Clamp so an out-of-range reading pins at an end instead of running past the scale, which
   // would read as a smaller value than it is.
@@ -50,7 +58,14 @@ export function GaugeWidget({ label, value, min, max, unit, ts, style = 'DIAL' }
   return (
     <GaugeShell label={label} value={value} unit={unit} ts={ts}>
       {style === 'THERMOMETER' ? (
-        <Thermometer label={label} value={value} min={min} max={max} ratio={ratio} hasValue={hasValue} />
+        <Thermometer
+          label={label}
+          value={value}
+          min={min}
+          max={max}
+          ratio={ratio}
+          hasValue={hasValue}
+        />
       ) : style === 'RADIAL' ? (
         <RadialBar label={label} value={value} ratio={ratio} hasValue={hasValue} />
       ) : style === 'BAR' ? (
@@ -77,49 +92,60 @@ function Dial({ label, value, min, max, ratio, hasValue }: StyleProps) {
   const needle = polar(needleAngle, RADIUS - 8);
 
   return (
-    <svg viewBox="0 0 100 78" className="min-h-0 w-full flex-1" role="img" aria-label={`${label}: ${value ?? 'no data'}`}>
+    <svg
+      viewBox="0 0 100 78"
+      className="min-h-0 w-full flex-1"
+      role="img"
+      aria-label={`${label}: ${value ?? 'no data'}`}
+    >
+      <path
+        d={arcPath(START_ANGLE, START_ANGLE + SWEEP, RADIUS)}
+        fill="none"
+        stroke="var(--color-border)"
+        strokeWidth={8}
+        strokeLinecap="round"
+      />
+      {hasValue && ratio > 0 && (
         <path
-          d={arcPath(START_ANGLE, START_ANGLE + SWEEP, RADIUS)}
+          d={arcPath(START_ANGLE, needleAngle, RADIUS)}
           fill="none"
-          stroke="var(--color-border)"
+          stroke="var(--color-accent)"
           strokeWidth={8}
           strokeLinecap="round"
         />
-        {hasValue && ratio > 0 && (
-          <path
-            d={arcPath(START_ANGLE, needleAngle, RADIUS)}
-            fill="none"
-            stroke="var(--color-accent)"
-            strokeWidth={8}
+      )}
+      {hasValue && (
+        <>
+          <line
+            x1={CENTER}
+            y1={CENTER}
+            x2={needle.x}
+            y2={needle.y}
+            stroke="var(--color-heading)"
+            strokeWidth={2}
             strokeLinecap="round"
           />
-        )}
-        {hasValue && (
-          <>
-            <line
-              x1={CENTER}
-              y1={CENTER}
-              x2={needle.x}
-              y2={needle.y}
-              stroke="var(--color-heading)"
-              strokeWidth={2}
-              strokeLinecap="round"
-            />
-            <circle cx={CENTER} cy={CENTER} r={3} fill="var(--color-heading)" />
-          </>
-        )}
-        <text x={polar(START_ANGLE, RADIUS).x} y={CENTER + RADIUS / 1.6} fontSize={6} fill="var(--color-faint)" textAnchor="middle">
-          {min}
-        </text>
-        <text
-          x={polar(START_ANGLE + SWEEP, RADIUS).x}
-          y={CENTER + RADIUS / 1.6}
-          fontSize={6}
-          fill="var(--color-faint)"
-          textAnchor="middle"
-        >
-          {max}
-        </text>
+          <circle cx={CENTER} cy={CENTER} r={3} fill="var(--color-heading)" />
+        </>
+      )}
+      <text
+        x={polar(START_ANGLE, RADIUS).x}
+        y={CENTER + RADIUS / 1.6}
+        fontSize={6}
+        fill="var(--color-faint)"
+        textAnchor="middle"
+      >
+        {min}
+      </text>
+      <text
+        x={polar(START_ANGLE + SWEEP, RADIUS).x}
+        y={CENTER + RADIUS / 1.6}
+        fontSize={6}
+        fill="var(--color-faint)"
+        textAnchor="middle"
+      >
+        {max}
+      </text>
     </svg>
   );
 }
@@ -137,14 +163,26 @@ function Thermometer({ label, value, min, max, ratio, hasValue }: StyleProps) {
   const height = (BOTTOM - TOP) * ratio;
 
   return (
-    <svg viewBox="0 0 60 84" className="min-h-0 w-full flex-1" role="img" aria-label={`${label}: ${value ?? 'no data'}`}>
+    <svg
+      viewBox="0 0 60 84"
+      className="min-h-0 w-full flex-1"
+      role="img"
+      aria-label={`${label}: ${value ?? 'no data'}`}
+    >
       {/* Track and bulb are one continuous cavity, drawn as two shapes with matching fills. */}
       <rect x={24} y={TOP} width={12} height={BOTTOM - TOP} rx={6} fill="var(--color-border)" />
       <circle cx={30} cy={70} r={11} fill="var(--color-border)" />
       {hasValue && (
         <>
           {/* Column grows upward from the bulb, so it's anchored at the bottom. */}
-          <rect x={24} y={BOTTOM - height} width={12} height={height} rx={6} fill="var(--color-accent)" />
+          <rect
+            x={24}
+            y={BOTTOM - height}
+            width={12}
+            height={height}
+            rx={6}
+            fill="var(--color-accent)"
+          />
           <circle cx={30} cy={70} r={9} fill="var(--color-accent)" />
         </>
       )}
@@ -169,9 +207,21 @@ function RadialBar({ label, value, ratio, hasValue }: Omit<StyleProps, 'min' | '
   const circumference = 2 * Math.PI * RING_RADIUS;
 
   return (
-    <svg viewBox="0 0 100 84" className="min-h-0 w-full flex-1" role="img" aria-label={`${label}: ${value ?? 'no data'}`}>
+    <svg
+      viewBox="0 0 100 84"
+      className="min-h-0 w-full flex-1"
+      role="img"
+      aria-label={`${label}: ${value ?? 'no data'}`}
+    >
       <g transform="rotate(-90 50 42)">
-        <circle cx={50} cy={42} r={RING_RADIUS} fill="none" stroke="var(--color-border)" strokeWidth={9} />
+        <circle
+          cx={50}
+          cy={42}
+          r={RING_RADIUS}
+          fill="none"
+          stroke="var(--color-border)"
+          strokeWidth={9}
+        />
         {hasValue && ratio > 0 && (
           <circle
             cx={50}
@@ -196,9 +246,16 @@ function RadialBar({ label, value, ratio, hasValue }: Omit<StyleProps, 'min' | '
  * sweep reads worse than a straight bar. */
 function Bar({ label, value, min, max, ratio, hasValue }: StyleProps) {
   return (
-    <svg viewBox="0 0 100 40" className="min-h-0 w-full flex-1" role="img" aria-label={`${label}: ${value ?? 'no data'}`}>
+    <svg
+      viewBox="0 0 100 40"
+      className="min-h-0 w-full flex-1"
+      role="img"
+      aria-label={`${label}: ${value ?? 'no data'}`}
+    >
       <rect x={4} y={14} width={92} height={12} rx={6} fill="var(--color-border)" />
-      {hasValue && ratio > 0 && <rect x={4} y={14} width={92 * ratio} height={12} rx={6} fill="var(--color-accent)" />}
+      {hasValue && ratio > 0 && (
+        <rect x={4} y={14} width={92 * ratio} height={12} rx={6} fill="var(--color-accent)" />
+      )}
       <text x={4} y={34} fontSize={6} fill="var(--color-faint)" textAnchor="start">
         {min}
       </text>

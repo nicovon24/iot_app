@@ -33,8 +33,7 @@ export interface DashboardCustomerAccess {
  * 24 hours" next month. FIXED pins absolute bounds, for looking at a specific incident.
  */
 export type DashboardTimeWindow =
-  | { kind: 'LAST'; ms: number }
-  | { kind: 'FIXED'; startTs: number; endTs: number };
+  { kind: 'LAST'; ms: number } | { kind: 'FIXED'; startTs: number; endTs: number };
 
 export interface Dashboard {
   id: string;

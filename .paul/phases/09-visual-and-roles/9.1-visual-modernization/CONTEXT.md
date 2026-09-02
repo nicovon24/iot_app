@@ -15,24 +15,29 @@
 The mockup is a static HTML/CSS reference (not production code) the user is treating as the target look. Key tokens and patterns extracted from it:
 
 **Typography & base**
+
 - Font: Inter (variable weights 400–800), replacing the current default stack.
 - Base page background: light neutral `#eef0f6` (a real shift from the current dark-navy-first theme — needs confirmation at planning time whether this replaces dark mode entirely or becomes the new light-mode default alongside a matching dark variant).
 
 **Color / accent**
+
 - Primary accent is a purple→indigo gradient: `linear-gradient(135deg, #818cf8, #c084fc)` — used on the logo badge, primary buttons, active nav item background, avatar badges, and toggle-switch "on" state.
 - Secondary accent gradients used for stat-card icon badges and status dots (green `#34d399→#059669` for "active/ok", red `#fca5a5→#f87171` for alarms/danger, cyan `#67e8f9→#67E8F9` for assets).
 
 **Sidebar**
+
 - Dark gradient rail: `linear-gradient(165deg, #12142b 0%, #1c2049 55%, #2a2470 100%)`, with a soft decorative radial-blur blob in the top-right corner for depth.
 - Collapsible: an icon-only rail state (icons only, no labels) and an expanded state (icons + labels), toggled by the user — a UI capability that doesn't exist in the current sidebar.
 - Active nav item: soft accent-gradient background wash + white text + subtle border; inactive items are muted white text; disabled/not-yet-built items are further dimmed.
 - Bottom of the sidebar: dark-mode toggle and a "hide labels" toggle, both as low-key icon+label rows.
 
 **Cards & surfaces (the core "glassmorphism" pattern)**
+
 - Every content panel (stat cards, list rows' containers, Admin's Miller-column panels, Login's form card) is a translucent white surface: `background: rgba(255,255,255,0.7–0.72)`, `backdrop-filter: blur(12–16px)`, `border: 1px solid rgba(255,255,255,0.6–0.7)`, `border-radius: 16–22px`, soft layered shadow (e.g. `0 10-20px 30-44px -12to-18px rgba(30,41,90,0.15-0.25)` or an indigo-tinted variant `rgba(99,102,241,0.25)`).
 - This glass-card treatment is the single most distinctive element of the new look and should become the standard container component, replacing today's flat `--color-surface-card` panels.
 
 **Components**
+
 - **Stat tiles** (Dashboard counts): icon badge (gradient circle/square) + small uppercase label + large bold number, inside a glass card.
 - **List rows** (Devices/Assets/Users lists): icon avatar (rounded square, gradient fill) + name (bold) + type/role (small muted uppercase) on the left, status/action affordances on the right, inside a glass card per row with hover background.
 - **Admin panel**: glass-card columns (Miller-column pattern already exists functionally — Phase 8 — this phase only restyles it), "+ Add" as a small accent-colored text link in the column header, empty-state text centered and muted.
@@ -41,6 +46,7 @@ The mockup is a static HTML/CSS reference (not production code) the user is trea
 - Subtle entrance animation (`fadeUp`: opacity + translateY, ~0.4s ease) on card mount, used sparingly per screen.
 
 **Alarms / empty states**
+
 - A centered glass card with a large icon badge, a headline, and a muted subline — used for both "no active alarms" and other empty states, replacing today's plain empty-state text.
 
 ## Explicitly Out of Scope
@@ -64,10 +70,10 @@ The mockup is a static HTML/CSS reference (not production code) the user is trea
 
 ## Additional Context
 
-- The reference mockup was shared as a self-contained HTML/CSS/JS bundle (not directly usable as production code — built with a different templating approach than this project's Next.js/Tailwind/HeroUI stack) — it documents the *visual target*, not implementation to copy wholesale.
+- The reference mockup was shared as a self-contained HTML/CSS/JS bundle (not directly usable as production code — built with a different templating approach than this project's Next.js/Tailwind/HeroUI stack) — it documents the _visual target_, not implementation to copy wholesale.
 - Split from a larger ask alongside Phase 9.2 (roles/users) and Phase 10 (dashboards) — this phase is purely visual and has no functional dependency on either.
 
 ---
 
-*This file is temporary. It informs planning but is not required.*
-*Created by /paul:discuss, consumed by /paul:plan.*
+_This file is temporary. It informs planning but is not required._
+_Created by /paul:discuss, consumed by /paul:plan._

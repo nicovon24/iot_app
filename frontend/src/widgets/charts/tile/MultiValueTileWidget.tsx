@@ -73,7 +73,9 @@ export function MultiValueTileWidget({
                     }
                   : {})}
                 className={`flex flex-col gap-0.5 rounded-md border border-border px-3 py-2 ${
-                  onEntityClick ? 'cursor-pointer transition-colors hover:border-accent hover:bg-tint' : ''
+                  onEntityClick
+                    ? 'cursor-pointer transition-colors hover:border-accent hover:bg-tint'
+                    : ''
                 }`}
               >
                 <span className="truncate text-xs text-muted" title={entry.name}>

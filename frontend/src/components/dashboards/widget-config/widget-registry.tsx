@@ -66,7 +66,15 @@ export const SCALE_TYPES: WidgetType[] = ['gauge', 'battery', 'rssi'];
 export type ConfigRequirement = 'required' | 'optional' | 'none';
 
 /** Gallery grouping — keeps the picker scannable as the widget count grows. */
-export const WIDGET_CATEGORIES = ['Cards', 'Gauges', 'Charts', 'Tables', 'Alarms', 'Maps', 'Heatmaps'] as const;
+export const WIDGET_CATEGORIES = [
+  'Cards',
+  'Gauges',
+  'Charts',
+  'Tables',
+  'Alarms',
+  'Maps',
+  'Heatmaps',
+] as const;
 export type WidgetCategory = (typeof WIDGET_CATEGORIES)[number];
 
 /** Icon for the category step of the Add-widget dialog. Declared per category rather than

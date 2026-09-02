@@ -1,7 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class TelemetryValueDto {
-  @ApiProperty({ description: 'Raw value serialized as a string — never a JS number, per docs/rules/api.md' })
+  @ApiProperty({
+    description: 'Raw value serialized as a string — never a JS number, per docs/rules/api.md',
+  })
   value!: string;
 
   @ApiProperty({ description: 'Unix timestamp (ms) of this reading' })

@@ -44,13 +44,14 @@ Requests are protected by a `SessionAuthGuard` that validates the `x-session-tok
 
 Create a `.env` file in this directory:
 
-| Variable               | Required | Default                  | Description                          |
-|-------------------------|:--------:|---------------------------|---------------------------------------|
-| `THINGSBOARD_URL`       | yes      | —                          | Base URL of the ThingsBoard instance  |
-| `THINGSBOARD_USERNAME`  | yes      | —                          | ThingsBoard login username            |
-| `THINGSBOARD_PASSWORD`  | yes      | —                          | ThingsBoard login password            |
-| `REDIS_URL`             | no       | `redis://localhost:6379`  | Redis connection string               |
-| `PORT`                  | no       | `3001`                    | Port the API listens on               |
+| Variable               | Required | Default                  | Description                           |
+| ---------------------- | :------: | ------------------------ | ------------------------------------- |
+| `THINGSBOARD_URL`      |   yes    | —                        | Base URL of the ThingsBoard instance  |
+| `THINGSBOARD_USERNAME` |   yes    | —                        | ThingsBoard login username            |
+| `THINGSBOARD_PASSWORD` |   yes    | —                        | ThingsBoard login password            |
+| `REDIS_URL`            |    no    | `redis://localhost:6379` | Redis connection string               |
+| `DATABASE_URL`         |   yes    | —                        | PostgreSQL connection string (Prisma) |
+| `PORT`                 |    no    | `3001`                   | Port the API listens on               |
 
 Configuration is validated at startup via [`config.schema.ts`](src/config/config.schema.ts) — the app fails fast if required variables are missing or malformed.
 
@@ -72,9 +73,14 @@ npm run start
 # lint
 npm run lint
 
-# run tests
-npm test
+# type-check
+npm run typecheck
+
+# tests
+npm run test
 ```
+
+Tests are Jest, co-located as `*.spec.ts` next to the code they cover — currently the security guards (`src/common/guards/`), the highest-risk, previously-buggy surface. See [CONTRIBUTING.md](../CONTRIBUTING.md#tests).
 
 The API listens on `0.0.0.0:<PORT>` (default `3001`).
 

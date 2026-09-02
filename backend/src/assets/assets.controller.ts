@@ -54,7 +54,8 @@ export class AssetsController {
   @HttpCode(204)
   @ApiOperation({
     summary: 'Delete an Asset',
-    description: 'Blocked if the Asset still has child Assets or linked Devices — remove those first.',
+    description:
+      'Blocked if the Asset still has child Assets or linked Devices — remove those first.',
   })
   @ApiResponse({ status: 204 })
   @ApiResponse({ status: 400, description: 'Asset still has children (Assets or Devices)' })
@@ -63,16 +64,23 @@ export class AssetsController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Update an Asset\'s name/type/label' })
+  @ApiOperation({ summary: "Update an Asset's name/type/label" })
   @ApiParam({ name: 'id' })
-  async update(@Param('id', ParseTbIdPipe) id: string, @Body() dto: UpdateAssetDto): Promise<EntityRef> {
+  async update(
+    @Param('id', ParseTbIdPipe) id: string,
+    @Body() dto: UpdateAssetDto,
+  ): Promise<EntityRef> {
     return this.assetsService.update(id, dto);
   }
 
   @Get(':id/children')
-  @ApiOperation({ summary: 'Direct children of this Asset via real TB Contains relations, split by type' })
+  @ApiOperation({
+    summary: 'Direct children of this Asset via real TB Contains relations, split by type',
+  })
   @ApiParam({ name: 'id' })
-  async getChildren(@Param('id', ParseTbIdPipe) id: string): Promise<{ assets: EntityRef[]; devices: EntityRef[] }> {
+  async getChildren(
+    @Param('id', ParseTbIdPipe) id: string,
+  ): Promise<{ assets: EntityRef[]; devices: EntityRef[] }> {
     return this.entitiesService.getRelationChildren(id, 'ASSET');
   }
 
@@ -97,7 +105,10 @@ export class AssetsController {
 
   @Delete(':id/devices/:deviceId')
   @HttpCode(204)
-  @ApiOperation({ summary: 'Unlink a Device from this Asset (removes the Contains relation, does not delete the Device)' })
+  @ApiOperation({
+    summary:
+      'Unlink a Device from this Asset (removes the Contains relation, does not delete the Device)',
+  })
   @ApiParam({ name: 'id' })
   @ApiParam({ name: 'deviceId' })
   async unlinkDevice(

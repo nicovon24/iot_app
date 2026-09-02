@@ -1,7 +1,14 @@
 'use client';
 
 import { ValueTileCell, ValueCardsCell, GaugeCell, DialCell, LabelCell } from './CardCells';
-import { LineChartCell, BarChartCell, ScatterCell, DonutCell, CalendarHeatmapCell, MultiKeyChartCell } from './ChartCells';
+import {
+  LineChartCell,
+  BarChartCell,
+  ScatterCell,
+  DonutCell,
+  CalendarHeatmapCell,
+  MultiKeyChartCell,
+} from './ChartCells';
 import { TimeseriesTableCell, AttributesCell } from './TableCells';
 import { AlarmsCell, AlarmCountCell } from './AlarmCells';
 import { MapCell, ValueMapCell, MovementHeatmapCell } from './MapCells';

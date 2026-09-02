@@ -61,8 +61,15 @@ export function AlarmCountCell({ config }: { config: EntityWidgetConfig }) {
 
   const label =
     config.title ??
-    (severities.length > 0 ? `${severities.join(', ')} alarms` : scoped ? 'Entity alarms' : 'All alarms');
-  const accent = severities.some((s) => URGENT_SEVERITIES.includes(s)) || severities.length === 0 ? 'danger' : 'info';
+    (severities.length > 0
+      ? `${severities.join(', ')} alarms`
+      : scoped
+        ? 'Entity alarms'
+        : 'All alarms');
+  const accent =
+    severities.some((s) => URGENT_SEVERITIES.includes(s)) || severities.length === 0
+      ? 'danger'
+      : 'info';
 
   return (
     <CountTileWidget

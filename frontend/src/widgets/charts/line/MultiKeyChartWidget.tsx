@@ -12,7 +12,14 @@ import {
 } from 'recharts';
 import { seriesColor } from '@/lib';
 import type { AxisGroup } from '@/lib';
-import { TOOLTIP_STYLE, axisTick, formatTime, withUnit, mergeByTimestamp, type ChartSeries } from '../chart-shared';
+import {
+  TOOLTIP_STYLE,
+  axisTick,
+  formatTime,
+  withUnit,
+  mergeByTimestamp,
+  type ChartSeries,
+} from '../chart-shared';
 
 export interface MultiKeyChartWidgetProps {
   /** One series per telemetry key (id = key name), for one entity. */
@@ -28,7 +35,13 @@ export interface MultiKeyChartWidgetProps {
 
 /** Two or more telemetry keys plotted together for one entity — dual Y-axis when the keys
  * resolve to two different units, so "temperature vs pressure" reads on its own scale each. */
-export function MultiKeyChartWidget({ series, axes, omittedKeys = [], isLoading, title }: MultiKeyChartWidgetProps) {
+export function MultiKeyChartWidget({
+  series,
+  axes,
+  omittedKeys = [],
+  isLoading,
+  title,
+}: MultiKeyChartWidgetProps) {
   const data = mergeByTimestamp(series);
   const axisIdForKey = new Map<string, 'left' | 'right'>();
   axes.forEach((axis, i) => {
@@ -57,14 +70,20 @@ export function MultiKeyChartWidget({ series, axes, omittedKeys = [], isLoading,
       {title && <h3 className="shrink-0 truncate pb-1 t-heading">{title}</h3>}
       {omittedKeys.length > 0 && (
         <p className="mb-1 shrink-0 t-meta">
-          {omittedKeys.length} key{omittedKeys.length > 1 ? 's' : ''} not shown — too many distinct units
+          {omittedKeys.length} key{omittedKeys.length > 1 ? 's' : ''} not shown — too many distinct
+          units
         </p>
       )}
       <div className="min-h-0 flex-1">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-            <XAxis dataKey="ts" tickFormatter={formatTime} stroke="var(--color-faint)" fontSize={12} />
+            <XAxis
+              dataKey="ts"
+              tickFormatter={formatTime}
+              stroke="var(--color-faint)"
+              fontSize={12}
+            />
             {axes[0] && (
               <YAxis
                 yAxisId="left"
@@ -73,7 +92,13 @@ export function MultiKeyChartWidget({ series, axes, omittedKeys = [], isLoading,
                 tickFormatter={axisTick}
                 label={
                   axes[0].unitSymbol
-                    ? { value: axes[0].unitSymbol, angle: -90, position: 'insideLeft', fill: 'var(--color-muted)', fontSize: 11 }
+                    ? {
+                        value: axes[0].unitSymbol,
+                        angle: -90,
+                        position: 'insideLeft',
+                        fill: 'var(--color-muted)',
+                        fontSize: 11,
+                      }
                     : undefined
                 }
               />
@@ -87,7 +112,13 @@ export function MultiKeyChartWidget({ series, axes, omittedKeys = [], isLoading,
                 tickFormatter={axisTick}
                 label={
                   axes[1].unitSymbol
-                    ? { value: axes[1].unitSymbol, angle: 90, position: 'insideRight', fill: 'var(--color-muted)', fontSize: 11 }
+                    ? {
+                        value: axes[1].unitSymbol,
+                        angle: 90,
+                        position: 'insideRight',
+                        fill: 'var(--color-muted)',
+                        fontSize: 11,
+                      }
                     : undefined
                 }
               />

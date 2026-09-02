@@ -79,8 +79,8 @@ export default function LoginPage() {
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-hidden bg-surface">
       {/* Three stacked atmospherics, all inert and all aria-hidden: the 80px grid that gives
-        * the field its measure, one soft accent bloom off to the right, and a slow scan.
-        * They are the only place the system permits a gradient — nothing here is content. */}
+       * the field its measure, one soft accent bloom off to the right, and a slow scan.
+       * They are the only place the system permits a gradient — nothing here is content. */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 opacity-100"
@@ -93,7 +93,9 @@ export default function LoginPage() {
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
-        style={{ background: 'radial-gradient(70% 60% at 78% 42%, rgba(16,185,129,.1), transparent 70%)' }}
+        style={{
+          background: 'radial-gradient(70% 60% at 78% 42%, rgba(16,185,129,.1), transparent 70%)',
+        }}
       />
       <div
         aria-hidden
@@ -111,7 +113,9 @@ export default function LoginPage() {
             className="h-[30px] w-[30px] object-contain [filter:grayscale(1)_brightness(2.2)]"
             priority
           />
-          <span className="text-base font-extrabold leading-none tracking-[-0.015em] text-heading">IoTArg</span>
+          <span className="text-base font-extrabold leading-none tracking-[-0.015em] text-heading">
+            IoTArg
+          </span>
 
           <span className="ml-auto flex items-center gap-2 border border-accent-strong/30 px-[11px] py-[7px]">
             <span aria-hidden className="animate-live h-1.5 w-1.5 bg-accent" />
@@ -121,10 +125,12 @@ export default function LoginPage() {
 
         <div className="my-auto flex w-full items-stretch gap-16 py-10 xl:gap-[88px]">
           {/* The form. A 2px accent edge instead of a card — the board's whole premise is that
-            * nothing floats, so the rule does the work the container used to. */}
+           * nothing floats, so the rule does the work the container used to. */}
           <div className="animate-fade-up flex w-full max-w-[452px] shrink-0 flex-col border-l-2 border-accent-strong pl-8">
             <span className="t-label !text-accent !tracking-[0.2em]">IoT device management</span>
-            <h1 className="t-title mb-9 mt-[18px] text-[52px] tracking-[-0.038em] sm:text-[62px]">Log in</h1>
+            <h1 className="t-title mb-9 mt-[18px] text-[52px] tracking-[-0.038em] sm:text-[62px]">
+              Log in
+            </h1>
 
             <form className="flex flex-1 flex-col" onSubmit={handleSubmit} noValidate>
               <div className="flex flex-col gap-[9px]">
@@ -168,13 +174,17 @@ export default function LoginPage() {
                     className="shrink-0 text-muted transition-colors duration-fast ease-out hover:text-accent"
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
-                    {showPassword ? <EyeOff size={16} strokeWidth={1.75} /> : <Eye size={16} strokeWidth={1.75} />}
+                    {showPassword ? (
+                      <EyeOff size={16} strokeWidth={1.75} />
+                    ) : (
+                      <Eye size={16} strokeWidth={1.75} />
+                    )}
                   </button>
                 </div>
               </div>
 
               {/* role="alert" so a screen reader hears the rejection; the accent edge is the
-                * same gesture the form itself uses, in the failure colour. */}
+               * same gesture the form itself uses, in the failure colour. */}
               {error && (
                 <p
                   role="alert"
@@ -187,7 +197,11 @@ export default function LoginPage() {
 
               <div className="mt-4 flex items-center gap-5">
                 <label className="flex cursor-not-allowed items-center gap-2.5 opacity-60">
-                  <input type="checkbox" disabled className="h-[15px] w-[15px] border-border-strong accent-accent" />
+                  <input
+                    type="checkbox"
+                    disabled
+                    className="h-[15px] w-[15px] border-border-strong accent-accent"
+                  />
                   <span className="text-[12.5px] leading-none text-faint">Remember me</span>
                 </label>
                 <span
@@ -212,14 +226,14 @@ export default function LoginPage() {
           </div>
 
           {/* column-reverse so the tagline reads first and the figure caption settles at the
-            * foot of the plate, which is where a caption belongs. */}
+           * foot of the plate, which is where a caption belongs. */}
           <div
             aria-hidden
             className="hidden min-w-0 flex-1 flex-col items-start justify-between gap-[26px] xl:flex"
           >
             {/* 30px type on a 1.15 leading carries ~2px of half-leading above its cap, so the
-              * box aligns while the letters sit low. Pulling the block up by that much is what
-              * makes the claim and the form's own heading read as sitting on one line. */}
+             * box aligns while the letters sit low. Pulling the block up by that much is what
+             * makes the claim and the form's own heading read as sitting on one line. */}
             <p className="-mt-[2px] w-[324px] text-[30px] font-extrabold leading-[1.15] tracking-[-0.03em] text-muted text-pretty">
               Todos tus dispositivos, en una sola consola.
             </p>

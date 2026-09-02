@@ -5,10 +5,33 @@
     "backend",
     "frontend"
   ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "prepare": "node -e \"try{require('fs').existsSync('.git')&&require('child_process').execSync('husky',{stdio:'inherit'})}catch(e){}\""
+    "prepare": "node -e \"try{require('fs').existsSync('.git')&&require('child_process').execSync('husky',{stdio:'inherit'})}catch(e){}\"",
+    "lint": "npm run lint --workspace=backend && npm run lint --workspace=frontend",
+    "typecheck": "npm run typecheck --workspace=backend && npm run typecheck --workspace=frontend",
+    "test": "npm run test --workspace=backend && npm run test --workspace=frontend",
+    "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,json,md}\""
+  },
+  "lint-staged": {
+    "backend/**/*.ts": [
+      "eslint --config backend/eslint.config.mjs --fix",
+      "prettier --write"
+    ],
+    "frontend/**/*.{ts,tsx}": [
+      "eslint --config frontend/eslint.config.mjs --fix",
+      "prettier --write"
+    ],
+    "**/*.{json,md}": [
+      "prettier --write"
+    ]
   },
   "devDependencies": {
-    "husky": "^9.1.7"
+    "husky": "^9.1.7",
+    "lint-staged": "^17.4.1",
+    "prettier": "^3.9.6"
   }
 }

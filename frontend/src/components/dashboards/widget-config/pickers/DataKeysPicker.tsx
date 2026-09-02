@@ -33,7 +33,9 @@ export function DataKeysPicker({
 }) {
   function groupEntries(source: 'ATTRIBUTE' | 'TELEMETRY', scope?: AttributeScope) {
     return value.filter((k) =>
-      k.source === 'ATTRIBUTE' ? source === 'ATTRIBUTE' && k.scope === scope : source === 'TELEMETRY',
+      k.source === 'ATTRIBUTE'
+        ? source === 'ATTRIBUTE' && k.scope === scope
+        : source === 'TELEMETRY',
     );
   }
 
@@ -42,18 +44,32 @@ export function DataKeysPicker({
   }
 
   function selectedKeys(source: 'ATTRIBUTE' | 'TELEMETRY', scope?: AttributeScope) {
-    return new Set(groupEntries(source, scope).filter((k) => k.key !== ALL_KEYS).map((k) => k.key));
+    return new Set(
+      groupEntries(source, scope)
+        .filter((k) => k.key !== ALL_KEYS)
+        .map((k) => k.key),
+    );
   }
 
   /** Replaces one group's entries wholesale, leaving every other group untouched. */
-  function replaceGroup(source: 'ATTRIBUTE' | 'TELEMETRY', scope: AttributeScope | undefined, next: DataKey[]) {
+  function replaceGroup(
+    source: 'ATTRIBUTE' | 'TELEMETRY',
+    scope: AttributeScope | undefined,
+    next: DataKey[],
+  ) {
     const others = value.filter((k) =>
-      k.source === 'ATTRIBUTE' ? !(source === 'ATTRIBUTE' && k.scope === scope) : source !== 'TELEMETRY',
+      k.source === 'ATTRIBUTE'
+        ? !(source === 'ATTRIBUTE' && k.scope === scope)
+        : source !== 'TELEMETRY',
     );
     onChange([...others, ...next]);
   }
 
-  function makeKey(source: 'ATTRIBUTE' | 'TELEMETRY', scope: AttributeScope | undefined, key: string): DataKey {
+  function makeKey(
+    source: 'ATTRIBUTE' | 'TELEMETRY',
+    scope: AttributeScope | undefined,
+    key: string,
+  ): DataKey {
     return source === 'ATTRIBUTE'
       ? { source: 'ATTRIBUTE', scope: scope as AttributeScope, key }
       : { source: 'TELEMETRY', key };
@@ -63,7 +79,11 @@ export function DataKeysPicker({
     replaceGroup(source, scope, isAll(source, scope) ? [] : [makeKey(source, scope, ALL_KEYS)]);
   }
 
-  function toggleKey(source: 'ATTRIBUTE' | 'TELEMETRY', scope: AttributeScope | undefined, key: string) {
+  function toggleKey(
+    source: 'ATTRIBUTE' | 'TELEMETRY',
+    scope: AttributeScope | undefined,
+    key: string,
+  ) {
     const selected = selectedKeys(source, scope);
     if (selected.has(key)) selected.delete(key);
     else selected.add(key);

@@ -33,7 +33,13 @@ export interface UnitPickerProps {
  * path: a stored value not in the catalog (a saved dashboard's old free-text unit) opens in
  * Custom mode showing that exact text, never blank, never an error.
  */
-export function UnitPicker({ value, onChange, decimals, onDecimalsChange, showDecimals = true }: UnitPickerProps) {
+export function UnitPicker({
+  value,
+  onChange,
+  decimals,
+  onDecimalsChange,
+  showDecimals = true,
+}: UnitPickerProps) {
   // Once the user explicitly picks "Custom…", stay in custom mode even if what they type happens
   // to match a catalog symbol mid-edit — otherwise the input would yank itself back to the
   // dropdown while they're typing.

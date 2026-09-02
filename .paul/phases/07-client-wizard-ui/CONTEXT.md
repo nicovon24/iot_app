@@ -1,7 +1,7 @@
 ---
 phase: 07-client-wizard-ui
 type: Context
-about: "iot-app"
+about: 'iot-app'
 ---
 
 # Phase 7 Discussion: Client creation wizard UI
@@ -16,7 +16,7 @@ about: "iot-app"
 
 - **Two separate flows, not one combined wizard:**
   1. Client-creation wizard (basic info → hierarchy levels → review → submit) — creates the Customer + hierarchy atomically via `POST /customers`.
-  2. A separate "Add Asset" flow/screen for an *existing* Client — picks hierarchy level + parent (Customer or existing Asset), submits via `POST /assets`.
+  2. A separate "Add Asset" flow/screen for an _existing_ Client — picks hierarchy level + parent (Customer or existing Asset), submits via `POST /assets`.
 - Devices: no UI, no backend changes. Stays read-only (`GET /devices`, `GET /devices/:id`) per Phase 4.3's explicit decision.
 - The existing "Clients" nav item (`frontend/src/lib/nav-items.ts`, currently `comingSoon: true`) becomes the real entry point — a Clients list page + "Create Client" wizard.
 
@@ -40,4 +40,5 @@ about: "iot-app"
 - Where the "Add Asset" entry point lives (Client detail view vs. a button on `/assets`) — left to plan-phase.
 
 ---
-*Context saved for handoff to /paul:plan*
+
+_Context saved for handoff to /paul:plan_

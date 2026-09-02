@@ -139,8 +139,8 @@ export function RuledTable<T>({
       </div>
 
       {/* The count, stated rather than paginated. The list endpoints return everything the
-        * screen shows, so a pager would be a control with nothing behind it — what the
-        * board actually communicates here is "this is all of them". */}
+       * screen shows, so a pager would be a control with nothing behind it — what the
+       * board actually communicates here is "this is all of them". */}
       {total !== undefined && rows.length > 0 && (
         <div className="t-label -mx-10 mt-auto px-10 pb-1 pt-4">
           1–{rows.length} of {total}
@@ -157,7 +157,10 @@ function RuledHeader<T>({ columns, template }: { columns: RuledColumn<T>[]; temp
       style={{ gridTemplateColumns: template }}
     >
       {columns.map((col) => (
-        <span key={col.key} className={`t-label truncate ${col.align === 'right' ? 'text-right' : ''}`}>
+        <span
+          key={col.key}
+          className={`t-label truncate ${col.align === 'right' ? 'text-right' : ''}`}
+        >
           {col.header ?? ''}
         </span>
       ))}
@@ -170,7 +173,15 @@ function RuledHeader<T>({ columns, template }: { columns: RuledColumn<T>[]; temp
  * The diamond is the app's status vocabulary — a circle here would be the only curve on
  * the screen.
  */
-export function RuledName({ name, ok = true, title }: { name: string; ok?: boolean; title?: string }) {
+export function RuledName({
+  name,
+  ok = true,
+  title,
+}: {
+  name: string;
+  ok?: boolean;
+  title?: string;
+}) {
   return (
     <span className="flex min-w-0 items-center gap-[11px]">
       <span

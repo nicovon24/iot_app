@@ -113,7 +113,7 @@ export function EntityMapMarker({
         <div className="flex w-[232px] flex-col gap-3">
           <div className="flex items-center gap-2 pr-4">
             {/* The dot repeats the marker's own colour *and* its fill, so the popup is visibly
-              * tied to the pin that opened it when several sit close together. */}
+             * tied to the pin that opened it when several sit close together. */}
             <span
               aria-hidden
               className="h-2 w-2 shrink-0 rotate-45"
@@ -145,7 +145,7 @@ export function EntityMapMarker({
                     {key}
                   </span>
                   {/* Tabular figures so the values form a straight column instead of jittering
-                    * with each digit's width. */}
+                   * with each digit's width. */}
                   <span className="shrink-0 t-metric-sm text-sm">
                     {formatTelemetryValue(value.value)}
                   </span>
@@ -156,7 +156,9 @@ export function EntityMapMarker({
 
           <div className="flex flex-col gap-2 border-t border-border pt-2.5">
             <p className="t-meta">
-              {lastReportTs ? `Last report ${new Date(lastReportTs).toLocaleString()}` : 'No data yet'}
+              {lastReportTs
+                ? `Last report ${new Date(lastReportTs).toLocaleString()}`
+                : 'No data yet'}
             </p>
             <button
               type="button"

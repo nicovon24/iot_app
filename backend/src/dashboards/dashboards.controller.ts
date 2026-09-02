@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, UnauthorizedException } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Put,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { AppSession } from '../auth/auth.service';
 import { CurrentSession } from '../common/decorators/current-session.decorator';
@@ -18,7 +28,9 @@ export class DashboardsController {
   constructor(private readonly dashboardsService: DashboardsService) {}
 
   @Get()
-  @ApiOperation({ summary: 'List dashboards visible to the caller (own PRIVATE + SHARED in scope)' })
+  @ApiOperation({
+    summary: 'List dashboards visible to the caller (own PRIVATE + SHARED in scope)',
+  })
   async list(@CurrentSession() session: AppSession | null) {
     return this.dashboardsService.list(requireSession(session));
   }
@@ -26,9 +38,15 @@ export class DashboardsController {
   @Get(':id')
   @ApiOperation({ summary: 'Get a dashboard with its widgets' })
   @ApiParam({ name: 'id' })
-  @ApiResponse({ status: 403, description: 'Dashboard is outside your customer hierarchy / not yours' })
+  @ApiResponse({
+    status: 403,
+    description: 'Dashboard is outside your customer hierarchy / not yours',
+  })
   @ApiResponse({ status: 404, description: 'Dashboard not found' })
-  async getById(@Param('id', ParseTbIdPipe) id: string, @CurrentSession() session: AppSession | null) {
+  async getById(
+    @Param('id', ParseTbIdPipe) id: string,
+    @CurrentSession() session: AppSession | null,
+  ) {
     return this.dashboardsService.getById(id, requireSession(session));
   }
 
@@ -39,7 +57,10 @@ export class DashboardsController {
       'customerScope "ALL" is sysadmin-only. A non-sysadmin caller\'s customerIds are always forced to their own customer.',
   })
   @ApiResponse({ status: 201 })
-  @ApiResponse({ status: 400, description: 'A widget config failed validation against its widgetType schema' })
+  @ApiResponse({
+    status: 400,
+    description: 'A widget config failed validation against its widgetType schema',
+  })
   @ApiResponse({ status: 403, description: 'Non-sysadmin attempted customerScope ALL' })
   async create(@Body() dto: SaveDashboardDto, @CurrentSession() session: AppSession | null) {
     return this.dashboardsService.create(dto, requireSession(session));
@@ -48,10 +69,14 @@ export class DashboardsController {
   @Put(':id')
   @ApiOperation({
     summary: 'Whole-dashboard save — replaces title/scope/widgets atomically',
-    description: 'Only the creator or a sysadmin may save. Sends the full widget list, not a delta.',
+    description:
+      'Only the creator or a sysadmin may save. Sends the full widget list, not a delta.',
   })
   @ApiParam({ name: 'id' })
-  @ApiResponse({ status: 400, description: 'A widget config failed validation — no partial write occurs' })
+  @ApiResponse({
+    status: 400,
+    description: 'A widget config failed validation — no partial write occurs',
+  })
   @ApiResponse({ status: 403, description: 'Caller is not the creator or a sysadmin' })
   async save(
     @Param('id', ParseTbIdPipe) id: string,
@@ -67,7 +92,10 @@ export class DashboardsController {
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 204 })
   @ApiResponse({ status: 403, description: 'Caller is not the creator or a sysadmin' })
-  async delete(@Param('id', ParseTbIdPipe) id: string, @CurrentSession() session: AppSession | null): Promise<void> {
+  async delete(
+    @Param('id', ParseTbIdPipe) id: string,
+    @CurrentSession() session: AppSession | null,
+  ): Promise<void> {
     await this.dashboardsService.delete(id, requireSession(session));
   }
 }

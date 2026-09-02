@@ -26,10 +26,17 @@ async function bootstrap() {
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('IoT App API')
-    .setDescription('Backend API proxying ThingsBoard — entities, attributes, telemetry, alarms, clients')
+    .setDescription(
+      'Backend API proxying ThingsBoard — entities, attributes, telemetry, alarms, clients',
+    )
     .setVersion('1.0')
     .addApiKey(
-      { type: 'apiKey', name: 'x-session-token', in: 'header', description: 'Session token from POST /auth/login' },
+      {
+        type: 'apiKey',
+        name: 'x-session-token',
+        in: 'header',
+        description: 'Session token from POST /auth/login',
+      },
       'session-token',
     )
     .build();

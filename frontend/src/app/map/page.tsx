@@ -6,9 +6,13 @@ import { PageHeader, StatusPill } from '@/components';
 import type { FleetEntityType } from '@/widgets/maps/fleet-positions';
 
 // Leaflet touches `window` at module scope, so none of these may load during SSR.
-const FleetMapWidget = dynamic(() => import('@/widgets/maps').then((m) => m.FleetMapWidget), { ssr: false });
+const FleetMapWidget = dynamic(() => import('@/widgets/maps').then((m) => m.FleetMapWidget), {
+  ssr: false,
+});
 const MapDock = dynamic(() => import('@/widgets/maps').then((m) => m.MapDock), { ssr: false });
-const MapStatusOverlay = dynamic(() => import('@/widgets/maps').then((m) => m.MapStatusOverlay), { ssr: false });
+const MapStatusOverlay = dynamic(() => import('@/widgets/maps').then((m) => m.MapStatusOverlay), {
+  ssr: false,
+});
 
 /**
  * Board 2a — "Instrumento".

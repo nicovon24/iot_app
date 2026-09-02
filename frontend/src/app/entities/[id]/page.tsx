@@ -5,7 +5,8 @@ import dynamic from 'next/dynamic';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { Tab, Tabs } from '@heroui/react';
-import { apiClient } from '@/lib';
+import { Select } from '@/components';
+import { apiClient, suggestUnit } from '@/lib';
 import { useEntityAttributes } from '@/hooks';
 import { useTelemetryKeys, useTelemetryHistory, useTelemetryLatest } from '@/hooks';
 import { useLiveTelemetry } from '@/hooks';
@@ -27,7 +28,8 @@ const TABS_CLASSNAMES = {
   tabList: 'gap-6 border-b border-border bg-transparent p-0',
   cursor: 'bg-[linear-gradient(135deg,var(--gradient-accent-from),var(--gradient-accent-to))]',
   tab: 'h-auto px-1 py-3',
-  tabContent: 'text-muted font-medium group-data-[selected=true]:text-accent group-data-[selected=true]:font-semibold',
+  tabContent:
+    'text-muted font-medium group-data-[selected=true]:text-accent group-data-[selected=true]:font-semibold',
   panel: 'pt-4 animate-fade-up',
 };
 
@@ -54,6 +56,8 @@ export default function EntityDetailPage() {
 
   useEffect(() => {
     if (!selectedKey && keysQuery.data && keysQuery.data.length > 0) {
+      // Auto-selects the first telemetry key once the list loads, if the user hasn't picked one.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedKey(keysQuery.data[0]);
     }
   }, [keysQuery.data, selectedKey]);
@@ -64,14 +68,17 @@ export default function EntityDetailPage() {
   const [liveValue, setLiveValue] = useState<{ value: string; ts: number } | undefined>(undefined);
 
   useEffect(() => {
+    // Clears the stale value from the previous key while the new key's query is loading.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLiveValue(undefined);
   }, [selectedKey]);
 
   useEffect(() => {
     if (selectedKey && latestQuery.data?.[selectedKey]) {
+      // Seeds from the latest REST snapshot; live WS frames (below) take over from there.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLiveValue(latestQuery.data[selectedKey]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedKey, latestQuery.data]);
 
   const subscribeTarget = useMemo(() => ({ entityId: id, entityType: type }), [id, type]);
@@ -88,11 +95,14 @@ export default function EntityDetailPage() {
     () => (historyQuery.data ?? []).map((point) => ({ ts: point.ts, value: Number(point.value) })),
     [historyQuery.data],
   );
+  const selectedUnit = selectedKey ? suggestUnit(selectedKey) : undefined;
 
   const alarmsQuery = useEntityAlarms(id, type);
   const [liveAlarms, setLiveAlarms] = useState<Alarm[]>([]);
 
   useEffect(() => {
+    // Clears alarms from the previous entity while the new entity's subscription spins up.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLiveAlarms([]);
   }, [id]);
 
@@ -107,10 +117,17 @@ export default function EntityDetailPage() {
     return [...newOnes, ...base];
   }, [alarmsQuery.data, liveAlarms]);
 
-  const hasLocation = (keysQuery.data ?? []).includes('latitude') && (keysQuery.data ?? []).includes('longitude');
-  const locationQuery = useTelemetryLatest(id, type, hasLocation ? ['latitude', 'longitude'] : undefined);
+  const hasLocation =
+    (keysQuery.data ?? []).includes('latitude') && (keysQuery.data ?? []).includes('longitude');
+  const locationQuery = useTelemetryLatest(
+    id,
+    type,
+    hasLocation ? ['latitude', 'longitude'] : undefined,
+  );
   const lat = locationQuery.data?.latitude ? Number(locationQuery.data.latitude.value) : undefined;
-  const lng = locationQuery.data?.longitude ? Number(locationQuery.data.longitude.value) : undefined;
+  const lng = locationQuery.data?.longitude
+    ? Number(locationQuery.data.longitude.value)
+    : undefined;
 
   return (
     <div className="flex flex-col gap-4">
@@ -122,29 +139,25 @@ export default function EntityDetailPage() {
       <Tabs aria-label="Entity detail tabs" variant="underlined" classNames={TABS_CLASSNAMES}>
         <Tab key="telemetry" title="Telemetry">
           <div className="flex flex-col gap-4">
-            <div className="flex max-w-xs flex-col gap-1.5">
-              <label htmlFor="telemetry-key" className="t-field">
-                Telemetry key
-              </label>
-              <select
-                id="telemetry-key"
+            <div className="max-w-xs">
+              <Select
+                label="Telemetry key"
                 value={selectedKey ?? ''}
-                onChange={(e) => setSelectedKey(e.target.value || undefined)}
+                onChange={(v) => setSelectedKey(v || undefined)}
                 disabled={keysQuery.isLoading || (keysQuery.data?.length ?? 0) === 0}
-                className="w-full rounded-md border border-border-strong bg-white/5 px-3 py-2.5 text-sm text-heading focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-60"
-              >
-                {(keysQuery.data ?? []).map((key) => (
-                  <option key={key} value={key}>
-                    {key}
-                  </option>
-                ))}
-              </select>
+                options={(keysQuery.data ?? []).map((key) => ({ value: key, label: key }))}
+              />
             </div>
 
             {selectedKey && (
               <>
-                <ValueTileWidget label={selectedKey} value={liveValue?.value} ts={liveValue?.ts} />
-                <LineChartWidget data={chartData} dataKey={selectedKey} />
+                <ValueTileWidget
+                  label={selectedKey}
+                  value={liveValue?.value}
+                  ts={liveValue?.ts}
+                  unit={selectedUnit}
+                />
+                <LineChartWidget data={chartData} dataKey={selectedKey} unit={selectedUnit} />
               </>
             )}
           </div>

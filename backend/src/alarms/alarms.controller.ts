@@ -18,7 +18,9 @@ export class EntityAlarmsController {
   constructor(private readonly alarmsService: AlarmsService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Alarms for a specific entity — scoped by CustomerScopeGuard like any other :id route' })
+  @ApiOperation({
+    summary: 'Alarms for a specific entity — scoped by CustomerScopeGuard like any other :id route',
+  })
   @ApiParam({ name: 'id' })
   @ApiQuery({ name: 'type', enum: ENTITY_TYPES })
   async getForEntity(

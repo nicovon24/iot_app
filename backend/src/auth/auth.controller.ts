@@ -40,7 +40,10 @@ export class AuthController {
 
   @Get('me')
   @ApiSecurity('session-token')
-  @ApiOperation({ summary: "Return the caller's own session identity (role/authority/customer), for frontend UI gating" })
+  @ApiOperation({
+    summary:
+      "Return the caller's own session identity (role/authority/customer), for frontend UI gating",
+  })
   @ApiResponse({ status: 200 })
   me(@CurrentSession() session: AppSession | null): CurrentUserResponse {
     if (!session) {

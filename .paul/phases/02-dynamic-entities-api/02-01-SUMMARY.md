@@ -2,7 +2,7 @@
 phase: 02-dynamic-entities-api
 plan: 01
 type: Summary
-about: "iot-app"
+about: 'iot-app'
 ---
 
 # Summary: Dynamic entities, attributes & telemetry API

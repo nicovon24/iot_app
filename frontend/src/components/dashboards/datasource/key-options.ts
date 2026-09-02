@@ -20,7 +20,9 @@ export function useDataKeyOptions(entityIds: string[], entityType: 'DEVICE' | 'A
       queryFn: async () => {
         const perScope = await Promise.all(
           ATTRIBUTE_SCOPES.map((scope) =>
-            apiClient.get<Attribute[]>(`/entities/${id}/attributes?type=${entityType}&scope=${scope}`),
+            apiClient.get<Attribute[]>(
+              `/entities/${id}/attributes?type=${entityType}&scope=${scope}`,
+            ),
           ),
         );
         return { CLIENT_SCOPE: perScope[0], SERVER_SCOPE: perScope[1], SHARED_SCOPE: perScope[2] };

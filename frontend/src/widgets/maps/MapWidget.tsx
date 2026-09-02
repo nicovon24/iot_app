@@ -48,7 +48,9 @@ export function MapWidget({ id, type, name, lat, lng, heightClassName = 'h-96' }
   const tile = MAP_TILE_CONFIG[tileStyle];
 
   return (
-    <div className={`relative ${heightClassName} overflow-hidden rounded-xl border border-border shadow-sm`}>
+    <div
+      className={`relative ${heightClassName} overflow-hidden rounded-xl border border-border shadow-sm`}
+    >
       <MapStyleToggle value={tileStyle} onChange={setTileStyle} />
       <MapContainer center={[lat, lng]} zoom={13} className="h-full w-full">
         <TileLayer attribution={tile.attribution} url={tile.url} />

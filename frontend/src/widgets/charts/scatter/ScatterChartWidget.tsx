@@ -116,7 +116,7 @@ export function ScatterChartWidget({
               domain={['dataMin', 'dataMax']}
             />
             {/* Fixed dot size: magnitude is already on both axes, and varying area would encode
-              * a third variable that isn't there. */}
+             * a third variable that isn't there. */}
             <ZAxis range={[36, 36]} />
             <RechartsTooltip
               cursor={{ strokeDasharray: '3 3', stroke: 'var(--color-border)' }}
@@ -135,7 +135,13 @@ export function ScatterChartWidget({
               />
             )}
             {series.map((s, i) => (
-              <Scatter key={s.id} name={s.name} data={s.points} fill={seriesColor(i)} fillOpacity={0.75} />
+              <Scatter
+                key={s.id}
+                name={s.name}
+                data={s.points}
+                fill={seriesColor(i)}
+                fillOpacity={0.75}
+              />
             ))}
           </ScatterChart>
         </ResponsiveContainer>

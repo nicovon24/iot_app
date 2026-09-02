@@ -25,8 +25,8 @@ export function PageHeader({ title, description, actions }: PageHeaderProps) {
       <div className="min-w-0">
         <h1 className="t-title">{title}</h1>
         {/* The rule is the system's signature. Fixed width on purpose: tied to the
-          * title's length it would wobble from page to page, and its job is to be the
-          * one constant every screen opens with. */}
+         * title's length it would wobble from page to page, and its job is to be the
+         * one constant every screen opens with. */}
         <div aria-hidden className="mt-3 h-0.5 w-24 bg-accent-strong" />
         {description && <p className="t-body mt-3.5 max-w-[440px]">{description}</p>}
       </div>

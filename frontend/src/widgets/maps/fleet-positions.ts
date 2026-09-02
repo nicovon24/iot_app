@@ -16,13 +16,17 @@ export function useFleetPositions(devices: EntityRef[], entityType: FleetEntityT
   const keysResults = useQueries({
     queries: devices.map((device) => ({
       queryKey: ['telemetry', 'keys', device.id],
-      queryFn: () => apiClient.get<string[]>(`/entities/${device.id}/telemetry/keys?type=${entityType}`),
+      queryFn: () =>
+        apiClient.get<string[]>(`/entities/${device.id}/telemetry/keys?type=${entityType}`),
     })),
   });
   const latestResults = useQueries({
     queries: devices.map((device) => ({
       queryKey: ['telemetry', 'latest', device.id, undefined],
-      queryFn: () => apiClient.get<TelemetryLatest>(`/entities/${device.id}/telemetry/latest?type=${entityType}`),
+      queryFn: () =>
+        apiClient.get<TelemetryLatest>(
+          `/entities/${device.id}/telemetry/latest?type=${entityType}`,
+        ),
     })),
   });
 

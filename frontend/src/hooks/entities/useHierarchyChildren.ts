@@ -27,7 +27,10 @@ export function useAssetChildren(assetId?: string) {
 export function useInvalidateHierarchyChildren() {
   const queryClient = useQueryClient();
   return (node: { id: string; type: 'CUSTOMER' | 'ASSET' }) => {
-    const key = node.type === 'CUSTOMER' ? ['customers', node.id, 'children'] : ['assets', node.id, 'children'];
+    const key =
+      node.type === 'CUSTOMER'
+        ? ['customers', node.id, 'children']
+        : ['assets', node.id, 'children'];
     queryClient.invalidateQueries({ queryKey: key });
   };
 }

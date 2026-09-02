@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run lint --workspace=backend
+      - run: npm run typecheck --workspace=backend
+      - run: npm run test --workspace=backend
+      - run: npm run build --workspace=backend
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run lint --workspace=frontend
+      - run: npm run typecheck --workspace=frontend
+      - run: npm run test --workspace=frontend
+      - run: npm run build --workspace=frontend
+        env:
+          NEXT_PUBLIC_API_BASE_URL: http://localhost:3001
+          NEXT_PUBLIC_WS_BASE_URL: ws://localhost:3001
+
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run format:check

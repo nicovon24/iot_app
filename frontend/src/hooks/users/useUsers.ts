@@ -8,7 +8,8 @@ export type { CreateUserRequest } from '@/types';
 export function useUsers(customerId: string | undefined) {
   return useQuery({
     queryKey: ['users', customerId ?? 'all'],
-    queryFn: () => apiClient.get<EntityRef[]>(customerId ? `/users?customerId=${customerId}` : '/users'),
+    queryFn: () =>
+      apiClient.get<EntityRef[]>(customerId ? `/users?customerId=${customerId}` : '/users'),
   });
 }
 

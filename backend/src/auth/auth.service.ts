@@ -27,7 +27,11 @@ export class AuthService {
     private readonly prisma: PrismaService,
   ) {}
 
-  private buildSession(profile: TbUserProfile, tbToken: string, tbRefreshToken: string): AppSession {
+  private buildSession(
+    profile: TbUserProfile,
+    tbToken: string,
+    tbRefreshToken: string,
+  ): AppSession {
     return {
       tbUserId: profile.id.id,
       email: profile.email,
@@ -43,25 +47,42 @@ export class AuthService {
     // V1 (Phase 2.2): real ThingsBoard authentication — sysadmin is a pre-existing TB
     // Tenant Admin, admin/reader are TB Customer Users created via the users module.
     // No shared/config credential fallback.
-    const { token, refreshToken } = await this.thingsboard.loginWithCredentials(dto.username, dto.password);
+    const { token, refreshToken } = await this.thingsboard.loginWithCredentials(
+      dto.username,
+      dto.password,
+    );
     const profile = await this.thingsboard.getUserProfile(token);
     const session = this.buildSession(profile, token, refreshToken);
 
     const sessionToken = randomUUID();
-    await this.redis.set(`${SESSION_PREFIX}${sessionToken}`, JSON.stringify(session), SESSION_TTL_SECONDS);
+    await this.redis.set(
+      `${SESSION_PREFIX}${sessionToken}`,
+      JSON.stringify(session),
+      SESSION_TTL_SECONDS,
+    );
     return { sessionToken };
   }
 
-  async impersonate(impersonator: AppSession, targetUserId: string): Promise<{ sessionToken: string; logId: string }> {
+  async impersonate(
+    impersonator: AppSession,
+    targetUserId: string,
+  ): Promise<{ sessionToken: string; logId: string }> {
     // Reuses the impersonator's own tbToken/tbRefreshToken rather than a second real TB login
     // for the target — consistent with this project's existing architecture where entity-scoped
     // TB calls already go through the shared service-account credential regardless of whose app
     // session is active (see STATE.md Blockers/Concerns).
-    const target = await this.thingsboard.request<TbUserProfile>('GET', `/api/user/${targetUserId}`);
+    const target = await this.thingsboard.request<TbUserProfile>(
+      'GET',
+      `/api/user/${targetUserId}`,
+    );
     const session = this.buildSession(target, impersonator.tbToken, impersonator.tbRefreshToken);
 
     const sessionToken = randomUUID();
-    await this.redis.set(`${SESSION_PREFIX}${sessionToken}`, JSON.stringify(session), SESSION_TTL_SECONDS);
+    await this.redis.set(
+      `${SESSION_PREFIX}${sessionToken}`,
+      JSON.stringify(session),
+      SESSION_TTL_SECONDS,
+    );
 
     const log = await this.prisma.impersonationLog.create({
       data: { impersonatorId: impersonator.tbUserId, targetUserId },

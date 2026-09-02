@@ -21,7 +21,8 @@ export function useTelemetryLatest(id: string, type: EntityType, keys?: string[]
   const keysParam = keys && keys.length > 0 ? `&keys=${keys.join(',')}` : '';
   return useQuery({
     queryKey: ['telemetry', 'latest', id, keys],
-    queryFn: () => apiClient.get<TelemetryLatest>(`/entities/${id}/telemetry/latest?type=${type}${keysParam}`),
+    queryFn: () =>
+      apiClient.get<TelemetryLatest>(`/entities/${id}/telemetry/latest?type=${type}${keysParam}`),
     enabled: Boolean(id),
   });
 }
@@ -48,6 +49,8 @@ export function useTelemetryHistory(
   // produced a new queryKey each time, so the query never settled and always
   // showed "no data yet" while chasing a moving time window.
   const { startTs, endTs } = useMemo(() => {
+    // Deliberately impure: memoized so Date.now() is sampled once per `key` change (see above).
+    // eslint-disable-next-line react-hooks/purity
     const end = optEndTs ?? Date.now();
     const start = optStartTs ?? end - ONE_HOUR_MS;
     return { startTs: start, endTs: end };

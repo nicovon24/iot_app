@@ -2,7 +2,14 @@
 
 import { useMemo, useState } from 'react';
 import { Select } from '@/components';
-import { Dialog, DialogBody, DialogCloseButton, DialogFooter, DialogHeader, DialogTitle } from '@/components';
+import {
+  Dialog,
+  DialogBody,
+  DialogCloseButton,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components';
 import { useEntities } from '@/hooks';
 import { CheckboxList } from './pickers';
 import { WIDGET_DIALOG_BODY_HEIGHT, WIDGET_DIALOG_WIDTH } from './AddWidgetPanel';
@@ -33,7 +40,11 @@ export function BulkAddPanel({
   const entityIds = useMemo(() => Array.from(selectedEntities), [selectedEntities]);
   // Infinity: bulk-add needs per-entity keys for *every* checked entity, not a sample, because
   // keysByEntity decides which (entity, key) widgets actually get created.
-  const { keysByEntity, keys: allKeys, isLoading: keysLoading } = useTelemetryKeyOptions(entityIds, entityKind, Infinity);
+  const {
+    keysByEntity,
+    keys: allKeys,
+    isLoading: keysLoading,
+  } = useTelemetryKeyOptions(entityIds, entityKind, Infinity);
 
   // One widget per (entity, key) pair the entity actually reports.
   const pairs = useMemo(
@@ -68,7 +79,11 @@ export function BulkAddPanel({
     onAdd(
       pairs.map((pair, i) => ({
         widgetType,
-        config: { entityId: pair.entityId, entityType: entityKind, telemetryKey: pair.telemetryKey },
+        config: {
+          entityId: pair.entityId,
+          entityType: entityKind,
+          telemetryKey: pair.telemetryKey,
+        },
         layout: layouts[i],
       })),
     );
@@ -129,7 +144,10 @@ export function BulkAddPanel({
                 label="Widget type for each selected key"
                 value={widgetType}
                 onChange={(v) => setWidgetType(v as WidgetType)}
-                options={BULK_WIDGET_TYPES.map((t) => ({ value: t, label: WIDGET_REGISTRY[t].label }))}
+                options={BULK_WIDGET_TYPES.map((t) => ({
+                  value: t,
+                  label: WIDGET_REGISTRY[t].label,
+                }))}
               />
             </>
           )}
@@ -148,7 +166,9 @@ export function BulkAddPanel({
           onClick={handleAdd}
           className="btn-accent rounded-md px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40"
         >
-          {pairs.length > 0 ? `Add ${pairs.length} widget${pairs.length > 1 ? 's' : ''}` : 'Add widgets'}
+          {pairs.length > 0
+            ? `Add ${pairs.length} widget${pairs.length > 1 ? 's' : ''}`
+            : 'Add widgets'}
         </button>
       </DialogFooter>
     </Dialog>

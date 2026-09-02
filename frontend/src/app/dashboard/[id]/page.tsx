@@ -8,7 +8,14 @@ import { ApiError } from '@/lib';
 import { useCreateDashboard, useDashboard, useSaveDashboard } from '@/hooks';
 import { usePermissions } from '@/hooks';
 import { toastError, toastSuccess } from '@/lib';
-import { DashboardCanvas, AddWidgetPanel, type NewWidgetInput, BulkAddPanel, TimeWindowPicker, TimeWindowProvider } from '@/components';
+import {
+  DashboardCanvas,
+  AddWidgetPanel,
+  type NewWidgetInput,
+  BulkAddPanel,
+  TimeWindowPicker,
+  TimeWindowProvider,
+} from '@/components';
 import { Tooltip } from '@/components';
 import { Input } from '@/components';
 import type {
@@ -22,7 +29,12 @@ import type {
 type StagedWidget = Omit<DashboardWidget, 'id' | 'dashboardId'> & { id: string };
 
 function toStaged(widgets: DashboardWidget[]): StagedWidget[] {
-  return widgets.map((w) => ({ id: w.id, widgetType: w.widgetType, config: w.config, layout: w.layout }));
+  return widgets.map((w) => ({
+    id: w.id,
+    widgetType: w.widgetType,
+    config: w.config,
+    layout: w.layout,
+  }));
 }
 
 export default function DashboardDetailPage() {
@@ -52,6 +64,7 @@ export default function DashboardDetailPage() {
     // non-editable fields (visibility, customer access) that each save sends back unchanged,
     // and holding a stale copy would write yesterday's sharing settings on the next save.
     if (dashboardQuery.data.id !== loadedFrom?.id) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTitle(dashboardQuery.data.title);
       setTimeWindow(dashboardQuery.data.timeWindow ?? null);
       setLayoutMode(dashboardQuery.data.layoutMode ?? 'SCROLL');
@@ -73,7 +86,12 @@ export default function DashboardDetailPage() {
   function handleAddWidget(newWidget: NewWidgetInput) {
     setStaged((prev) => [
       ...prev,
-      { id: `staged-${Date.now()}-${prev.length}`, widgetType: newWidget.widgetType, config: newWidget.config, layout: newWidget.layout },
+      {
+        id: `staged-${Date.now()}-${prev.length}`,
+        widgetType: newWidget.widgetType,
+        config: newWidget.config,
+        layout: newWidget.layout,
+      },
     ]);
   }
 
@@ -116,7 +134,11 @@ export default function DashboardDetailPage() {
       customerIds: loadedFrom?.customerAccess.map((a) => a.customerId) ?? [],
       timeWindow,
       layoutMode,
-      widgets: staged.map((w) => ({ widgetType: w.widgetType, config: w.config, layout: w.layout })),
+      widgets: staged.map((w) => ({
+        widgetType: w.widgetType,
+        config: w.config,
+        layout: w.layout,
+      })),
     };
 
     try {
@@ -135,8 +157,10 @@ export default function DashboardDetailPage() {
   }
 
   if (!isNew && dashboardQuery.isError) {
-    const notFound = dashboardQuery.error instanceof ApiError && dashboardQuery.error.status === 404;
-    const forbidden = dashboardQuery.error instanceof ApiError && dashboardQuery.error.status === 403;
+    const notFound =
+      dashboardQuery.error instanceof ApiError && dashboardQuery.error.status === 404;
+    const forbidden =
+      dashboardQuery.error instanceof ApiError && dashboardQuery.error.status === 403;
     return (
       <div className="flex h-full items-center justify-center">
         <p className="text-sm text-muted">
@@ -173,8 +197,8 @@ export default function DashboardDetailPage() {
         )}
 
         {/* Outside the canWrite gate on purpose: a read-only viewer must be able to change the
-          * range they're looking at. In view mode the change is transient — only editing and
-          * saving persists it. */}
+         * range they're looking at. In view mode the change is transient — only editing and
+         * saving persists it. */}
         <div className="ml-auto mr-2 flex shrink-0 items-center gap-2">
           <TimeWindowPicker value={timeWindow} onChange={setTimeWindow} />
           {canWrite && editMode && (
@@ -244,7 +268,9 @@ export default function DashboardDetailPage() {
         )}
       </div>
 
-      <div className={`min-h-0 flex-1 ${layoutMode === 'FIT' ? 'overflow-hidden' : 'overflow-auto'}`}>
+      <div
+        className={`min-h-0 flex-1 ${layoutMode === 'FIT' ? 'overflow-hidden' : 'overflow-auto'}`}
+      >
         <TimeWindowProvider value={timeWindow}>
           <DashboardCanvas
             widgets={staged}

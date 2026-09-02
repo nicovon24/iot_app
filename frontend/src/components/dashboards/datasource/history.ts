@@ -58,7 +58,16 @@ export function useHistoryForEntities(
 
   const results = useQueries({
     queries: entities.map((entity) => ({
-      queryKey: ['telemetry', 'history', entity.id, key, window.startTs, window.endTs, agg, interval],
+      queryKey: [
+        'telemetry',
+        'history',
+        entity.id,
+        key,
+        window.startTs,
+        window.endTs,
+        agg,
+        interval,
+      ],
       queryFn: async (): Promise<TelemetryValue[]> => {
         const params = new URLSearchParams({
           type: entityType,
@@ -105,7 +114,16 @@ export function useMultiKeyHistoryForEntities(
 
   const results = useQueries({
     queries: entities.map((entity) => ({
-      queryKey: ['telemetry', 'history', entity.id, keyList, window.startTs, window.endTs, agg, interval],
+      queryKey: [
+        'telemetry',
+        'history',
+        entity.id,
+        keyList,
+        window.startTs,
+        window.endTs,
+        agg,
+        interval,
+      ],
       queryFn: async (): Promise<Record<string, TelemetryValue[]>> => {
         const params = new URLSearchParams({
           type: entityType,
@@ -191,9 +209,10 @@ export function useRawHistoryForEntities(
  * the TanStack query key and the query never settles, the bug already documented in
  * useTelemetryHistory.
  */
-export function resolveHistoryWindow(
-  timeWindow?: DashboardTimeWindow | null,
-): { startTs: number; endTs: number } {
+export function resolveHistoryWindow(timeWindow?: DashboardTimeWindow | null): {
+  startTs: number;
+  endTs: number;
+} {
   if (timeWindow?.kind === 'FIXED') {
     return { startTs: timeWindow.startTs, endTs: timeWindow.endTs };
   }

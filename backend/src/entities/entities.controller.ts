@@ -16,7 +16,10 @@ export class EntitiesController {
   constructor(private readonly entitiesService: EntitiesService) {}
 
   @Get()
-  @ApiOperation({ summary: 'List entities (Device or Asset) unified as EntityRef, scoped to caller\'s customer hierarchy' })
+  @ApiOperation({
+    summary:
+      "List entities (Device or Asset) unified as EntityRef, scoped to caller's customer hierarchy",
+  })
   @ApiQuery({ name: 'type', enum: ENTITY_TYPES })
   async list(
     @Query('type', new ParseEnumPipe(ENTITY_TYPES)) type: EntityType,

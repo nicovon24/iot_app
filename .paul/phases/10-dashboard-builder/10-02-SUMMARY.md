@@ -2,7 +2,7 @@
 phase: 10-dashboard-builder
 plan: 02
 type: Summary
-about: "iot-app"
+about: 'iot-app'
 ---
 
 # 10-02 Summary — Frontend dashboard builder base

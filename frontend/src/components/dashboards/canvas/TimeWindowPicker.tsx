@@ -90,7 +90,10 @@ export function TimeWindowPicker({
 
   const fixed = value?.kind === 'FIXED' ? value : undefined;
   const options = useMemo(
-    () => [...TIME_WINDOW_PRESETS.map((p) => ({ value: p.value, label: p.label })), { value: CUSTOM, label: 'Custom range' }],
+    () => [
+      ...TIME_WINDOW_PRESETS.map((p) => ({ value: p.value, label: p.label })),
+      { value: CUSTOM, label: 'Custom range' },
+    ],
     [],
   );
 

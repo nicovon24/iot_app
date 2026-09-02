@@ -40,7 +40,7 @@ const MOCK_CALENDAR_DATA = Array.from({ length: 1000 }, (_, i) => {
  * shows what the chart is for rather than a random cloud. */
 const MOCK_SCATTER_DATA = Array.from({ length: 60 }, (_, i) => {
   const x = -100 + (i / 59) * 55;
-  return { x, y: 30 + (x + 100) * 0.35 + (Math.sin(i * 2.4) * 4) };
+  return { x, y: 30 + (x + 100) * 0.35 + Math.sin(i * 2.4) * 4 };
 });
 
 /** Two synthetic series with different units — demonstrates the dual-axis behavior the widget
@@ -75,8 +75,22 @@ export function WidgetPreview({ type }: { type: WidgetType }) {
       return (
         <ValueCardsWidget
           entries={[
-            { id: '1', name: 'Pump 003', measures: [{ key: 'temperature', value: '24.6', ts: NOW }, { key: 'pressure', value: '1.2', ts: NOW }] },
-            { id: '2', name: 'Pump 004', measures: [{ key: 'temperature', value: '22.1', ts: NOW }, { key: 'pressure', value: '1.4', ts: NOW }] },
+            {
+              id: '1',
+              name: 'Pump 003',
+              measures: [
+                { key: 'temperature', value: '24.6', ts: NOW },
+                { key: 'pressure', value: '1.2', ts: NOW },
+              ],
+            },
+            {
+              id: '2',
+              name: 'Pump 004',
+              measures: [
+                { key: 'temperature', value: '22.1', ts: NOW },
+                { key: 'pressure', value: '1.4', ts: NOW },
+              ],
+            },
           ]}
         />
       );
@@ -91,10 +105,14 @@ export function WidgetPreview({ type }: { type: WidgetType }) {
       return <RssiWidget label="Signal" value={-65} min={-120} max={-30} unit="dBm" ts={NOW} />;
 
     case 'line-chart':
-      return <LineChartWidget data={MOCK_LINE_DATA} dataKey="temperature" heightClassName="h-full" />;
+      return (
+        <LineChartWidget data={MOCK_LINE_DATA} dataKey="temperature" heightClassName="h-full" />
+      );
 
     case 'bar-chart':
-      return <BarChartWidget data={MOCK_LINE_DATA} dataKey="temperature" heightClassName="h-full" />;
+      return (
+        <BarChartWidget data={MOCK_LINE_DATA} dataKey="temperature" heightClassName="h-full" />
+      );
 
     case 'scatter':
       return (
@@ -126,10 +144,18 @@ export function WidgetPreview({ type }: { type: WidgetType }) {
           mode="LIST"
           rows={[{ id: '1', name: 'Pump 003' }]}
           columns={[
-            { id: 'firmware', label: 'firmware', source: 'ATTRIBUTE', scope: 'SERVER_SCOPE', key: 'firmware' },
+            {
+              id: 'firmware',
+              label: 'firmware',
+              source: 'ATTRIBUTE',
+              scope: 'SERVER_SCOPE',
+              key: 'firmware',
+            },
             { id: 'temperature', label: 'temperature', source: 'TELEMETRY', key: 'temperature' },
           ]}
-          values={{ '1': { firmware: { value: 'v2.3.1' }, temperature: { value: '24.6', ts: NOW } } }}
+          values={{
+            '1': { firmware: { value: 'v2.3.1' }, temperature: { value: '24.6', ts: NOW } },
+          }}
         />
       );
 
@@ -145,10 +171,19 @@ export function WidgetPreview({ type }: { type: WidgetType }) {
       );
 
     case 'alarms-list':
-      return <AlarmsListWidget alarms={[MOCK_ALARM]} isLoading={false} isError={false} emptyLabel="No alarms" />;
+      return (
+        <AlarmsListWidget
+          alarms={[MOCK_ALARM]}
+          isLoading={false}
+          isError={false}
+          emptyLabel="No alarms"
+        />
+      );
 
     case 'alarm-count':
-      return <CountTileWidget label="Critical alarms" value={3} accent="danger" icon={AlertTriangle} />;
+      return (
+        <CountTileWidget label="Critical alarms" value={3} accent="danger" icon={AlertTriangle} />
+      );
 
     case 'calendar-heatmap':
       return <CalendarHeatmapWidget points={MOCK_CALENDAR_DATA} />;

@@ -45,9 +45,19 @@ function renderOption(option: SelectOption) {
   );
 }
 
-export function Select({ label, placeholder, value, onChange, options, disabled, compact = false }: SelectProps) {
+export function Select({
+  label,
+  placeholder,
+  value,
+  onChange,
+  options,
+  disabled,
+  compact = false,
+}: SelectProps) {
   const hasGroups = options.some((o) => o.group);
-  const groupNames = hasGroups ? Array.from(new Set(options.filter((o) => o.group).map((o) => o.group!))) : [];
+  const groupNames = hasGroups
+    ? Array.from(new Set(options.filter((o) => o.group).map((o) => o.group!)))
+    : [];
   const ungrouped = hasGroups ? options.filter((o) => !o.group) : [];
 
   return (

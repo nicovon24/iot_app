@@ -3,7 +3,9 @@ import { IsIn, IsInt, IsOptional, IsString, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class PaginationQueryDto {
-  @ApiPropertyOptional({ description: 'Page number (0-based). Omit both page and pageSize to fetch all.' })
+  @ApiPropertyOptional({
+    description: 'Page number (0-based). Omit both page and pageSize to fetch all.',
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()

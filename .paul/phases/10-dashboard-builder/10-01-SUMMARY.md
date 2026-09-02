@@ -2,7 +2,7 @@
 phase: 10-dashboard-builder
 plan: 01
 type: Summary
-about: "iot-app"
+about: 'iot-app'
 ---
 
 # 10-01 Summary — Backend foundation for custom dashboards

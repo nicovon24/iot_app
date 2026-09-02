@@ -1,7 +1,7 @@
 ---
-description: "iot_app — architecture/scalability review + Claude workflow retrospective"
+description: 'iot_app — architecture/scalability review + Claude workflow retrospective'
 type: Review
-about: "iot-app"
+about: 'iot-app'
 ---
 
 # Review — 2026-08-12
@@ -20,12 +20,12 @@ in the widget config panel, and it has one root cause.
 
 ### Root cause: config-panel state is flat, not per-type
 
-| File | Lines | Problem |
-|---|---|---|
-| `frontend/src/dashboards/widget-config/AddWidgetPanel/index.tsx` | 554 | ~25 `useState` calls, one per possible config field across all 19 widget types (`min`, `max`, `unit`, `decimals`, `stacked`, `sparkline`, `text`, `align`, `xKey`, `yKey`, `groupBy`, `gaugeStyle`, `unitsByKey`...) |
-| `frontend/src/dashboards/widget-config/AddWidgetPanel/ConfigureStep.tsx` | 433 | Mirror of the above: a long chain of `{widgetType === 'x' && <Field/>}` instead of each type owning its own form |
-| `frontend/src/dashboards/renderer/ChartCells.tsx` | 384 | Each chart cell repeats the same skeleton (resolve window → run history hook → build props → render) |
-| `frontend/src/dashboards/widget-config/widget-registry.tsx` | 404 | UI metadata registry — correct idea, but doesn't yet drive form generation, only gating |
+| File                                                                     | Lines | Problem                                                                                                                                                                                                              |
+| ------------------------------------------------------------------------ | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `frontend/src/dashboards/widget-config/AddWidgetPanel/index.tsx`         | 554   | ~25 `useState` calls, one per possible config field across all 19 widget types (`min`, `max`, `unit`, `decimals`, `stacked`, `sparkline`, `text`, `align`, `xKey`, `yKey`, `groupBy`, `gaugeStyle`, `unitsByKey`...) |
+| `frontend/src/dashboards/widget-config/AddWidgetPanel/ConfigureStep.tsx` | 433   | Mirror of the above: a long chain of `{widgetType === 'x' && <Field/>}` instead of each type owning its own form                                                                                                     |
+| `frontend/src/dashboards/renderer/ChartCells.tsx`                        | 384   | Each chart cell repeats the same skeleton (resolve window → run history hook → build props → render)                                                                                                                 |
+| `frontend/src/dashboards/widget-config/widget-registry.tsx`              | 404   | UI metadata registry — correct idea, but doesn't yet drive form generation, only gating                                                                                                                              |
 
 Every new widget type touches `AddWidgetPanel/index.tsx` in the same 5 spots: declare `useState`,
 seed it in the edit-effect, clear it in `resetTypeConfig()`, write it conditionally in
@@ -37,7 +37,7 @@ config fields, so the panel still asks `widgetType === 'x'` by hand for every fi
 ### Duplication found
 
 - `GaugeWidget.tsx`/`BatteryWidget.tsx`/`RssiWidget.tsx` — same prop shape (`label, value, min,
-  max, unit, ts`), same SVG structure. Battery/Rssi are effectively "Gauge with a fixed style +
+max, unit, ts`), same SVG structure. Battery/Rssi are effectively "Gauge with a fixed style +
   defaults" (~180 combined lines that could be one component + two default configs).
   **Fixed 2026-08-12**: extracted `GaugeShell.tsx` (label header + value/timestamp footer, the
   part all three pasted identically); each widget keeps its own SVG as a `children` slot. Not
@@ -85,7 +85,7 @@ telemetry key, its own merge logic), `min`/`max` (cross-validated against each o
 `title`/`action`/`dataKeys` (always-present, type-independent). These have real cross-field
 logic — folding them into the generic table would have hidden that logic behind indirection
 rather than simplifying it. `ConfigureStep.tsx` itself (the `{widgetType === 'x' && <Field/>}`
-chain deciding what to *render*) was intentionally left as-is; the table only owns state
+chain deciding what to _render_) was intentionally left as-is; the table only owns state
 lifecycle + config serialization, not layout.
 
 **Real bug caught mid-refactor, not shipped**: while writing the field table, `xKey`/`yKey` were
@@ -103,11 +103,11 @@ standing caveat as the rest of Phase 10/11's frontend work).
 **Verdict: solid module boundaries overall (standard NestJS one-module-per-domain), one real god
 service.**
 
-| File | Lines | Note |
-|---|---|---|
-| `backend/src/entities/entities.service.ts` | 429 | Does ref-resolution, paginated listing, customer-hierarchy scoping, CRUD for 3 entity kinds (Asset/Customer/Device), and TB Relations — 6 responsibilities in one file |
-| `backend/src/dashboards/widget-registry.ts` | 314 | Large but *appropriately* — it's meant to be the single place widget-type Zod schemas live (explicit design decision, not drift) |
-| Everything else | ≤ 202 | Comfortably sized, one responsibility each |
+| File                                        | Lines | Note                                                                                                                                                                   |
+| ------------------------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `backend/src/entities/entities.service.ts`  | 429   | Does ref-resolution, paginated listing, customer-hierarchy scoping, CRUD for 3 entity kinds (Asset/Customer/Device), and TB Relations — 6 responsibilities in one file |
+| `backend/src/dashboards/widget-registry.ts` | 314   | Large but _appropriately_ — it's meant to be the single place widget-type Zod schemas live (explicit design decision, not drift)                                       |
+| Everything else                             | ≤ 202 | Comfortably sized, one responsibility each                                                                                                                             |
 
 `entities.service.ts` is the one candidate for a split — e.g. `EntityRefResolutionService`
 (ref-batch-resolve + Redis caching), `EntityScopeService` (hierarchy scoping), and per-kind CRUD
@@ -139,6 +139,7 @@ their stated single responsibility.
 Asked for explicitly: how the flow and Claude/context usage went, based on recent changes.
 
 **What worked well:**
+
 - Delegating the Phase 12 design to two parallel Explore agents + a Plan agent (instead of me
   reading every file myself) kept the main thread's context light while still producing a
   detailed, pressure-tested design — the Plan agent's pushback (sparkline as a flag not a type,
@@ -153,6 +154,7 @@ Asked for explicitly: how the flow and Claude/context usage went, based on recen
   across 5 plans.
 
 **What cost more than it needed to:**
+
 - **PAUL doc upkeep tax.** Every phase/plan touch required editing ROADMAP.md, STATE.md, and often
   a CONTEXT.md, and those files are now large enough (400+ lines each) that edits routinely
   triggered pre-existing markdown-lint warnings unrelated to the actual change, adding noise to
@@ -174,6 +176,7 @@ Asked for explicitly: how the flow and Claude/context usage went, based on recen
   chat responses in the same turn.
 
 **Concrete suggestions:**
+
 1. Before stacking a 3rd phase on unverified frontend work, spend one session just doing the
    browser click-through for Phase 10 + Phase 12 together — cheaper than deferring twice more.
 2. Consider trimming STATE.md's `### Decisions` table periodically (archive rows older than N
@@ -187,13 +190,13 @@ Asked for explicitly: how the flow and Claude/context usage went, based on recen
 
 No PAUL plan (user chose "directo, sin PAUL" for this pass). Summary:
 
-| Item | Outcome |
-|---|---|
-| Gauge/Battery/Rssi shared wrapper duplication | Fixed — `GaugeShell.tsx` extracted |
-| "Unit per key" config block pasted 3x | Not reproducible — already a single shared block, review was stale/over-generalized here |
+| Item                                                     | Outcome                                                                                                                                                                                                                                                    |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Gauge/Battery/Rssi shared wrapper duplication            | Fixed — `GaugeShell.tsx` extracted                                                                                                                                                                                                                         |
+| "Unit per key" config block pasted 3x                    | Not reproducible — already a single shared block, review was stale/over-generalized here                                                                                                                                                                   |
 | Config-panel god-file (`AddWidgetPanel`/`ConfigureStep`) | Partially fixed — 15 of ~25 state fields moved to a declarative table (`type-config-fields.ts` + `use-type-config.ts`); fields with real cross-field logic (unit auto-suggest, entity/scope resets, min/max validation) deliberately left as explicit code |
-| Backend god-service (`entities.service.ts`) | Partially fixed — ref-resolution extracted to `entity-ref-resolver.ts` as a plain class, zero DI/call-site changes (13 consumers, including global auth guards, untouched); hierarchy-scoping and CRUD stay in place |
-| Backend/frontend widget-registry drift (no test) | Not touched — needs the deferred test harness (Phase 12) first |
+| Backend god-service (`entities.service.ts`)              | Partially fixed — ref-resolution extracted to `entity-ref-resolver.ts` as a plain class, zero DI/call-site changes (13 consumers, including global auth guards, untouched); hierarchy-scoping and CRUD stay in place                                       |
+| Backend/frontend widget-registry drift (no test)         | Not touched — needs the deferred test harness (Phase 12) first                                                                                                                                                                                             |
 
 Verification: `tsc --noEmit` clean in both `backend/` and `frontend/`; `next build` and
 `nest build` both clean. **Not click-tested in a browser** — same standing caveat as the rest of
@@ -201,4 +204,5 @@ Phase 10/11's frontend work; the config-panel change in particular touches every
 widget types' config forms and has not been exercised live.
 
 ---
-*Created 2026-08-12, diagnosis only — no code or scope changes from this file.*
+
+_Created 2026-08-12, diagnosis only — no code or scope changes from this file._

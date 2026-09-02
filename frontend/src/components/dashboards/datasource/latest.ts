@@ -14,7 +14,11 @@ export interface CellValue {
 
 /** Latest value of one telemetry key for each entity, keyed by entity id. Shares query keys
  * with useTelemetryLatest so single- and multi-entity widgets hit the same cache entries. */
-export function useLatestForEntities(entities: EntityRef[], entityType: 'DEVICE' | 'ASSET', key: string | undefined) {
+export function useLatestForEntities(
+  entities: EntityRef[],
+  entityType: 'DEVICE' | 'ASSET',
+  key: string | undefined,
+) {
   const keys = key ? [key] : undefined;
   const results = useQueries({
     queries: entities.map((entity) => ({
@@ -49,7 +53,10 @@ export function useMultiKeyLatestForEntities(
   const results = useQueries({
     queries: entities.map((entity) => ({
       queryKey: ['telemetry', 'latest', entity.id, undefined],
-      queryFn: () => apiClient.get<TelemetryLatest>(`/entities/${entity.id}/telemetry/latest?type=${entityType}`),
+      queryFn: () =>
+        apiClient.get<TelemetryLatest>(
+          `/entities/${entity.id}/telemetry/latest?type=${entityType}`,
+        ),
       enabled: keys.length > 0,
       refetchInterval: TELEMETRY_POLL_MS,
     })),

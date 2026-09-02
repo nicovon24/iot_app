@@ -1,4 +1,11 @@
-import { BadRequestException, ForbiddenException, HttpException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  HttpException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { EntitiesService } from '../entities/entities.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { AppSession } from '../auth/auth.service';
@@ -41,7 +48,9 @@ export class AssetsService {
         where: { assetId: dto.parentId },
       });
       if (!parentAssignment) {
-        throw new NotFoundException(`Parent asset ${dto.parentId} is not a tracked hierarchy member`);
+        throw new NotFoundException(
+          `Parent asset ${dto.parentId} is not a tracked hierarchy member`,
+        );
       }
       if (parentAssignment.customerId !== dto.customerId) {
         throw new BadRequestException('Parent asset belongs to a different customer');
@@ -57,7 +66,9 @@ export class AssetsService {
     try {
       await this.entitiesService.assignAssetToCustomer(dto.customerId, created.id);
     } catch (err) {
-      this.logger.error(`Rolling back Asset ${created.id} — customer assignment failed: ${(err as Error).message}`);
+      this.logger.error(
+        `Rolling back Asset ${created.id} — customer assignment failed: ${(err as Error).message}`,
+      );
       await this.entitiesService.deleteAsset(created.id);
       throw err;
     }
@@ -67,7 +78,9 @@ export class AssetsService {
         data: { customerId: dto.customerId, assetId: created.id, levelIndex: dto.levelIndex },
       });
     } catch (err) {
-      this.logger.error(`Rolling back Asset ${created.id} — hierarchy assignment write failed: ${(err as Error).message}`);
+      this.logger.error(
+        `Rolling back Asset ${created.id} — hierarchy assignment write failed: ${(err as Error).message}`,
+      );
       await this.entitiesService.deleteAsset(created.id);
       throw err;
     }
@@ -75,7 +88,9 @@ export class AssetsService {
     try {
       await this.entitiesService.createRelation(dto.parentId, parentType, created.id, 'ASSET');
     } catch (err) {
-      this.logger.error(`Rolling back Asset ${created.id} — Contains relation creation failed: ${(err as Error).message}`);
+      this.logger.error(
+        `Rolling back Asset ${created.id} — Contains relation creation failed: ${(err as Error).message}`,
+      );
       await this.prisma.assetHierarchyAssignment.delete({ where: { assetId: created.id } });
       await this.entitiesService.deleteAsset(created.id);
       throw err;
@@ -107,7 +122,10 @@ export class AssetsService {
     await this.prisma.assetHierarchyAssignment.deleteMany({ where: { assetId: id } });
   }
 
-  async update(id: string, updates: { name?: string; type?: string; label?: string }): Promise<EntityRef> {
+  async update(
+    id: string,
+    updates: { name?: string; type?: string; label?: string },
+  ): Promise<EntityRef> {
     return this.entitiesService.updateAsset(id, updates);
   }
 
@@ -133,7 +151,9 @@ export class AssetsService {
     }
 
     await this.entitiesService.createRelation(assetId, 'ASSET', deviceId, 'DEVICE');
-    const assignment = await this.prisma.assetHierarchyAssignment.findUnique({ where: { assetId } });
+    const assignment = await this.prisma.assetHierarchyAssignment.findUnique({
+      where: { assetId },
+    });
     if (assignment) {
       await this.entitiesService.assignDeviceToCustomer(assignment.customerId, deviceId);
     }

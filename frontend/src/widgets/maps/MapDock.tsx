@@ -41,12 +41,16 @@ export function MapDock({
             {s === 'DEVICE' ? 'Devices' : 'Assets'}
           </button>
         ))}
-        <span className="t-label ml-auto">{isLoading ? 'Locating…' : `${plotted.length} plotted`}</span>
+        <span className="t-label ml-auto">
+          {isLoading ? 'Locating…' : `${plotted.length} plotted`}
+        </span>
       </div>
 
       <div className="table-scroll min-h-0 flex-1 overflow-y-auto">
         {entities.length === 0 ? (
-          <p className="t-body px-5 py-6">No {scope === 'DEVICE' ? 'devices' : 'assets'} registered.</p>
+          <p className="t-body px-5 py-6">
+            No {scope === 'DEVICE' ? 'devices' : 'assets'} registered.
+          </p>
         ) : (
           entities.map((entity) => {
             const pos = positions[entity.id];
@@ -54,8 +58,8 @@ export function MapDock({
             return (
               <div key={entity.id} className="ruled-row flex items-center gap-3 px-5 py-3.5">
                 {/* Exactly the marker's own two axes — colour for the alarm band, hollow for
-                  * unreachable — so a row and its pin are recognisably the same thing. A row
-                  * with no position is drawn hollow too: it is absent from the map either way. */}
+                 * unreachable — so a row and its pin are recognisably the same thing. A row
+                 * with no position is drawn hollow too: it is absent from the map either way. */}
                 <StatusDiamond status={status} plotted={Boolean(pos)} />
                 <span className="flex min-w-0 flex-col gap-1">
                   <span className="t-item truncate" title={entity.name}>
@@ -65,7 +69,10 @@ export function MapDock({
                     {pos ? `${pos[0].toFixed(4)} · ${pos[1].toFixed(4)}` : 'No position'}
                   </span>
                 </span>
-                <Link href={entityDetailsHref(entity.id, scope)} className="t-action ml-auto shrink-0">
+                <Link
+                  href={entityDetailsHref(entity.id, scope)}
+                  className="t-action ml-auto shrink-0"
+                >
                   Details
                 </Link>
               </div>
@@ -77,7 +84,13 @@ export function MapDock({
   );
 }
 
-function StatusDiamond({ status, plotted }: { status: EntityStatus | undefined; plotted: boolean }) {
+function StatusDiamond({
+  status,
+  plotted,
+}: {
+  status: EntityStatus | undefined;
+  plotted: boolean;
+}) {
   const color = statusColor(status);
   const hollow = !plotted || status?.connectivity === 'offline';
   return (

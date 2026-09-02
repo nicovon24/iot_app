@@ -64,6 +64,9 @@ export function pairSeries(seriesA: TelemetryValue[], seriesB: TelemetryValue[])
  * Every fix weighs the same: the heat is time spent in a place, and overlapping points
  * accumulate on their own.
  */
-export function pairCoordinates(latitude: TelemetryValue[], longitude: TelemetryValue[]): HeatPoint[] {
+export function pairCoordinates(
+  latitude: TelemetryValue[],
+  longitude: TelemetryValue[],
+): HeatPoint[] {
   return pairSeries(latitude, longitude).map(({ a, b }) => ({ lat: a, lng: b, intensity: 1 }));
 }

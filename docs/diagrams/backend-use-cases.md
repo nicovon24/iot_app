@@ -3,6 +3,7 @@
 Use cases based on the endpoints/services actually implemented in `backend/src` as of 2026-07-31 (end of Phase 2.2). Does not include dashboards, telemetry_definitions, or alarms because **they don't exist in the code** — see "Pending" section.
 
 Actors:
+
 - **Administrator**: session with `authority` `TENANT_ADMIN`/`SYS_ADMIN`, or `appRole` `ADMIN` over their customer.
 - **End user**: `CUSTOMER_USER` with access scoped to their customer and descendants.
 - **System**: automatic synchronization/authentication against ThingsBoard (service-account JWT caching, token refresh).

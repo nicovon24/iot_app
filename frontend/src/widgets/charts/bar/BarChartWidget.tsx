@@ -25,7 +25,13 @@ export interface BarChartWidgetProps {
  * (hourly totals, counts per interval) where each value covers a span rather than marking an
  * instant — a line implies a continuous reading between points that a SUM per bucket isn't.
  */
-export function BarChartWidget({ data, dataKey, title, heightClassName = 'h-64', unit }: BarChartWidgetProps) {
+export function BarChartWidget({
+  data,
+  dataKey,
+  title,
+  heightClassName = 'h-64',
+  unit,
+}: BarChartWidgetProps) {
   if (data.length === 0) {
     return (
       <div className={`glass-card flex ${heightClassName} items-center justify-center`}>
@@ -41,12 +47,27 @@ export function BarChartWidget({ data, dataKey, title, heightClassName = 'h-64',
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-            <XAxis dataKey="ts" tickFormatter={formatTime} stroke="var(--color-faint)" fontSize={12} />
+            <XAxis
+              dataKey="ts"
+              tickFormatter={formatTime}
+              stroke="var(--color-faint)"
+              fontSize={12}
+            />
             <YAxis
               stroke="var(--color-faint)"
               fontSize={12}
               tickFormatter={axisTick}
-              label={unit ? { value: unit, angle: -90, position: 'insideLeft', fill: 'var(--color-muted)', fontSize: 11 } : undefined}
+              label={
+                unit
+                  ? {
+                      value: unit,
+                      angle: -90,
+                      position: 'insideLeft',
+                      fill: 'var(--color-muted)',
+                      fontSize: 11,
+                    }
+                  : undefined
+              }
             />
             <RechartsTooltip
               labelFormatter={(label) => formatTime(Number(label))}

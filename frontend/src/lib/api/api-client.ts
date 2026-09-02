@@ -14,7 +14,11 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE', path: string, body?: unknown): Promise<T> {
+async function request<T>(
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
+  path: string,
+  body?: unknown,
+): Promise<T> {
   const headers: Record<string, string> = {};
   const token = getSessionToken();
   if (token) headers['x-session-token'] = token;
@@ -34,7 +38,10 @@ async function request<T>(method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE', p
       // response had no JSON body
     }
     const detailMessage =
-      errorBody && typeof errorBody === 'object' && 'message' in errorBody && typeof errorBody.message === 'string'
+      errorBody &&
+      typeof errorBody === 'object' &&
+      'message' in errorBody &&
+      typeof errorBody.message === 'string'
         ? errorBody.message
         : response.statusText || `Request failed with status ${response.status}`;
     throw new ApiError(detailMessage, response.status, errorBody);

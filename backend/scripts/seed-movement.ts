@@ -29,7 +29,7 @@ interface Stop {
 
 /** A depot, two work sites and a yard around Berlin — the city the existing fleet data uses. */
 export const STOPS: Stop[] = [
-  { latitude: 52.5200, longitude: 13.4050, dwell: 3, label: 'Mitte depot' },
+  { latitude: 52.52, longitude: 13.405, dwell: 3, label: 'Mitte depot' },
   { latitude: 52.4862, longitude: 13.4283, dwell: 2, label: 'Neukölln site' },
   { latitude: 52.5429, longitude: 13.3512, dwell: 2, label: 'Wedding site' },
   { latitude: 52.5065, longitude: 13.2846, dwell: 1, label: 'Charlottenburg yard' },
@@ -57,7 +57,9 @@ function loadEnv(): Record<string, string> {
 function parseArgs() {
   const [, , deviceName, ...rest] = process.argv;
   if (!deviceName || deviceName.startsWith('--')) {
-    console.error('Usage: npx tsx scripts/seed-movement.ts <device-name> [--days 7] [--interval 300]');
+    console.error(
+      'Usage: npx tsx scripts/seed-movement.ts <device-name> [--days 7] [--interval 300]',
+    );
     process.exit(1);
   }
   const flag = (name: string, fallback: number) => {
@@ -98,7 +100,9 @@ async function findDevice(url: string, token: string, name: string) {
 function jitter(latitude: number, longitude: number, metres: number) {
   const deltaLatitude = (Math.random() - 0.5) * 2 * (metres / METRES_PER_DEG_LAT);
   const deltaLongitude =
-    (Math.random() - 0.5) * 2 * (metres / (METRES_PER_DEG_LAT * Math.cos((latitude * Math.PI) / 180)));
+    (Math.random() - 0.5) *
+    2 *
+    (metres / (METRES_PER_DEG_LAT * Math.cos((latitude * Math.PI) / 180)));
   return { latitude: latitude + deltaLatitude, longitude: longitude + deltaLongitude };
 }
 
@@ -163,7 +167,9 @@ async function main() {
   const trail = buildTrail(startTs, endTs, intervalSec * 1000);
 
   console.log(`Device : ${device.name} (${device.id.id})`);
-  console.log(`Window : ${new Date(startTs).toLocaleString()} → ${new Date(endTs).toLocaleString()}`);
+  console.log(
+    `Window : ${new Date(startTs).toLocaleString()} → ${new Date(endTs).toLocaleString()}`,
+  );
   console.log(`Points : ${trail.length} (every ${intervalSec}s over ${days} days)`);
 
   // Posted timestamped and in batches — one request per point would be thousands of round trips,
@@ -184,12 +190,16 @@ async function main() {
       },
     );
     if (!response.ok) {
-      throw new Error(`Telemetry POST failed at batch ${i / BATCH}: ${response.status} ${await response.text()}`);
+      throw new Error(
+        `Telemetry POST failed at batch ${i / BATCH}: ${response.status} ${await response.text()}`,
+      );
     }
     console.log(`  sent ${Math.min(i + BATCH, payload.length)}/${payload.length}`);
   }
 
-  console.log('\nDone. Set the dashboard time range to cover the window above and the heatmap will render.');
+  console.log(
+    '\nDone. Set the dashboard time range to cover the window above and the heatmap will render.',
+  );
 }
 
 // Guarded so the check script can import buildTrail without the seed firing at a real tenant.

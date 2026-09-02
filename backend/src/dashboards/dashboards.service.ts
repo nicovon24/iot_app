@@ -98,7 +98,11 @@ export class DashboardsService {
    * transaction" requirement (AC-5), whether the request came from the one-by-one panel or
    * a bulk-add batch.
    */
-  async save(id: string, dto: SaveDashboardDto, session: AppSession): Promise<DashboardWithRelations> {
+  async save(
+    id: string,
+    dto: SaveDashboardDto,
+    session: AppSession,
+  ): Promise<DashboardWithRelations> {
     const existing = await this.prisma.dashboard.findUnique({ where: { id } });
     if (!existing) throw new NotFoundException('Dashboard not found');
     if (existing.createdBy !== session.tbUserId && !isSysadmin(session)) {

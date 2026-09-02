@@ -6,7 +6,7 @@ tags: [nextjs, tanstack-query, heroui, leaflet, alarms, map]
 
 requires:
   - phase: 06-entity-views
-    plan: "06-02"
+    plan: '06-02'
     provides: entities/[id]/page.tsx tab shell, useTelemetryKeys (lat/lng key detection), text-color token system
 provides:
   - Live Alarms tab on the entity detail page (REST + WS merge, dedup by alarm id+startTs)
@@ -17,10 +17,10 @@ provides:
 affects: []
 
 tech-stack:
-  added: [react-leaflet, leaflet, "@types/leaflet"]
+  added: [react-leaflet, leaflet, '@types/leaflet']
   patterns:
-    - "Global alarm view relies on TanStack Query re-fetch on filter change, not a tenant-wide WS subscription — /ws/alarms is entity-scoped by backend design"
-    - "Live alarm frames merged into REST-fetched list via id+startTs dedup key, prepended rather than replacing cache"
+    - 'Global alarm view relies on TanStack Query re-fetch on filter change, not a tenant-wide WS subscription — /ws/alarms is entity-scoped by backend design'
+    - 'Live alarm frames merged into REST-fetched list via id+startTs dedup key, prepended rather than replacing cache'
 
 key-files:
   created:
@@ -41,9 +41,9 @@ key-decisions:
 duration: ~30min
 started: 2026-08-02T00:00:00Z
 completed: 2026-08-02T00:00:00Z
-description: "Live Alarms + conditional Map tabs on the entity detail page, plus the global filterable Alarms list page — closes Phase 6"
+description: 'Live Alarms + conditional Map tabs on the entity detail page, plus the global filterable Alarms list page — closes Phase 6'
 type: Summary
-about: "iot-app"
+about: 'iot-app'
 ---
 
 # Phase 6 Plan 03: Alarms + Map tabs, global Alarms page — Summary
@@ -52,12 +52,12 @@ about: "iot-app"
 
 ## Acceptance Criteria Results
 
-| Criterion | Status | Notes |
-|-----------|--------|-------|
-| AC-1: Alarms tab shows real per-entity alarm data with live updates | Pass | `GET /entities/:id/alarms` verified against real Device `industrial-pump-005` — returned the real "High Temperature Alarm" (CRITICAL, CLEARED_UNACK) created during Phase 3 verification; `/ws/alarms` subscribe verified live via a temporary `ws` script — pushed the same alarm frame on subscribe, closed cleanly on unsubscribe |
-| AC-2: Map tab only appears when the entity has real location telemetry | Pass | `industrial-pump-005`'s real telemetry keys include `latitude`/`longitude` (confirmed via `GET /telemetry/keys`); latest values `52.463255`/`13.343303` fetched and render as a real pin. `hasLocation` check gates `Tab isDisabled` |
-| AC-3: Global Alarms page lists and filters alarms across entities | Pass | `GET /alarms` (no filter) and `GET /alarms?severity=CRITICAL` both returned the real alarm; `GET /alarms?severity=WARNING` returned an empty, correctly-filtered result — confirms the Select-driven refetch wiring is correct |
-| AC-4: Alarms live push doesn't leak subscriptions across tab/page navigation | Pass | `useLiveAlarms` mirrors 06-02's `useLiveTelemetry` cleanup exactly (unsubscribe + `client.close()` in the effect cleanup, keyed on `target.entityId`/`entityType`) — same pattern already verified leak-free in 06-02 |
+| Criterion                                                                    | Status | Notes                                                                                                                                                                                                                                                                                                                                |
+| ---------------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| AC-1: Alarms tab shows real per-entity alarm data with live updates          | Pass   | `GET /entities/:id/alarms` verified against real Device `industrial-pump-005` — returned the real "High Temperature Alarm" (CRITICAL, CLEARED_UNACK) created during Phase 3 verification; `/ws/alarms` subscribe verified live via a temporary `ws` script — pushed the same alarm frame on subscribe, closed cleanly on unsubscribe |
+| AC-2: Map tab only appears when the entity has real location telemetry       | Pass   | `industrial-pump-005`'s real telemetry keys include `latitude`/`longitude` (confirmed via `GET /telemetry/keys`); latest values `52.463255`/`13.343303` fetched and render as a real pin. `hasLocation` check gates `Tab isDisabled`                                                                                                 |
+| AC-3: Global Alarms page lists and filters alarms across entities            | Pass   | `GET /alarms` (no filter) and `GET /alarms?severity=CRITICAL` both returned the real alarm; `GET /alarms?severity=WARNING` returned an empty, correctly-filtered result — confirms the Select-driven refetch wiring is correct                                                                                                       |
+| AC-4: Alarms live push doesn't leak subscriptions across tab/page navigation | Pass   | `useLiveAlarms` mirrors 06-02's `useLiveTelemetry` cleanup exactly (unsubscribe + `client.close()` in the effect cleanup, keyed on `target.entityId`/`entityType`) — same pattern already verified leak-free in 06-02                                                                                                                |
 
 ## Accomplishments
 
@@ -71,6 +71,7 @@ about: "iot-app"
 ## Verification Method
 
 No headless-browser tool available in this Windows dev environment (same constraint as 06-01/06-02). Verified via:
+
 - `npx tsc --noEmit` — clean, no errors
 - Direct `curl` calls against the real running backend (session token obtained via `POST /auth/login` with the real TB service-account credentials) for `GET /entities/:id/alarms`, `GET /alarms` (unfiltered, `severity=CRITICAL`, `severity=WARNING`), `GET /entities/:id/telemetry/keys`, `GET /entities/:id/telemetry/latest?keys=latitude,longitude`
 - A temporary Node `ws` script exercising the real `/ws/alarms` subscribe/unsubscribe lifecycle against a real Device id — received the real alarm frame, closed cleanly
@@ -79,15 +80,15 @@ No headless-browser tool available in this Windows dev environment (same constra
 
 ## Files Created/Modified
 
-| File | Change | Purpose |
-|------|--------|---------|
-| `frontend/src/hooks/useEntityAlarms.ts` | Created | `useEntityAlarms(id, type)` + `useGlobalAlarms(params)` TanStack Query hooks |
-| `frontend/src/hooks/useLiveAlarms.ts` | Created | WS `/ws/alarms` subscription wrapper, unwraps `WsFrame` to `Alarm` |
-| `frontend/src/widgets/AlarmsListWidget.tsx` | Created | Reusable alarm table (entity-scoped and global reuse this) |
-| `frontend/src/widgets/MapWidget.tsx` | Created | Single-pin `react-leaflet` map |
-| `frontend/src/app/entities/[id]/page.tsx` | Modified | Alarms tab wired live; Map tab conditional on real lat/long keys |
-| `frontend/src/app/alarms/page.tsx` | Modified | Real global alarm list with severity/status filters, replacing `ComingSoon` |
-| `frontend/package.json` | Modified | `react-leaflet`, `leaflet`, `@types/leaflet` added |
+| File                                        | Change   | Purpose                                                                      |
+| ------------------------------------------- | -------- | ---------------------------------------------------------------------------- |
+| `frontend/src/hooks/useEntityAlarms.ts`     | Created  | `useEntityAlarms(id, type)` + `useGlobalAlarms(params)` TanStack Query hooks |
+| `frontend/src/hooks/useLiveAlarms.ts`       | Created  | WS `/ws/alarms` subscription wrapper, unwraps `WsFrame` to `Alarm`           |
+| `frontend/src/widgets/AlarmsListWidget.tsx` | Created  | Reusable alarm table (entity-scoped and global reuse this)                   |
+| `frontend/src/widgets/MapWidget.tsx`        | Created  | Single-pin `react-leaflet` map                                               |
+| `frontend/src/app/entities/[id]/page.tsx`   | Modified | Alarms tab wired live; Map tab conditional on real lat/long keys             |
+| `frontend/src/app/alarms/page.tsx`          | Modified | Real global alarm list with severity/status filters, replacing `ComingSoon`  |
+| `frontend/package.json`                     | Modified | `react-leaflet`, `leaflet`, `@types/leaflet` added                           |
 
 ## Deviations from Plan
 
@@ -96,16 +97,19 @@ None of substance. The plan's example hook names (`useKeys()`/`useLatest()`/`use
 ## Next Phase Readiness
 
 **Ready:**
+
 - Phase 6 goal fully met: from the nav, list Devices/Assets, drill into any entity for live Attributes/Telemetry/Alarms and a Map when available; global Alarms page gives a cross-entity operational view
 - `AlarmsListWidget` is reusable as-is for any future alarm-scoped view
 
 **Concerns:**
+
 - Same as 06-01/06-02: no automated browser/screenshot verification tool in this environment — all UI correctness relied on `tsc`, real backend data verification, and code-level review; a retroactive visual pass is worth doing if a browser driver becomes available
 - None of this session's changes are committed to git yet (per project `CLAUDE.md`, never commit without explicit ask)
 
 **Blockers:** None.
 
 ---
-*Built with PAUL Framework · iot_app*
-*Phase: 06-entity-views, Plan: 03*
-*Completed: 2026-08-02*
+
+_Built with PAUL Framework · iot_app_
+_Phase: 06-entity-views, Plan: 03_
+_Completed: 2026-08-02_

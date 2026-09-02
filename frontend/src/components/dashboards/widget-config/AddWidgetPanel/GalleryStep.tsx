@@ -1,7 +1,12 @@
 'use client';
 
 import { WidgetPreview } from '../WidgetPreview';
-import { WIDGET_REGISTRY, widgetsByCategory, type WidgetCategory, type WidgetType } from '../widget-registry';
+import {
+  WIDGET_REGISTRY,
+  widgetsByCategory,
+  type WidgetCategory,
+  type WidgetType,
+} from '../widget-registry';
 
 export function GalleryStep({
   category,

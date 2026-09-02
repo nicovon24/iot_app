@@ -12,7 +12,14 @@ import {
   YAxis,
 } from 'recharts';
 import { seriesColor } from '@/lib';
-import { TOOLTIP_STYLE, axisTick, formatTime, withUnit, mergeByTimestamp, type ChartSeries } from '../chart-shared';
+import {
+  TOOLTIP_STYLE,
+  axisTick,
+  formatTime,
+  withUnit,
+  mergeByTimestamp,
+  type ChartSeries,
+} from '../chart-shared';
 
 export interface MultiSeriesBarChartWidgetProps {
   series: ChartSeries[];
@@ -66,23 +73,43 @@ export function MultiSeriesBarChartWidget({
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-            <XAxis dataKey="ts" tickFormatter={formatTime} stroke="var(--color-faint)" fontSize={12} />
+            <XAxis
+              dataKey="ts"
+              tickFormatter={formatTime}
+              stroke="var(--color-faint)"
+              fontSize={12}
+            />
             <YAxis
               stroke="var(--color-faint)"
               fontSize={12}
               tickFormatter={axisTick}
-              label={unit ? { value: unit, angle: -90, position: 'insideLeft', fill: 'var(--color-muted)', fontSize: 11 } : undefined}
+              label={
+                unit
+                  ? {
+                      value: unit,
+                      angle: -90,
+                      position: 'insideLeft',
+                      fill: 'var(--color-muted)',
+                      fontSize: 11,
+                    }
+                  : undefined
+              }
             />
             <RechartsTooltip
               labelFormatter={(label) => formatTime(Number(label))}
-              formatter={(value, key) => [withUnit(unit)(Number(value)), nameById[String(key)] ?? String(key)]}
+              formatter={(value, key) => [
+                withUnit(unit)(Number(value)),
+                nameById[String(key)] ?? String(key),
+              ]}
               contentStyle={TOOLTIP_STYLE}
               cursor={{ fill: 'var(--color-surface)' }}
             />
             {/* Same rule as the line chart: past one series, identity never rests on hue alone. */}
             {series.length > 1 && (
               <Legend
-                formatter={(key) => <span className="text-xs text-muted">{nameById[String(key)] ?? String(key)}</span>}
+                formatter={(key) => (
+                  <span className="text-xs text-muted">{nameById[String(key)] ?? String(key)}</span>
+                )}
                 iconType="square"
                 iconSize={12}
               />

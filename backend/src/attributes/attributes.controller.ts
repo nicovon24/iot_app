@@ -1,5 +1,13 @@
 import { Body, Controller, Get, HttpCode, Param, ParseEnumPipe, Post, Query } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiSecurity,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AttributesPayload, EntityType, TbAttribute, TbAttributeScope } from '../types';
 import { AttributesService } from './attributes.service';
 import { ParseTbIdPipe } from '../common/pipes/tb-id.pipe';
@@ -15,26 +23,37 @@ export class AttributesController {
 
   @Get()
   @ApiOperation({
-    summary: 'Dynamic attribute read — returns whatever keys exist in the given scope, unfiltered unless "keys" is passed',
+    summary:
+      'Dynamic attribute read — returns whatever keys exist in the given scope, unfiltered unless "keys" is passed',
   })
   @ApiParam({ name: 'id' })
   @ApiQuery({ name: 'type', enum: ENTITY_TYPES })
   @ApiQuery({ name: 'scope', enum: SCOPES })
-  @ApiQuery({ name: 'keys', required: false, description: 'Comma-separated keys; omit for all keys in scope' })
+  @ApiQuery({
+    name: 'keys',
+    required: false,
+    description: 'Comma-separated keys; omit for all keys in scope',
+  })
   async getAttributes(
     @Param('id', ParseTbIdPipe) id: string,
     @Query('type', new ParseEnumPipe(ENTITY_TYPES)) type: EntityType,
     @Query('scope', new ParseEnumPipe(SCOPES)) scope: TbAttributeScope,
     @Query('keys') keys?: string,
   ): Promise<TbAttribute[]> {
-    return this.attributesService.getAttributes(id, type, scope, keys ? keys.split(',') : undefined);
+    return this.attributesService.getAttributes(
+      id,
+      type,
+      scope,
+      keys ? keys.split(',') : undefined,
+    );
   }
 
   @Post()
   @HttpCode(200)
   @ApiOperation({
     summary: 'Create/update attributes (upsert)',
-    description: 'Writes a free-form key/value map: creates keys that don\'t exist, overwrites keys that do. Other existing keys are left untouched.',
+    description:
+      "Writes a free-form key/value map: creates keys that don't exist, overwrites keys that do. Other existing keys are left untouched.",
   })
   @ApiParam({ name: 'id' })
   @ApiQuery({ name: 'type', enum: ENTITY_TYPES })

@@ -115,7 +115,13 @@ export class AlarmsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     try {
-      const inScope = await isEntityInScope(session, entityId, entityType, this.entitiesService, this.tb);
+      const inScope = await isEntityInScope(
+        session,
+        entityId,
+        entityType,
+        this.entitiesService,
+        this.tb,
+      );
       if (!inScope) {
         client.send(JSON.stringify({ event: 'error', entityId, message: 'forbidden' }));
         return;

@@ -63,7 +63,9 @@ export function ValueTileCell({ config }: { config: EntityWidgetConfig }) {
   const point = entity ? latest.byEntity[entity.id] : undefined;
   const sparklineData =
     wantsSparkline && entity
-      ? (history.byEntity[entity.id] ?? []).map((v) => ({ ts: v.ts, value: Number(v.value) })).filter((p) => Number.isFinite(p.value))
+      ? (history.byEntity[entity.id] ?? [])
+          .map((v) => ({ ts: v.ts, value: Number(v.value) }))
+          .filter((p) => Number.isFinite(p.value))
       : undefined;
   return (
     <ValueTileWidget
@@ -120,7 +122,8 @@ export function GaugeCell({ config }: { config: EntityWidgetConfig }) {
 
   // Without a configured range, derive one around the reading so the needle still sits
   // somewhere meaningful instead of pinning at an arbitrary 0–100 end.
-  const fallbackMax = numeric !== undefined && Number.isFinite(numeric) ? Math.max(1, Math.ceil(numeric * 1.5)) : 100;
+  const fallbackMax =
+    numeric !== undefined && Number.isFinite(numeric) ? Math.max(1, Math.ceil(numeric * 1.5)) : 100;
 
   return (
     <GaugeWidget
@@ -144,7 +147,13 @@ const DIAL_DEFAULTS = {
   rssi: { min: -120, max: -30, unit: 'dBm' },
 } as const;
 
-export function DialCell({ config, kind }: { config: EntityWidgetConfig; kind: 'battery' | 'rssi' }) {
+export function DialCell({
+  config,
+  kind,
+}: {
+  config: EntityWidgetConfig;
+  kind: 'battery' | 'rssi';
+}) {
   const entityType = config.entityType ?? 'DEVICE';
   const { entities, isLoading, notFound } = useDatasourceEntities(config);
   // One dial shows one subject, so only the first entity is fetched — same reason GaugeCell

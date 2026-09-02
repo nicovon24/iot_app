@@ -20,7 +20,10 @@ export interface GroupedKeys {
  * that is the whole point of this widget. Those keys are reported in `omittedKeys` instead,
  * following the same convention every other capped widget in this app already uses.
  */
-export function groupKeysByUnit(keys: string[], units: Record<string, string> | undefined): GroupedKeys {
+export function groupKeysByUnit(
+  keys: string[],
+  units: Record<string, string> | undefined,
+): GroupedKeys {
   const order: string[] = [];
   const byUnit = new Map<string, string[]>();
 

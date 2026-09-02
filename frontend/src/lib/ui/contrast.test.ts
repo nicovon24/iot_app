@@ -1,13 +1,12 @@
 /**
- * Self-check for the theme's colour contrast — run with: npx tsx src/lib/ui/contrast.check.ts
+ * The theme's colour contrast.
  *
  * This project has swapped its palette wholesale several times (see .paul/STATE.md's
  * "Addendum 2" — four dark variants in one sitting), and each swap was judged by eye.
  * Eyes are bad at this: the accent that shipped for months rendered white button labels
- * at 3.68:1, well under the 4.5:1 WCAG AA asks for. This check reads the real token
- * values out of globals.css and fails the moment a swap drops one below its threshold,
- * so the next palette exploration stays as free as the last one without silently
- * regressing legibility.
+ * at 3.68:1, well under the 4.5:1 WCAG AA asks for. This reads the real token values out
+ * of globals.css and fails the moment a swap drops one below its threshold, so the next
+ * palette exploration stays as free as the last one without silently regressing legibility.
  *
  * The aqua-green palette inverted one of the invariants this file used to hold. While the
  * accent was a dark petrol cyan, every accent surface carried white; at #2ee89a white
@@ -18,9 +17,9 @@
  * Thresholds are WCAG 2.1: 4.5:1 for normal text (1.4.3), 3:1 for large text and for
  * the boundary of a UI component or a meaningful icon (1.4.11).
  */
-import assert from 'node:assert';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { describe, expect, it } from 'vitest';
 
 type Rgb = [number, number, number];
 
@@ -33,9 +32,9 @@ function token(name: string, seen: string[] = []): string {
   // declared in both places — --font-sans and --font-mono, for instance, exist only in
   // @theme and point straight at themselves. Without this guard, asking for one recurses
   // until the stack dies instead of saying what is wrong.
-  assert.ok(!seen.includes(name), `circular token alias: ${[...seen, name].join(' -> ')}`);
+  if (seen.includes(name)) throw new Error(`circular token alias: ${[...seen, name].join(' -> ')}`);
   const match = CSS.match(new RegExp(`^\\s*${name}:\\s*([^;]+);`, 'm'));
-  assert.ok(match, `globals.css should define ${name}`);
+  if (!match) throw new Error(`globals.css should define ${name}`);
   const value = match[1].trim();
   // Several tokens alias another token rather than repeating its literal — follow the
   // indirection so the checker measures the colour that actually paints.
@@ -49,8 +48,10 @@ function parse(value: string): { rgb: Rgb; alpha: number } {
     const n = parseInt(hex[1], 16);
     return { rgb: [(n >> 16) & 255, (n >> 8) & 255, n & 255], alpha: 1 };
   }
-  const rgba = value.match(/^rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)(?:[,/\s]+([\d.]+))?\s*\)$/i);
-  assert.ok(rgba, `unsupported colour format: ${value}`);
+  const rgba = value.match(
+    /^rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)(?:[,/\s]+([\d.]+))?\s*\)$/i,
+  );
+  if (!rgba) throw new Error(`unsupported colour format: ${value}`);
   return {
     rgb: [Number(rgba[1]), Number(rgba[2]), Number(rgba[3])],
     alpha: rgba[4] === undefined ? 1 : Number(rgba[4]),
@@ -89,25 +90,59 @@ const AA_NON_TEXT = 3;
 const checks: { label: string; fg: Rgb; bg: Rgb; min: number }[] = [];
 
 /** Ink tokens must clear AA as body text on both the page and a card. */
-for (const name of ['--color-heading', '--color-body', '--color-nav', '--color-muted', '--color-faint', '--color-accent', '--color-danger']) {
+for (const name of [
+  '--color-heading',
+  '--color-body',
+  '--color-nav',
+  '--color-muted',
+  '--color-faint',
+  '--color-accent',
+  '--color-danger',
+]) {
   const ink = composite(token(name), CARD);
   checks.push({ label: `${name} as text on a card`, fg: ink, bg: CARD, min: AA_TEXT });
-  checks.push({ label: `${name} as text on the page`, fg: composite(token(name), SURFACE), bg: SURFACE, min: AA_TEXT });
+  checks.push({
+    label: `${name} as text on the page`,
+    fg: composite(token(name), SURFACE),
+    bg: SURFACE,
+    min: AA_TEXT,
+  });
 }
 
 /** Accent surfaces — the button, badge and active-pill role — carry dark ink, not white.
  * Asserting the pair is the point: the bug this replaces was a background that moved to a
  * brighter green while the `text-white` on top of it stayed put. */
 const ON_ACCENT = parse(token('--color-on-accent')).rgb;
-for (const name of ['--color-accent-strong', '--gradient-accent-from', '--gradient-accent-to', '--gradient-sidebar-active-from', '--gradient-sidebar-active-to']) {
-  checks.push({ label: `--color-on-accent text on ${name}`, fg: ON_ACCENT, bg: parse(token(name)).rgb, min: AA_TEXT });
+for (const name of [
+  '--color-accent-strong',
+  '--gradient-accent-from',
+  '--gradient-accent-to',
+  '--gradient-sidebar-active-from',
+  '--gradient-sidebar-active-to',
+]) {
+  checks.push({
+    label: `--color-on-accent text on ${name}`,
+    fg: ON_ACCENT,
+    bg: parse(token(name)).rgb,
+    min: AA_TEXT,
+  });
 }
 
 /** Danger stayed a dark surface, so it kept its white label. */
-checks.push({ label: 'white text on --color-danger-strong', fg: WHITE, bg: parse(token('--color-danger-strong')).rgb, min: AA_TEXT });
+checks.push({
+  label: 'white text on --color-danger-strong',
+  fg: WHITE,
+  bg: parse(token('--color-danger-strong')).rgb,
+  min: AA_TEXT,
+});
 
 /** The impersonation banner is the app's one warning surface. */
-checks.push({ label: '--color-on-warning text on --color-warning', fg: parse(token('--color-on-warning')).rgb, bg: parse(token('--color-warning')).rgb, min: AA_TEXT });
+checks.push({
+  label: '--color-on-warning text on --color-warning',
+  fg: parse(token('--color-on-warning')).rgb,
+  bg: parse(token('--color-warning')).rgb,
+  min: AA_TEXT,
+});
 
 /** Status gradients back icons, not text, so 1.4.11's 3:1 applies — but each against its
  * own declared ink, since ok/info are light surfaces and danger is a dark one. Anything
@@ -146,7 +181,12 @@ for (const [label, bg] of [
   ['the page', SURFACE],
   ['a card', CARD],
 ] as const) {
-  checks.push({ label: `--color-focus ring on ${label}`, fg: parse(token('--color-focus')).rgb, bg, min: AA_NON_TEXT });
+  checks.push({
+    label: `--color-focus ring on ${label}`,
+    fg: parse(token('--color-focus')).rgb,
+    bg,
+    min: AA_NON_TEXT,
+  });
 }
 
 /** No single ring colour clears 3:1 against both a near-black page and a bright accent:
@@ -160,16 +200,9 @@ checks.push({
   min: AA_NON_TEXT,
 });
 
-const failures: string[] = [];
-for (const { label, fg, bg, min } of checks) {
-  const ratio = contrast(fg, bg);
-  if (ratio < min) failures.push(`  ${label}: ${ratio.toFixed(2)}:1 (needs ${min}:1)`);
-}
-
-assert.strictEqual(
-  failures.length,
-  0,
-  `${failures.length} theme colour pair(s) below their WCAG threshold:\n${failures.join('\n')}`,
-);
-
-console.log(`contrast.check.ts: ${checks.length} colour pairs passed`);
+describe('theme colour contrast (WCAG AA)', () => {
+  it.each(checks)('$label clears its threshold', ({ fg, bg, min }) => {
+    const ratio = contrast(fg, bg);
+    expect(ratio).toBeGreaterThanOrEqual(min);
+  });
+});

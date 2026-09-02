@@ -1,7 +1,7 @@
 ---
 description: "Prove ThingsBoard can power a product with a frontend and API far more capable than ThingsBoard's native UI"
 type: Project
-about: "iot-app"
+about: 'iot-app'
 ---
 
 # IoTArg (iot_app)
@@ -16,11 +16,11 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 
 ## Current State
 
-| Attribute | Value |
-|-----------|-------|
-| Type | Application |
-| Version | v2.0 (in progress) — v1.0 complete |
-| Status | Prototype |
+| Attribute    | Value                                                          |
+| ------------ | -------------------------------------------------------------- |
+| Type         | Application                                                    |
+| Version      | v2.0 (in progress) — v1.0 complete                             |
+| Status       | Prototype                                                      |
 | Last Updated | 2026-08-05 (after Phase 10 — dashboard builder, code-complete) |
 
 ## Requirements
@@ -81,6 +81,7 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 ## Target Users
 
 **Primary:** Industrial operators and administrators
+
 - Monitor sensors/assets in real time (flow, pressure, temperature, vibration, position, etc.)
 - Need history/aggregates and flexible dashboards eventually (V2)
 - UI in English (**revised 2026-08-02** — superseded the original "UI in Spanish" requirement per explicit user direction); not necessarily technical
@@ -94,6 +95,7 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 ## Constraints
 
 ### Technical Constraints
+
 - ThingsBoard entities/telemetry/attributes/alarms are never duplicated locally — always proxied
 - Telemetry values are always serialized as strings in API responses (never JS `number`) — see `.paul/rules/api.md`
 - Frontend never talks to ThingsBoard directly — always through the NestJS backend (REST + WS)
@@ -101,72 +103,75 @@ Industrial operators can view live and historical telemetry/attributes/alarms fo
 - ThingsBoard instance is **CE (Community Edition)**, not PE — no native Entity Groups/Roles. V1 scoping follows the **customer hierarchy**: sysadmin (tenant) sees everything; a customer user sees everything under its own customer, including descendant sub-customers. Per-asset/área permission granularity (finer than hierarchy) has no TB-native mechanism and is deferred until a design is chosen
 
 ### Business Constraints
+
 - Solo-dev project — plan/apply/unify loop (PAUL) sized for one person, no heavy subagent orchestration overhead
 
 ### Compliance Constraints
+
 - None currently (no real client/industry data in V1 — emulated devices only)
 
 ## Key Decisions
 
-| Decision | Rationale | Date | Status |
-|----------|-----------|------|--------|
-| Frontend is Next.js (App Router), not plain Vite+React | User preference; also enables future BFF route handlers if needed | 2026-07-30 | Active |
-| Redis included from V1 (not deferred) | Cuts repeated calls to ThingsBoard and DB for JWT + recent telemetry/attribute reads | 2026-07-30 | Active |
-| Postgres/Prisma scoped narrowly in V1 to hierarchy-level metadata only — no local Client/Customer table | Only persistence actually needed for the wizard; Customer itself always lives in TB, never duplicated | 2026-07-30 | Active |
-| Client-creation wizard is the only V1 wizard; hierarchy fixed at creation | Keeps V1 scope tight — Asset/Device wizards and hierarchy editing deferred to V2 | 2026-07-30 | Active |
-| "Client" IS ThingsBoard's native Customer — not a separate app-owned entity | User clarified mid-Phase-4 that a parallel `Client` concept alongside TB's `Customer` was redundant and confusing; `CustomerHierarchyLevels` is keyed by the real TB `customerId` instead of a local id | 2026-08-01 | Active |
-| API mirrors ThingsBoard's dynamic entity/attribute/telemetry model | Any telemetry/attribute key works without backend changes when new sensor types appear | 2026-07-30 | Active |
-| GraphQL discarded in favor of REST + Swagger | See docs/project/STACK.md | 2026-07-25 | Active |
-| Users are TB-native (sysadmin = TB Tenant Admin, admin/reader = TB Customer Users), not an app-owned users table | App is complementary to ThingsBoard identity, not a second source of truth for users | 2026-07-31 | Active |
-| Permission scoping in V1 follows the customer hierarchy (tenant sees all; a customer sees itself + descendant sub-customers) — no finer granularity (TB CE has no Entity Groups) | Avoids inventing a parallel permission system before a real design for área/asset-level scoping is chosen; hierarchy-based scoping is a natural TB CE mechanism (sub-customers) | 2026-07-31 | Active |
-| WebSocket gateways run on `@nestjs/platform-ws`'s `WsAdapter` over the existing Fastify HTTP server | Keeps standard Nest gateway/DI conventions instead of hand-rolling a Fastify WS route; one adapter serves both telemetry and alarm gateways | 2026-07-31 | Active |
-| Customer-hierarchy scoping logic is a single shared function (`isEntityInScope`) used by both the REST `CustomerScopeGuard` and every WS gateway | Prevents REST and WS from drifting into two different authorization rules over time | 2026-07-31 | Active |
-| Alarm live push uses ~7s polling+diff instead of ThingsBoard's native `alarmDataCmds` WS protocol | That protocol is materially more complex than telemetry's `tsSubCmds` and wasn't confirmed working within Phase 3's budget; revisit if Phase 6 needs lower latency | 2026-07-31 | Active |
-| Local Postgres runs on host port 15432, not the 5432 default | Three native Windows PostgreSQL services were already bound to 5432/5433/5434 on the dev machine, silently intercepting Docker's forwarded connections | 2026-08-01 | Active |
-| Prisma pinned to v6, not the current v7 | Prisma 7 requires driver adapters/`prisma.config.ts` instead of a plain `url` in the datasource block — a bigger architectural change than Phase 4 scoped | 2026-08-01 | Active |
-| `POST /customers` creates the real TB Customer first, then hierarchy rows in Postgres; on Postgres failure the TB Customer is deleted (compensating action, not a true cross-store transaction) | TB has no transaction spanning both stores; this avoids leaving an orphaned Customer with no hierarchy | 2026-08-01 | Active |
-| Default suggested hierarchy levels: Site → Area → Asset → Sensor | User-chosen naming for the Phase 7 wizard's default suggestion; still free-text per Customer, not enforced by the backend | 2026-08-01 | Active |
-| **UI language switched to English, superseding the original "UI in Spanish" requirement** | Explicit user direction during Phase 5 frontend work | 2026-08-02 | Active |
-| Global Alarms page relies on TanStack Query refetch-on-filter-change, not a tenant-wide WS subscription | `/ws/alarms` is entity-scoped by design (Phase 3); a tenant-wide alarm push protocol wasn't built and isn't needed for a filterable list | 2026-08-02 | Active |
-| Map tab uses HeroUI `Tabs`' `isDisabled` instead of omitting the tab for entities without lat/long | Lets the user see the capability exists but isn't available for this entity, rather than hiding it entirely | 2026-08-02 | Active |
-| Map marker/popup is one shared component (`EntityMapMarker`) used by both the per-entity Map tab and the fleet map, colored by alarm state (not severity-level granularity) | Avoids two divergent map implementations; matches the scope explicitly confirmed with the user before planning Phase 6.4 | 2026-08-02 | Active |
-| Map tiles default to a white/light basemap (CartoDB Positron), with a toggle to switch to color OSM tiles | Explicit user request after seeing Phase 6's color map — white is the default "at rest" look | 2026-08-02 | Active |
-| Impersonated sessions reuse the impersonator's own `tbToken`/`tbRefreshToken` rather than a second real TB login for the target user | Consistent with existing architecture — entity-scoped TB calls already go through the shared service-account credential regardless of whose app session is active, not the caller's own token | 2026-08-05 | Active |
-| No live kill-switch for impersonation — a sysadmin can't forcibly end another active impersonation session from elsewhere, only "Back to my session" on the impersonating browser itself | Explicit scope cut, confirmed with the user before planning Phase 9.2 | 2026-08-05 | Active |
-| Client-side role-based UI gating (READER's write controls hidden, not just backend-403'd) required adding `GET /auth/me` first | Superseded the Phase 7 decision to not build fake client-side role checks without a real endpoint backing them — that endpoint now exists | 2026-08-05 | Active |
-| READER's write controls are hidden entirely, not shown disabled | Initial implementation used disabled-with-tooltip; user explicitly asked to switch to fully hidden | 2026-08-05 | Active |
-| Dashboard sharing model is `visibility: PRIVATE\|SHARED` + `customerScope: ALL\|SPECIFIC` (+ `DashboardCustomerAccess` join table for one-or-more Customers), not a single `customerId` column | User asked mid-Phase-10-discussion whether a dashboard should target one, several, or all Customers, and whether a creator could keep one private | 2026-08-05 | Active |
-| No ADMIN-vs-READER distinction within a `SHARED` dashboard's visibility | Explicit user decision, consistent with the project's standing "no per-role/per-area granularity without a real design" stance (see Área/asset-level permission granularity row) | 2026-08-05 | Active |
-| Dashboard `widgetType` is a backend registry (Zod schema per type) + frontend registry (UI metadata per type), not a closed enum/switch — deliberately shaped so future gauges/templates/AI-generated configs are additive, not a rework | User asked to leave the door open for more widget types, templates, and AI-assisted generation without building any of them yet | 2026-08-05 | Active |
-| Whole-dashboard save is one Prisma transaction (`PUT /dashboards/:id` replaces all widgets + customerAccess rows together) | User's explicit "sin errores" requirement — a partial-failure mid-save must never leave the grid inconsistent with the DB | 2026-08-05 | Active |
-| Dashboard builder canvas uses `react-grid-layout@1.5.4` (classic API), not the current `2.x` rewrite | v2's hook-based API (`dragConfig`/`resizeConfig`, required numeric `width`) carried materially higher implementation risk than v1's well-documented `isDraggable`/`layout`/`onLayoutChange` shape, especially without a browser to click-test against this session | 2026-08-05 (Phase 10, 10-02) | Active |
-| Bulk-add (pick one entity, check several telemetry keys, add them all as `value-tile`/`line-chart` widgets in one action) is the mechanism for the user's explicit ≤5-minute dashboard-building target, one entity at a time in v1 | User set the 5-minute target after reviewing a save/render diagram together and found the one-by-one flow wouldn't reliably hit it | 2026-08-05 (Phase 10, 10-03) | Active |
+| Decision                                                                                                                                                                                                                                 | Rationale                                                                                                                                                                                                                                                          | Date                         | Status |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------- | ------ |
+| Frontend is Next.js (App Router), not plain Vite+React                                                                                                                                                                                   | User preference; also enables future BFF route handlers if needed                                                                                                                                                                                                  | 2026-07-30                   | Active |
+| Redis included from V1 (not deferred)                                                                                                                                                                                                    | Cuts repeated calls to ThingsBoard and DB for JWT + recent telemetry/attribute reads                                                                                                                                                                               | 2026-07-30                   | Active |
+| Postgres/Prisma scoped narrowly in V1 to hierarchy-level metadata only — no local Client/Customer table                                                                                                                                  | Only persistence actually needed for the wizard; Customer itself always lives in TB, never duplicated                                                                                                                                                              | 2026-07-30                   | Active |
+| Client-creation wizard is the only V1 wizard; hierarchy fixed at creation                                                                                                                                                                | Keeps V1 scope tight — Asset/Device wizards and hierarchy editing deferred to V2                                                                                                                                                                                   | 2026-07-30                   | Active |
+| "Client" IS ThingsBoard's native Customer — not a separate app-owned entity                                                                                                                                                              | User clarified mid-Phase-4 that a parallel `Client` concept alongside TB's `Customer` was redundant and confusing; `CustomerHierarchyLevels` is keyed by the real TB `customerId` instead of a local id                                                            | 2026-08-01                   | Active |
+| API mirrors ThingsBoard's dynamic entity/attribute/telemetry model                                                                                                                                                                       | Any telemetry/attribute key works without backend changes when new sensor types appear                                                                                                                                                                             | 2026-07-30                   | Active |
+| GraphQL discarded in favor of REST + Swagger                                                                                                                                                                                             | See docs/project/STACK.md                                                                                                                                                                                                                                          | 2026-07-25                   | Active |
+| Users are TB-native (sysadmin = TB Tenant Admin, admin/reader = TB Customer Users), not an app-owned users table                                                                                                                         | App is complementary to ThingsBoard identity, not a second source of truth for users                                                                                                                                                                               | 2026-07-31                   | Active |
+| Permission scoping in V1 follows the customer hierarchy (tenant sees all; a customer sees itself + descendant sub-customers) — no finer granularity (TB CE has no Entity Groups)                                                         | Avoids inventing a parallel permission system before a real design for área/asset-level scoping is chosen; hierarchy-based scoping is a natural TB CE mechanism (sub-customers)                                                                                    | 2026-07-31                   | Active |
+| WebSocket gateways run on `@nestjs/platform-ws`'s `WsAdapter` over the existing Fastify HTTP server                                                                                                                                      | Keeps standard Nest gateway/DI conventions instead of hand-rolling a Fastify WS route; one adapter serves both telemetry and alarm gateways                                                                                                                        | 2026-07-31                   | Active |
+| Customer-hierarchy scoping logic is a single shared function (`isEntityInScope`) used by both the REST `CustomerScopeGuard` and every WS gateway                                                                                         | Prevents REST and WS from drifting into two different authorization rules over time                                                                                                                                                                                | 2026-07-31                   | Active |
+| Alarm live push uses ~7s polling+diff instead of ThingsBoard's native `alarmDataCmds` WS protocol                                                                                                                                        | That protocol is materially more complex than telemetry's `tsSubCmds` and wasn't confirmed working within Phase 3's budget; revisit if Phase 6 needs lower latency                                                                                                 | 2026-07-31                   | Active |
+| Local Postgres runs on host port 15432, not the 5432 default                                                                                                                                                                             | Three native Windows PostgreSQL services were already bound to 5432/5433/5434 on the dev machine, silently intercepting Docker's forwarded connections                                                                                                             | 2026-08-01                   | Active |
+| Prisma pinned to v6, not the current v7                                                                                                                                                                                                  | Prisma 7 requires driver adapters/`prisma.config.ts` instead of a plain `url` in the datasource block — a bigger architectural change than Phase 4 scoped                                                                                                          | 2026-08-01                   | Active |
+| `POST /customers` creates the real TB Customer first, then hierarchy rows in Postgres; on Postgres failure the TB Customer is deleted (compensating action, not a true cross-store transaction)                                          | TB has no transaction spanning both stores; this avoids leaving an orphaned Customer with no hierarchy                                                                                                                                                             | 2026-08-01                   | Active |
+| Default suggested hierarchy levels: Site → Area → Asset → Sensor                                                                                                                                                                         | User-chosen naming for the Phase 7 wizard's default suggestion; still free-text per Customer, not enforced by the backend                                                                                                                                          | 2026-08-01                   | Active |
+| **UI language switched to English, superseding the original "UI in Spanish" requirement**                                                                                                                                                | Explicit user direction during Phase 5 frontend work                                                                                                                                                                                                               | 2026-08-02                   | Active |
+| Global Alarms page relies on TanStack Query refetch-on-filter-change, not a tenant-wide WS subscription                                                                                                                                  | `/ws/alarms` is entity-scoped by design (Phase 3); a tenant-wide alarm push protocol wasn't built and isn't needed for a filterable list                                                                                                                           | 2026-08-02                   | Active |
+| Map tab uses HeroUI `Tabs`' `isDisabled` instead of omitting the tab for entities without lat/long                                                                                                                                       | Lets the user see the capability exists but isn't available for this entity, rather than hiding it entirely                                                                                                                                                        | 2026-08-02                   | Active |
+| Map marker/popup is one shared component (`EntityMapMarker`) used by both the per-entity Map tab and the fleet map, colored by alarm state (not severity-level granularity)                                                              | Avoids two divergent map implementations; matches the scope explicitly confirmed with the user before planning Phase 6.4                                                                                                                                           | 2026-08-02                   | Active |
+| Map tiles default to a white/light basemap (CartoDB Positron), with a toggle to switch to color OSM tiles                                                                                                                                | Explicit user request after seeing Phase 6's color map — white is the default "at rest" look                                                                                                                                                                       | 2026-08-02                   | Active |
+| Impersonated sessions reuse the impersonator's own `tbToken`/`tbRefreshToken` rather than a second real TB login for the target user                                                                                                     | Consistent with existing architecture — entity-scoped TB calls already go through the shared service-account credential regardless of whose app session is active, not the caller's own token                                                                      | 2026-08-05                   | Active |
+| No live kill-switch for impersonation — a sysadmin can't forcibly end another active impersonation session from elsewhere, only "Back to my session" on the impersonating browser itself                                                 | Explicit scope cut, confirmed with the user before planning Phase 9.2                                                                                                                                                                                              | 2026-08-05                   | Active |
+| Client-side role-based UI gating (READER's write controls hidden, not just backend-403'd) required adding `GET /auth/me` first                                                                                                           | Superseded the Phase 7 decision to not build fake client-side role checks without a real endpoint backing them — that endpoint now exists                                                                                                                          | 2026-08-05                   | Active |
+| READER's write controls are hidden entirely, not shown disabled                                                                                                                                                                          | Initial implementation used disabled-with-tooltip; user explicitly asked to switch to fully hidden                                                                                                                                                                 | 2026-08-05                   | Active |
+| Dashboard sharing model is `visibility: PRIVATE\|SHARED` + `customerScope: ALL\|SPECIFIC` (+ `DashboardCustomerAccess` join table for one-or-more Customers), not a single `customerId` column                                           | User asked mid-Phase-10-discussion whether a dashboard should target one, several, or all Customers, and whether a creator could keep one private                                                                                                                  | 2026-08-05                   | Active |
+| No ADMIN-vs-READER distinction within a `SHARED` dashboard's visibility                                                                                                                                                                  | Explicit user decision, consistent with the project's standing "no per-role/per-area granularity without a real design" stance (see Área/asset-level permission granularity row)                                                                                   | 2026-08-05                   | Active |
+| Dashboard `widgetType` is a backend registry (Zod schema per type) + frontend registry (UI metadata per type), not a closed enum/switch — deliberately shaped so future gauges/templates/AI-generated configs are additive, not a rework | User asked to leave the door open for more widget types, templates, and AI-assisted generation without building any of them yet                                                                                                                                    | 2026-08-05                   | Active |
+| Whole-dashboard save is one Prisma transaction (`PUT /dashboards/:id` replaces all widgets + customerAccess rows together)                                                                                                               | User's explicit "sin errores" requirement — a partial-failure mid-save must never leave the grid inconsistent with the DB                                                                                                                                          | 2026-08-05                   | Active |
+| Dashboard builder canvas uses `react-grid-layout@1.5.4` (classic API), not the current `2.x` rewrite                                                                                                                                     | v2's hook-based API (`dragConfig`/`resizeConfig`, required numeric `width`) carried materially higher implementation risk than v1's well-documented `isDraggable`/`layout`/`onLayoutChange` shape, especially without a browser to click-test against this session | 2026-08-05 (Phase 10, 10-02) | Active |
+| Bulk-add (pick one entity, check several telemetry keys, add them all as `value-tile`/`line-chart` widgets in one action) is the mechanism for the user's explicit ≤5-minute dashboard-building target, one entity at a time in v1       | User set the 5-minute target after reviewing a save/render diagram together and found the one-by-one flow wouldn't reliably hit it                                                                                                                                 | 2026-08-05 (Phase 10, 10-03) | Active |
 
 ## Success Metrics
 
-| Metric | Target | Current | Status |
-|--------|--------|---------|--------|
-| Live telemetry latency (TB → frontend) | < 2s | Not measured | At risk |
-| Entities API works for any Device/Asset without code changes per type | Yes | Not built | At risk |
-| Client-creation wizard produces a usable hierarchy end-to-end | Yes | Backend complete (Phase 4); frontend pending (Phase 7) | On track |
+| Metric                                                                | Target | Current                                                | Status   |
+| --------------------------------------------------------------------- | ------ | ------------------------------------------------------ | -------- |
+| Live telemetry latency (TB → frontend)                                | < 2s   | Not measured                                           | At risk  |
+| Entities API works for any Device/Asset without code changes per type | Yes    | Not built                                              | At risk  |
+| Client-creation wizard produces a usable hierarchy end-to-end         | Yes    | Backend complete (Phase 4); frontend pending (Phase 7) | On track |
 
 ## Tech Stack / Tools
 
-| Layer | Technology | Notes |
-|-------|------------|-------|
-| Backend | NestJS + Fastify adapter | REST + Swagger, WS gateways for telemetry/alarms |
-| Cache | Redis | ThingsBoard JWT cache + telemetry/attribute read cache (V1) |
-| Database | PostgreSQL via Prisma (v6) | Hierarchy-level metadata only (keyed by real TB `customerId`), no local Customer/Client table; local instance on port 15432 |
-| IoT Engine | ThingsBoard (Cloud dev / Docker local) | Devices, Assets, Telemetry, Attributes, Alarms, Rule Chains |
-| Frontend | Next.js (App Router) + TypeScript | Zustand (UI state), TanStack Query (server state), Recharts, react-leaflet (map), react-grid-layout v1 (dashboard builder grid) |
-| Package Manager | npm workspaces (root `package.json`) | `backend`, `frontend` |
+| Layer           | Technology                             | Notes                                                                                                                           |
+| --------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Backend         | NestJS + Fastify adapter               | REST + Swagger, WS gateways for telemetry/alarms                                                                                |
+| Cache           | Redis                                  | ThingsBoard JWT cache + telemetry/attribute read cache (V1)                                                                     |
+| Database        | PostgreSQL via Prisma (v6)             | Hierarchy-level metadata only (keyed by real TB `customerId`), no local Customer/Client table; local instance on port 15432     |
+| IoT Engine      | ThingsBoard (Cloud dev / Docker local) | Devices, Assets, Telemetry, Attributes, Alarms, Rule Chains                                                                     |
+| Frontend        | Next.js (App Router) + TypeScript      | Zustand (UI state), TanStack Query (server state), Recharts, react-leaflet (map), react-grid-layout v1 (dashboard builder grid) |
+| Package Manager | npm workspaces (root `package.json`)   | `backend`, `frontend`                                                                                                           |
 
 ## Links
 
-| Resource | URL |
-|----------|-----|
+| Resource   | URL                                                            |
+| ---------- | -------------------------------------------------------------- |
 | Repository | https://github.com/nicovon24/iot_app (branch: `feature/admin`) |
 
 ---
-*PROJECT.md — Updated when requirements or context change*
-*Last updated: 2026-08-05 after Phase 10 (dashboard builder, code-complete — see Active for pending browser verification)*
+
+_PROJECT.md — Updated when requirements or context change_
+_Last updated: 2026-08-05 after Phase 10 (dashboard builder, code-complete — see Active for pending browser verification)_

@@ -44,10 +44,16 @@ export function LineChartCell({ config }: { config: EntityWidgetConfig }) {
     agg: config.agg,
     interval: config.interval,
   });
-  const single = useHistoryForEntities(all ? [] : entities, entityType, config.telemetryKey, window, {
-    agg: config.agg,
-    interval: config.interval,
-  });
+  const single = useHistoryForEntities(
+    all ? [] : entities,
+    entityType,
+    config.telemetryKey,
+    window,
+    {
+      agg: config.agg,
+      interval: config.interval,
+    },
+  );
 
   if (notFound) return <WidgetUnavailable />;
 
@@ -102,10 +108,16 @@ export function BarChartCell({ config }: { config: EntityWidgetConfig }) {
     agg: config.agg,
     interval: config.interval,
   });
-  const single = useHistoryForEntities(all ? [] : entities, entityType, config.telemetryKey, window, {
-    agg: config.agg,
-    interval: config.interval,
-  });
+  const single = useHistoryForEntities(
+    all ? [] : entities,
+    entityType,
+    config.telemetryKey,
+    window,
+    {
+      agg: config.agg,
+      interval: config.interval,
+    },
+  );
 
   if (notFound) return <WidgetUnavailable />;
 
@@ -145,10 +157,11 @@ export function MultiKeyChartCell({ config }: { config: EntityWidgetConfig }) {
 
   const timeWindow = useDashboardTimeWindow();
   const shown = entities.slice(0, 1);
+  const keysSignature = keys.join(',');
   const window = useMemo(
     () => resolveHistoryWindow(timeWindow),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [keys.join(','), timeWindow],
+    [keysSignature, timeWindow],
   );
   const history = useMultiKeyHistoryForEntities(shown, entityType, keys, window, {
     agg: config.agg,
@@ -178,7 +191,6 @@ export function MultiKeyChartCell({ config }: { config: EntityWidgetConfig }) {
 const TIME_AXIS = 'TIME';
 
 export function ScatterCell({ config }: { config: EntityWidgetConfig }) {
-  const all = isAllScope(config);
   const entityType = config.entityType ?? 'DEVICE';
   const { entities, isLoading, notFound } = useDatasourceEntities(config);
   const fleetMode = config.mode === 'FLEET';
@@ -188,11 +200,7 @@ export function ScatterCell({ config }: { config: EntityWidgetConfig }) {
   // (a dot each, one colour) so it's bounded by request volume, while HISTORY gives each entity
   // its own colour and is bounded by the eight validated palette slots.
   const shown = entities.slice(0, fleetMode ? MAX_TILES : MAX_SERIES);
-  const window = useMemo(
-    () => resolveHistoryWindow(timeWindow),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [timeWindow],
-  );
+  const window = useMemo(() => resolveHistoryWindow(timeWindow), [timeWindow]);
 
   const xKey = config.xKey ?? TIME_AXIS;
   const yKey = config.yKey ?? '';
@@ -254,12 +262,12 @@ export function ScatterCell({ config }: { config: EntityWidgetConfig }) {
         points: pairSeries(byKey[xKey] ?? [], ySeries).map(({ a, b }) => ({ x: a, y: b })),
       };
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fleetMode, shown, history.byEntity, latest.byEntity, xKey, yKey]);
 
   if (notFound) return <WidgetUnavailable />;
   if (isLoading && entities.length === 0) return <WidgetUnavailable reason="Loading…" />;
-  if (!config.yKey) return <WidgetUnavailable reason="Pick the two keys to plot against each other" />;
+  if (!config.yKey)
+    return <WidgetUnavailable reason="Pick the two keys to plot against each other" />;
 
   return (
     <ScatterChartWidget
@@ -327,7 +335,9 @@ export function DonutCell({ config }: { config: EntityWidgetConfig }) {
 
   return (
     <DonutChartWidget
-      title={config.title ?? (groupBy === 'ALARM_SEVERITY' ? 'Alarms by severity' : 'Alarms by status')}
+      title={
+        config.title ?? (groupBy === 'ALARM_SEVERITY' ? 'Alarms by severity' : 'Alarms by status')
+      }
       slices={slices}
       unitNoun="alarms"
       isLoading={activeAlarms.isLoading}

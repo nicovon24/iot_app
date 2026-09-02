@@ -19,7 +19,9 @@ export class CustomersService {
    * to avoid an orphaned Customer with no hierarchy — TB has no native transaction spanning
    * both stores, so this is a best-effort compensating action, not true atomicity.
    */
-  async create(dto: CreateCustomerDto): Promise<EntityRef & { hierarchyLevels: { levelIndex: number; name: string }[] }> {
+  async create(
+    dto: CreateCustomerDto,
+  ): Promise<EntityRef & { hierarchyLevels: { levelIndex: number; name: string }[] }> {
     const customer = await this.entitiesService.createCustomer(dto.name, dto.parentCustomerId);
 
     try {

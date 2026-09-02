@@ -5,10 +5,8 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import L from 'leaflet';
-import { useQueries } from '@tanstack/react-query';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
-import { apiClient } from '@/lib';
 import { useEntities } from '@/hooks';
 import { useTelemetryKeys, useTelemetryLatest } from '@/hooks';
 
@@ -20,7 +18,7 @@ import { MapAutoResize } from './MapAutoResize';
 import { MapStyleToggle } from './MapStyleToggle';
 import { MAP_TILE_CONFIG, type MapTileStyle } from '@/lib';
 import { MapSkeleton } from '@/components';
-import type { EntityRef, TelemetryLatest } from '@/types';
+import type { EntityRef } from '@/types';
 
 /** What a marker wears before its status is known. Never alarmed, never offline. */
 const UNKNOWN_STATUS: EntityStatus = { connectivity: 'unknown', severity: null, level: null };
@@ -28,7 +26,6 @@ const UNKNOWN_STATUS: EntityStatus = { connectivity: 'unknown', severity: null, 
 const DEFAULT_CENTER: [number, number] = [20, 0];
 const DEFAULT_ZOOM = 2;
 const SINGLE_DEVICE_ZOOM = 13;
-
 
 function computeInitialView(positions: Record<string, [number, number]>): {
   center: [number, number];
@@ -41,7 +38,10 @@ function computeInitialView(positions: Record<string, [number, number]>): {
   const lats = coords.map((c) => c[0]);
   const lngs = coords.map((c) => c[1]);
   return {
-    center: [(Math.min(...lats) + Math.max(...lats)) / 2, (Math.min(...lngs) + Math.max(...lngs)) / 2],
+    center: [
+      (Math.min(...lats) + Math.max(...lats)) / 2,
+      (Math.min(...lngs) + Math.max(...lngs)) / 2,
+    ],
     zoom: 11,
   };
 }
@@ -89,7 +89,11 @@ function FleetMarker({
   const lat = telemetry.latitude ? Number(telemetry.latitude.value) : undefined;
   const lng = telemetry.longitude ? Number(telemetry.longitude.value) : undefined;
   const hasValidCoords =
-    hasLocation && lat !== undefined && lng !== undefined && !Number.isNaN(lat) && !Number.isNaN(lng);
+    hasLocation &&
+    lat !== undefined &&
+    lng !== undefined &&
+    !Number.isNaN(lat) &&
+    !Number.isNaN(lng);
 
   useEffect(() => {
     onPosition(device.id, hasValidCoords ? [lat as number, lng as number] : null);
@@ -129,10 +133,15 @@ export function FleetMapWidget({
   refetchInterval,
 }: FleetMapWidgetProps = {}) {
   const [tileStyle, setTileStyle] = useState<MapTileStyle>('dark');
-  const { data, isLoading, isError, error } = useEntities(entityType, undefined, { refetchInterval });
+  const { data, isLoading, isError, error } = useEntities(entityType, undefined, {
+    refetchInterval,
+  });
   const devices = data?.data ?? [];
   const [positions, setPositions] = useState<Record<string, [number, number]>>({});
-  const { positions: prefetchedPositions, isLoading: positionsLoading } = useFleetPositions(devices, entityType);
+  const { positions: prefetchedPositions, isLoading: positionsLoading } = useFleetPositions(
+    devices,
+    entityType,
+  );
   // One call for the whole map. Its queries are keyed, so the dock and the overlay on the same
   // screen read the identical cache entries rather than refetching any of this.
   const { statusById } = useFleetStatus(entityType);
@@ -153,7 +162,9 @@ export function FleetMapWidget({
 
   if (isLoading || positionsLoading) {
     return (
-      <div className={`relative ${heightClassName} overflow-hidden rounded-xl border border-border`}>
+      <div
+        className={`relative ${heightClassName} overflow-hidden rounded-xl border border-border`}
+      >
         <MapSkeleton />
       </div>
     );
@@ -162,7 +173,9 @@ export function FleetMapWidget({
   if (isError) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     return (
-      <div className={`flex ${heightClassName} items-center justify-center rounded-xl border border-border bg-surface-card`}>
+      <div
+        className={`flex ${heightClassName} items-center justify-center rounded-xl border border-border bg-surface-card`}
+      >
         <p className="text-sm text-danger">Failed to load: {message}</p>
       </div>
     );
@@ -172,7 +185,9 @@ export function FleetMapWidget({
   const initialView = computeInitialView(prefetchedPositions);
 
   return (
-    <div className={`relative ${heightClassName} overflow-hidden rounded-xl border border-border shadow-sm`}>
+    <div
+      className={`relative ${heightClassName} overflow-hidden rounded-xl border border-border shadow-sm`}
+    >
       <MapStyleToggle value={tileStyle} onChange={setTileStyle} />
       <MapContainer center={initialView.center} zoom={initialView.zoom} className="h-full w-full">
         <TileLayer attribution={tile.attribution} url={tile.url} />

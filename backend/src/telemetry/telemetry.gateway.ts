@@ -112,7 +112,13 @@ export class TelemetryGateway implements OnGatewayConnection, OnGatewayDisconnec
     clientSubs.set(key, () => {});
 
     try {
-      const inScope = await isEntityInScope(session, entityId, entityType, this.entitiesService, this.tb);
+      const inScope = await isEntityInScope(
+        session,
+        entityId,
+        entityType,
+        this.entitiesService,
+        this.tb,
+      );
       if (!inScope) {
         clientSubs.delete(key);
         client.send(JSON.stringify({ event: 'error', entityId, message: 'forbidden' }));

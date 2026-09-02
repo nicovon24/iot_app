@@ -169,7 +169,14 @@ export class ThingsboardWsService implements OnModuleDestroy {
   private sendUnsubscribe(socket: WebSocket, entry: SubscriptionEntry): void {
     socket.send(
       JSON.stringify({
-        tsSubCmds: [{ entityType: entry.entityType, entityId: entry.entityId, cmdId: entry.cmdId, unsubscribe: true }],
+        tsSubCmds: [
+          {
+            entityType: entry.entityType,
+            entityId: entry.entityId,
+            cmdId: entry.cmdId,
+            unsubscribe: true,
+          },
+        ],
         historyCmds: [],
         attrSubCmds: [],
       }),

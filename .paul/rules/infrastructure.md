@@ -4,13 +4,13 @@
 
 Validated at startup via Zod (`backend/src/config/config.schema.ts`) — the app fails fast if required vars are missing or malformed. See `backend/.env.example`.
 
-| Variable | Required | Default | Notes |
-|---|:---:|---|---|
-| `THINGSBOARD_URL` | yes | — | Base URL of the ThingsBoard instance (Cloud dev or local Docker) |
-| `THINGSBOARD_USERNAME` | yes | — | Service-account login for the backend's own cached session (not an end-user's) |
-| `THINGSBOARD_PASSWORD` | yes | — | |
-| `REDIS_URL` | no | `redis://localhost:6379` | |
-| `PORT` | no | `3001` | |
+| Variable               | Required | Default                  | Notes                                                                          |
+| ---------------------- | :------: | ------------------------ | ------------------------------------------------------------------------------ |
+| `THINGSBOARD_URL`      |   yes    | —                        | Base URL of the ThingsBoard instance (Cloud dev or local Docker)               |
+| `THINGSBOARD_USERNAME` |   yes    | —                        | Service-account login for the backend's own cached session (not an end-user's) |
+| `THINGSBOARD_PASSWORD` |   yes    | —                        |                                                                                |
+| `REDIS_URL`            |    no    | `redis://localhost:6379` |                                                                                |
+| `PORT`                 |    no    | `3001`                   |                                                                                |
 
 Never commit real `THINGSBOARD_USERNAME`/`PASSWORD` values — `.env` is local-only, `.env.example` stays blank.
 
@@ -24,6 +24,7 @@ Never commit real `THINGSBOARD_USERNAME`/`PASSWORD` values — `.env` is local-o
 ## Redis usage
 
 Two distinct concerns share the same Redis instance in V1:
+
 1. ThingsBoard service-account JWT cache (`tb:jwt`).
 2. App session store (`x-session-token` → `AppSession`, set at `/auth/login`).
 

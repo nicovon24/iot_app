@@ -30,7 +30,7 @@ export function MillerColumn({
     >
       <div className="flex shrink-0 items-center justify-between gap-2 px-4 pb-3 pt-1">
         {/* Archivo rather than the mono label role: this names a level of the hierarchy, and
-          * the boards set structural language in the display face. */}
+         * the boards set structural language in the display face. */}
         <h2 className="text-[10px] font-extrabold uppercase leading-none tracking-[0.16em] text-muted">
           {title}
         </h2>
@@ -76,7 +76,10 @@ export function MillerRow({
       }
       className={`ruled-row group flex items-center gap-2 px-4 py-2.5 ${onSelect ? 'cursor-pointer' : ''}`}
     >
-      <span className="min-w-0 flex-1 truncate text-[12.5px] leading-none text-nav group-hover:text-heading" title={label}>
+      <span
+        className="min-w-0 flex-1 truncate text-[12.5px] leading-none text-nav group-hover:text-heading"
+        title={label}
+      >
         {label}
       </span>
       {meta && <span className="t-label shrink-0">{meta}</span>}

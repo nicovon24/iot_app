@@ -18,7 +18,10 @@ export class RolesGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<FastifyRequest & { session?: AppSession }>();
     const session = request.session;
 
-    if (required.includes('SYSADMIN') && (session?.authority === 'TENANT_ADMIN' || session?.authority === 'SYS_ADMIN')) {
+    if (
+      required.includes('SYSADMIN') &&
+      (session?.authority === 'TENANT_ADMIN' || session?.authority === 'SYS_ADMIN')
+    ) {
       return true;
     }
 

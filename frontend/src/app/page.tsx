@@ -10,7 +10,9 @@ import { Skeleton } from '@/components';
 import type { EntityRef } from '@/types';
 
 // Leaflet touches `window` at module scope, so this widget must never load during SSR.
-const FleetMapWidget = dynamic(() => import('@/widgets/maps').then((m) => m.FleetMapWidget), { ssr: false });
+const FleetMapWidget = dynamic(() => import('@/widgets/maps').then((m) => m.FleetMapWidget), {
+  ssr: false,
+});
 
 /** How many device cards the summary grid shows before deferring to /devices. */
 const CARD_LIMIT = 5;
@@ -88,8 +90,14 @@ export default function OverviewPage() {
         title="Overview"
         description={
           <>
-            Fleet summary{tenant ? <> for <span className="text-body">{tenant}</span></> : null} — {deviceCount}{' '}
-            {deviceCount === 1 ? 'device' : 'devices'} reporting, {assetCount}{' '}
+            Fleet summary
+            {tenant ? (
+              <>
+                {' '}
+                for <span className="text-body">{tenant}</span>
+              </>
+            ) : null}{' '}
+            — {deviceCount} {deviceCount === 1 ? 'device' : 'devices'} reporting, {assetCount}{' '}
             {assetCount === 1 ? 'asset' : 'assets'} registered.
           </>
         }
@@ -97,7 +105,7 @@ export default function OverviewPage() {
       />
 
       {/* The summary row. A 2px rule opens it, 1px rules divide the figures — the
-        * system's two weights doing exactly the two jobs they exist for. */}
+       * system's two weights doing exactly the two jobs they exist for. */}
       <div className="rule-2 mt-[34px] flex shrink-0 items-stretch gap-16 pt-6">
         <Kpi label="Devices" value={deviceCount} isLoading={devicesQuery.isLoading} />
         <div aria-hidden className="w-px bg-border" />
@@ -148,8 +156,8 @@ export default function OverviewPage() {
               <DeviceCard key={entity.id} entity={entity} />
             ))}
             {/* The assets summary rides in the grid's last cell rather than getting a
-              * row of its own — dashed so it reads as a different kind of thing than
-              * the solid device cards beside it. */}
+             * row of its own — dashed so it reads as a different kind of thing than
+             * the solid device cards beside it. */}
             <Link
               href="/assets"
               className="flex flex-col justify-between gap-3 border border-dashed border-border px-[18px] py-4 transition-colors duration-fast ease-out hover:border-accent-strong"
@@ -158,7 +166,12 @@ export default function OverviewPage() {
                 {assetCount} {assetCount === 1 ? 'asset' : 'assets'}
               </span>
               <span className="truncate text-[12px] font-extrabold leading-tight text-nav">
-                {assets.length > 0 ? assets.slice(0, 3).map((a) => a.name).join(' · ') : 'None registered'}
+                {assets.length > 0
+                  ? assets
+                      .slice(0, 3)
+                      .map((a) => a.name)
+                      .join(' · ')
+                  : 'None registered'}
               </span>
             </Link>
           </>
@@ -166,8 +179,8 @@ export default function OverviewPage() {
       </div>
 
       {/* The map is a band, not a panel: bled to the page edges and opened by the same
-        * 2px rule as the summary row, so it closes the page the way the header opens it.
-        * The negative margins undo <main>'s 40px gutter. */}
+       * 2px rule as the summary row, so it closes the page the way the header opens it.
+       * The negative margins undo <main>'s 40px gutter. */}
       <div className="rule-2 -mx-10 mt-8 min-h-[216px] flex-1 shrink-0">
         <FleetMapWidget heightClassName="h-full min-h-[216px]" />
       </div>

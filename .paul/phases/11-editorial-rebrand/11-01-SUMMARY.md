@@ -2,7 +2,7 @@
 phase: 11-editorial-rebrand
 plan: 01
 type: Summary
-about: "iot-app"
+about: 'iot-app'
 ---
 
 # 11-01 Summary — Near-black/aqua-green rebrand + Editorial design system

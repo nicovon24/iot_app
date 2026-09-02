@@ -16,6 +16,7 @@ export function useImpersonate() {
       startImpersonationSession(data.sessionToken, data.logId, variables.label);
       // Full reload, not a client-side router push — every TanStack Query cache entry keyed by
       // the old session's data must be dropped, not silently reused across the identity switch.
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
       window.location.href = '/dashboard';
     },
     onError: (error) => toastError("Couldn't login as user", error),
@@ -30,6 +31,8 @@ export async function endImpersonation(): Promise<void> {
   if (!result) return;
   try {
     await apiClient.post(`/users/impersonate/${result.logId}/end`);
+    // Full reload needed to drop the impersonated session's query cache, see useImpersonate above.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
     window.location.href = '/dashboard';
   } catch (error) {
     // The client-side identity swap back to the sysadmin's own token already happened above —
@@ -37,6 +40,7 @@ export async function endImpersonation(): Promise<void> {
     // failed. Delay the reload briefly so the toast is actually visible before navigation wipes it.
     toastError("Couldn't record the end of this impersonation", error);
     setTimeout(() => {
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
       window.location.href = '/dashboard';
     }, 1500);
   }

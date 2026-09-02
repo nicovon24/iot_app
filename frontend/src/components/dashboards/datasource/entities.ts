@@ -48,12 +48,19 @@ export function useDatasourceEntities(config: WidgetDatasource): {
   });
 
   if (all) {
-    return { entities: listQuery.data?.data ?? [], isLoading: listQuery.isLoading, notFound: false };
+    return {
+      entities: listQuery.data?.data ?? [],
+      isLoading: listQuery.isLoading,
+      notFound: false,
+    };
   }
 
   return {
     entities: singleQuery.data ? [singleQuery.data] : [],
     isLoading: singleQuery.isLoading,
-    notFound: singleQuery.isError && singleQuery.error instanceof ApiError && singleQuery.error.status === 404,
+    notFound:
+      singleQuery.isError &&
+      singleQuery.error instanceof ApiError &&
+      singleQuery.error.status === 404,
   };
 }

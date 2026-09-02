@@ -2,13 +2,29 @@
 
 import { useEffect, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { Dialog, DialogBody, DialogCloseButton, DialogFooter, DialogHeader, DialogTitle } from '@/components';
+import {
+  Dialog,
+  DialogBody,
+  DialogCloseButton,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components';
 import { useEntities } from '@/hooks';
-import { useDataKeyOptions, useTelemetryKeyOptions, type DataKey } from '../../use-widget-datasource';
+import {
+  useDataKeyOptions,
+  useTelemetryKeyOptions,
+  type DataKey,
+} from '../../use-widget-datasource';
 import type { DatasourceScope } from '../pickers';
 import type { WidgetAction } from '../widget-actions';
 import { packWidgets } from '../../canvas/layout-utils';
-import { WIDGET_REGISTRY, SCALE_TYPES, type WidgetCategory, type WidgetType } from '../widget-registry';
+import {
+  WIDGET_REGISTRY,
+  SCALE_TYPES,
+  type WidgetCategory,
+  type WidgetType,
+} from '../widget-registry';
 import { suggestUnit } from '@/lib';
 import { CategoryStep } from './CategoryStep';
 import { GalleryStep } from './GalleryStep';
@@ -76,9 +92,11 @@ export function AddWidgetPanel({
   // build-branch per field here.
   const typeConfig = useTypeConfig();
   const agg = typeConfig.get<Aggregation>(widgetType, 'agg') ?? 'AVG';
-  const gaugeStyle = typeConfig.get<'DIAL' | 'THERMOMETER' | 'RADIAL' | 'BAR'>(widgetType, 'gaugeStyle') ?? 'DIAL';
+  const gaugeStyle =
+    typeConfig.get<'DIAL' | 'THERMOMETER' | 'RADIAL' | 'BAR'>(widgetType, 'gaugeStyle') ?? 'DIAL';
   const groupBy =
-    typeConfig.get<'ALARM_SEVERITY' | 'ALARM_STATUS' | 'ENTITY_TYPE'>(widgetType, 'groupBy') ?? 'ALARM_SEVERITY';
+    typeConfig.get<'ALARM_SEVERITY' | 'ALARM_STATUS' | 'ENTITY_TYPE'>(widgetType, 'groupBy') ??
+    'ALARM_SEVERITY';
   const scatterMode = typeConfig.get<'HISTORY' | 'FLEET'>(widgetType, 'scatterMode') ?? 'HISTORY';
   const interpolation = typeConfig.get<'linear' | 'step'>(widgetType, 'interpolation') ?? 'linear';
   const severities = typeConfig.get<Set<string>>(widgetType, 'severities') ?? new Set<string>();
@@ -130,6 +148,8 @@ export function AddWidgetPanel({
       units?: Record<string, string>;
     };
     const type = editWidget.widgetType as WidgetType;
+    // Bulk-seeding form state from the widget being edited (see effect comment above).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setWidgetType(type);
     setCategory(WIDGET_REGISTRY[type]?.category);
     setEntityKind(config.entityType ?? 'DEVICE');
@@ -151,6 +171,9 @@ export function AddWidgetPanel({
     setUnitsByKey(config.units ?? {});
     setTab('data');
     setStep('configure');
+    // typeConfig omitted: its methods are stable per render, and including the object itself
+    // would re-run this seed effect on every keystroke that touches type-config state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, editWidget]);
   // The scatter declares telemetryKey: 'none' because its keys are per-axis, but it still needs
   // the key list to populate those two pickers.
@@ -163,10 +186,18 @@ export function AddWidgetPanel({
   const entitiesQuery = useEntities(
     entityKind,
     { pageSize: 200 },
-    { enabled: (needsKey || supportsDataKeys || meta?.entity !== 'none') && (scope === 'ALL' || Boolean(entityId)) },
+    {
+      enabled:
+        (needsKey || supportsDataKeys || meta?.entity !== 'none') &&
+        (scope === 'ALL' || Boolean(entityId)),
+    },
   );
   const keySourceIds =
-    scope === 'ALL' ? (entitiesQuery.data?.data ?? []).map((e) => e.id) : entityId ? [entityId] : [];
+    scope === 'ALL'
+      ? (entitiesQuery.data?.data ?? []).map((e) => e.id)
+      : entityId
+        ? [entityId]
+        : [];
   const selectedEntityName = entityId
     ? entitiesQuery.data?.data.find((e) => e.id === entityId)?.name
     : undefined;
@@ -175,9 +206,12 @@ export function AddWidgetPanel({
   const dataKeyOptions = useDataKeyOptions(supportsDataKeys ? keySourceIds : [], entityKind);
 
   const multiKeys = Boolean(meta?.multiTelemetryKeys);
-  const entitySatisfied = !meta || meta.entity !== 'required' || scope === 'ALL' || Boolean(entityId);
+  const entitySatisfied =
+    !meta || meta.entity !== 'required' || scope === 'ALL' || Boolean(entityId);
   const keySatisfied =
-    !meta || meta.telemetryKey !== 'required' || (multiKeys ? telemetryKeys.size > 0 : Boolean(telemetryKey));
+    !meta ||
+    meta.telemetryKey !== 'required' ||
+    (multiKeys ? telemetryKeys.size > 0 : Boolean(telemetryKey));
   // The backend rejects min >= max; catching it here turns a save-time error into a disabled
   // button next to the field that caused it.
   const scaleValid =
@@ -201,7 +235,9 @@ export function AddWidgetPanel({
     if (!widgetType) return 'Widget title';
     switch (widgetType) {
       case 'value-tile':
-        return scope === 'ALL' ? (telemetryKey ?? 'Value') : `${selectedEntityName ?? 'Entity'} · ${telemetryKey ?? 'key'}`;
+        return scope === 'ALL'
+          ? (telemetryKey ?? 'Value')
+          : `${selectedEntityName ?? 'Entity'} · ${telemetryKey ?? 'key'}`;
       case 'gauge':
         return `${selectedEntityName ?? 'Entity'} · ${telemetryKey ?? 'key'}`;
       case 'alarms-list':
@@ -373,7 +409,9 @@ export function AddWidgetPanel({
       <DialogBody className={`${WIDGET_DIALOG_BODY_HEIGHT} overflow-y-auto`}>
         {step === 'category' && <CategoryStep onPick={pickCategory} />}
 
-        {step === 'gallery' && category && <GalleryStep category={category} onPick={pickWidgetType} />}
+        {step === 'gallery' && category && (
+          <GalleryStep category={category} onPick={pickWidgetType} />
+        )}
 
         {step === 'configure' && meta && widgetType && (
           <ConfigureStep

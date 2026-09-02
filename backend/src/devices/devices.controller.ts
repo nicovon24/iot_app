@@ -33,7 +33,10 @@ export class DevicesController {
   @Patch(':id')
   @ApiOperation({ summary: "Update a Device's label" })
   @ApiParam({ name: 'id' })
-  async update(@Param('id', ParseTbIdPipe) id: string, @Body() dto: UpdateDeviceDto): Promise<EntityRef> {
+  async update(
+    @Param('id', ParseTbIdPipe) id: string,
+    @Body() dto: UpdateDeviceDto,
+  ): Promise<EntityRef> {
     return this.entitiesService.updateDevice(id, dto);
   }
 

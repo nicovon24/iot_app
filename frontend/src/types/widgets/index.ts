@@ -35,5 +35,3 @@ declare module 'leaflet' {
     options?: HeatLayerOptions,
   ): HeatLayer;
 }
-
-

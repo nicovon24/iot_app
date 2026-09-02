@@ -51,7 +51,8 @@ export const DEFAULT_ENTITY_COLUMNS: EntityColumn[] = [
     key: 'label',
     header: 'Label',
     width: '1fr',
-    render: (e) => (e.label ? <span className="truncate text-[12px] text-body">{e.label}</span> : <RuledEmpty />),
+    render: (e) =>
+      e.label ? <span className="truncate text-[12px] text-body">{e.label}</span> : <RuledEmpty />,
   },
   { key: 'client', header: 'Client', width: '120px', render: (e) => metaCell(e.customerId?.name) },
 ];

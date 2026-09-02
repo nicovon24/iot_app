@@ -1,6 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib';
-import type { EntityRef, EntityType, PageData, UseEntitiesParams, UseEntitiesOptions } from '@/types';
+import type {
+  EntityRef,
+  EntityType,
+  PageData,
+  UseEntitiesParams,
+  UseEntitiesOptions,
+} from '@/types';
 
 export type { UseEntitiesParams, UseEntitiesOptions } from '@/types';
 
@@ -32,7 +38,8 @@ export function useEntities(
 ) {
   return useQuery({
     queryKey: ['entities', type, params],
-    queryFn: () => apiClient.get<PageData<EntityRef>>(`/${ENTITY_LIST_PATH[type]}${buildQueryString(params)}`),
+    queryFn: () =>
+      apiClient.get<PageData<EntityRef>>(`/${ENTITY_LIST_PATH[type]}${buildQueryString(params)}`),
     enabled: options?.enabled ?? true,
     refetchInterval: options?.refetchInterval,
   });

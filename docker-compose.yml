@@ -1,6 +1,7 @@
 services:
   redis:
     image: redis:7-alpine
+    container_name: iot_app_redis
     ports:
       - "6379:6379"
     volumes:
@@ -13,6 +14,7 @@ services:
 
   postgres:
     image: postgres:16-alpine
+    container_name: iot_app_postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -31,12 +33,16 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
+    image: iot_app-backend:local
+    container_name: iot_app_backend
     env_file:
       - backend/.env
     environment:
       REDIS_URL: redis://redis:6379
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iot_app
       FRONTEND_URL: http://localhost:3000
+      # Overrides backend/.env's PORT so it always matches the 3001 port mapping below.
+      PORT: 3001
     ports:
       - "3001:3001"
     depends_on:
@@ -44,17 +50,31 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
+    healthcheck:
+      # No dedicated /health route; api/docs (Swagger) always responds once Nest is up.
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3001/api/docs"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
   frontend:
     build:
       context: .
       dockerfile: frontend/Dockerfile
       args:
+        # Baked into the JS bundle at build time (Next.js NEXT_PUBLIC_* vars are
+        # not readable at runtime). Must be a URL reachable from the browser,
+        # not the Docker-internal service name (e.g. NOT http://backend:3001).
         NEXT_PUBLIC_API_BASE_URL: http://localhost:3001
+        NEXT_PUBLIC_WS_BASE_URL: ws://localhost:3001
+    image: iot_app-frontend:local
+    container_name: iot_app_frontend
     ports:
       - "3000:3000"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
 
 volumes:
   redis_data:

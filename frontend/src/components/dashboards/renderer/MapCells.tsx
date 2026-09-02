@@ -6,11 +6,18 @@ import { useTelemetryLatest } from '@/hooks';
 
 // Leaflet touches `window` at module scope, so these widgets must never load during SSR.
 const MapWidget = dynamic(() => import('@/widgets/maps').then((m) => m.MapWidget), { ssr: false });
-const FleetMapWidget = dynamic(() => import('@/widgets/maps').then((m) => m.FleetMapWidget), { ssr: false });
-const ValueMapWidget = dynamic(() => import('@/widgets/maps').then((m) => m.ValueMapWidget), { ssr: false });
-const MovementHeatmapWidget = dynamic(() => import('@/widgets/maps').then((m) => m.MovementHeatmapWidget), {
+const FleetMapWidget = dynamic(() => import('@/widgets/maps').then((m) => m.FleetMapWidget), {
   ssr: false,
 });
+const ValueMapWidget = dynamic(() => import('@/widgets/maps').then((m) => m.ValueMapWidget), {
+  ssr: false,
+});
+const MovementHeatmapWidget = dynamic(
+  () => import('@/widgets/maps').then((m) => m.MovementHeatmapWidget),
+  {
+    ssr: false,
+  },
+);
 import { useWidgetAction } from '../widget-config/widget-actions';
 import { pairCoordinates } from '../datasource/pair-coordinates';
 import { useDashboardTimeWindow } from '../canvas/TimeWindowPicker';
@@ -98,11 +105,7 @@ export function MovementHeatmapCell({ config }: { config: EntityWidgetConfig }) 
 
   const timeWindow = useDashboardTimeWindow();
   const shown = entities.slice(0, MAX_SERIES);
-  const window = useMemo(
-    () => resolveHistoryWindow(timeWindow),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [timeWindow],
-  );
+  const window = useMemo(() => resolveHistoryWindow(timeWindow), [timeWindow]);
   // Raw, unaggregated: averaging coordinates would place the sensor where it never was.
   const history = useRawHistoryForEntities(shown, entityType, ['latitude', 'longitude'], window);
   // Latest position carries no time bound, so it answers the question the history can't when
@@ -119,7 +122,6 @@ export function MovementHeatmapCell({ config }: { config: EntityWidgetConfig }) 
         const series = history.byEntity[entity.id] ?? {};
         return pairCoordinates(series.latitude ?? [], series.longitude ?? []);
       }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [shown, history.byEntity],
   );
 
@@ -183,17 +185,27 @@ export function MapCell({ config }: { config: EntityWidgetConfig }) {
   const single = Boolean(config.entityId) && !isAllScope(config);
 
   const { entities, notFound } = useDatasourceEntities(single ? config : {});
-  const location = useTelemetryLatest(single ? (config.entityId ?? '') : '', entityType, ['latitude', 'longitude']);
+  const location = useTelemetryLatest(single ? (config.entityId ?? '') : '', entityType, [
+    'latitude',
+    'longitude',
+  ]);
 
   if (!single) {
-    return <FleetMapWidget heightClassName="h-full" entityType={entityType} refetchInterval={ENTITY_POLL_MS} />;
+    return (
+      <FleetMapWidget
+        heightClassName="h-full"
+        entityType={entityType}
+        refetchInterval={ENTITY_POLL_MS}
+      />
+    );
   }
   if (notFound) return <WidgetUnavailable />;
   if (location.isLoading) return <WidgetUnavailable reason="Loading location…" />;
 
   const lat = location.data?.latitude ? Number(location.data.latitude.value) : undefined;
   const lng = location.data?.longitude ? Number(location.data.longitude.value) : undefined;
-  if (lat === undefined || lng === undefined) return <WidgetUnavailable reason="No location data reported for this entity" />;
+  if (lat === undefined || lng === undefined)
+    return <WidgetUnavailable reason="No location data reported for this entity" />;
 
   return (
     <MapWidget

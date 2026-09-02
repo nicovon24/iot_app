@@ -49,6 +49,18 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Admin', href: '/admin', icon: ShieldCheck, group: 'ADMINISTRATION' },
   { label: 'Clients', href: '/clients', icon: Building2, group: 'ADMINISTRATION' },
   { label: 'Users', href: '/users', icon: UserCog, group: 'ADMINISTRATION' },
-  { label: 'White Label', href: '/white-label', icon: Palette, group: 'ADMINISTRATION', comingSoon: true },
-  { label: 'Settings', href: '/settings', icon: Settings, group: 'ADMINISTRATION', comingSoon: true },
+  {
+    label: 'White Label',
+    href: '/white-label',
+    icon: Palette,
+    group: 'ADMINISTRATION',
+    comingSoon: true,
+  },
+  {
+    label: 'Settings',
+    href: '/settings',
+    icon: Settings,
+    group: 'ADMINISTRATION',
+    comingSoon: true,
+  },
 ];

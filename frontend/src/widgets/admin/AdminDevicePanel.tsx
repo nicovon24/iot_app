@@ -6,7 +6,14 @@ import { Plus, X, Cpu, UserPlus } from 'lucide-react';
 import { useCustomerChildren, useAssetChildren } from '@/hooks';
 import { useLinkDevice, useUnlinkDevice, useClaimDevice } from '@/hooks';
 import { useEntities } from '@/hooks';
-import { Dialog, DialogHeader, DialogTitle, DialogCloseButton, DialogBody, DialogFooter } from '@/components';
+import {
+  Dialog,
+  DialogHeader,
+  DialogTitle,
+  DialogCloseButton,
+  DialogBody,
+  DialogFooter,
+} from '@/components';
 import { Select } from '@/components';
 import { TableRowsSkeleton } from '@/components';
 import { tableClassNames, toastError, toastSuccess } from '@/lib';
@@ -25,10 +32,13 @@ export function AdminDevicePanel({ title, activeNode, readOnly = false }: AdminD
   const [isClaimOpen, setIsClaimOpen] = useState(false);
   const [claimDeviceId, setClaimDeviceId] = useState<string | undefined>(undefined);
 
-  const customerChildren = useCustomerChildren(activeNode?.type === 'CUSTOMER' ? activeNode.id : undefined);
+  const customerChildren = useCustomerChildren(
+    activeNode?.type === 'CUSTOMER' ? activeNode.id : undefined,
+  );
   const assetChildren = useAssetChildren(activeNode?.type === 'ASSET' ? activeNode.id : undefined);
   const children = activeNode?.type === 'ASSET' ? assetChildren.data : customerChildren.data;
-  const isLoading = activeNode?.type === 'ASSET' ? assetChildren.isLoading : customerChildren.isLoading;
+  const isLoading =
+    activeNode?.type === 'ASSET' ? assetChildren.isLoading : customerChildren.isLoading;
 
   const devicesQuery = useEntities('DEVICE');
   const linkDevice = useLinkDevice();
@@ -172,7 +182,11 @@ export function AdminDevicePanel({ title, activeNode, readOnly = false }: AdminD
           />
         </DialogBody>
         <DialogFooter>
-          <button type="button" onClick={closeAssign} className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-tint">
+          <button
+            type="button"
+            onClick={closeAssign}
+            className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-tint"
+          >
             Cancel
           </button>
           <button
@@ -206,7 +220,8 @@ export function AdminDevicePanel({ title, activeNode, readOnly = false }: AdminD
         </DialogHeader>
         <DialogBody>
           <p className="mb-3 text-sm text-muted">
-            Claims a Device with no Customer into your own Customer, so it can then be assigned to an Asset.
+            Claims a Device with no Customer into your own Customer, so it can then be assigned to
+            an Asset.
           </p>
           <Select
             label="Device"
@@ -217,7 +232,11 @@ export function AdminDevicePanel({ title, activeNode, readOnly = false }: AdminD
           />
         </DialogBody>
         <DialogFooter>
-          <button type="button" onClick={closeClaim} className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-tint">
+          <button
+            type="button"
+            onClick={closeClaim}
+            className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-tint"
+          >
             Cancel
           </button>
           <button

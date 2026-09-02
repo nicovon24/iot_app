@@ -29,7 +29,20 @@ const MAX_DAYS = 3_653;
 const COMPACT_DAY_THRESHOLD = 120;
 
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTH_LABELS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
 
 interface Cell {
   ts: number;
@@ -66,7 +79,13 @@ function daysBetween(from: number, to: number) {
  * Reading an exact value is explicitly not the goal; that's the timeseries table's job, and why
  * every cell carries a tooltip instead of a printed number.
  */
-export function CalendarHeatmapWidget({ points, isLoading, title, unit, window }: CalendarHeatmapWidgetProps) {
+export function CalendarHeatmapWidget({
+  points,
+  isLoading,
+  title,
+  unit,
+  window,
+}: CalendarHeatmapWidgetProps) {
   // Own tooltip rather than the `title` attribute: the native one waits about a second before
   // appearing, can't be styled to match the card, and drops the line break between date and
   // value. On a grid you sweep across, that delay makes the whole thing feel unresponsive.
@@ -136,7 +155,7 @@ export function CalendarHeatmapWidget({ points, isLoading, title, unit, window }
       {title && <h3 className="shrink-0 truncate t-heading">{title}</h3>}
 
       {/* Scrolling moves the cells out from under a tooltip measured against the card, so it's
-        * dismissed rather than left pointing at the wrong day. */}
+       * dismissed rather than left pointing at the wrong day. */}
       <div className="table-scroll min-h-0 flex-1 overflow-auto" onScroll={() => setHovered(null)}>
         <div className="flex" style={{ gap }}>
           <div className="flex shrink-0 flex-col" style={{ gap, paddingTop: 16 }}>
@@ -155,11 +174,7 @@ export function CalendarHeatmapWidget({ points, isLoading, title, unit, window }
           <div className="flex flex-col" style={{ gap }}>
             <div className="flex" style={{ gap }}>
               {weeks.map((_, i) => (
-                <span
-                  key={i}
-                  className="text-[9px] leading-4 text-faint"
-                  style={{ width: size }}
-                >
+                <span key={i} className="text-[9px] leading-4 text-faint" style={{ width: size }}>
                   {monthMarks.find((m) => m.column === i)?.label ?? ''}
                 </span>
               ))}
@@ -183,7 +198,10 @@ export function CalendarHeatmapWidget({ points, isLoading, title, unit, window }
                         background: heatColor(cell.value, min, max),
                         // Empty days get a hairline so the grid reads as a grid even when most
                         // of it has no data — without it a sparse range looks like one stray dot.
-                        boxShadow: cell.value === undefined ? 'inset 0 0 0 1px var(--color-border)' : undefined,
+                        boxShadow:
+                          cell.value === undefined
+                            ? 'inset 0 0 0 1px var(--color-border)'
+                            : undefined,
                       }}
                       onMouseEnter={(e) => setHovered(locate(e.currentTarget, cell))}
                       onFocus={(e) => setHovered(locate(e.currentTarget, cell))}
@@ -218,13 +236,22 @@ export function CalendarHeatmapWidget({ points, isLoading, title, unit, window }
         <span className="mr-1 flex items-center gap-1">
           <span
             className="rounded-[2px]"
-            style={{ width: 9, height: 9, background: HEAT_EMPTY, boxShadow: 'inset 0 0 0 1px var(--color-border)' }}
+            style={{
+              width: 9,
+              height: 9,
+              background: HEAT_EMPTY,
+              boxShadow: 'inset 0 0 0 1px var(--color-border)',
+            }}
           />
           no data
         </span>
         {hasValues && <span>{formatTelemetryValue(String(min)) ?? min}</span>}
         {HEAT_COLORS.map((color) => (
-          <span key={color} className="rounded-[2px]" style={{ width: 9, height: 9, background: color }} />
+          <span
+            key={color}
+            className="rounded-[2px]"
+            style={{ width: 9, height: 9, background: color }}
+          />
         ))}
         {hasValues && (
           <span>

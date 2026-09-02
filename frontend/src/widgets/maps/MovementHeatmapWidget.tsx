@@ -99,9 +99,7 @@ export function MovementHeatmapWidget({
   return (
     <div className="glass-card flex h-full flex-col overflow-hidden p-0">
       {title && (
-        <h3 className="shrink-0 truncate border-b border-border px-4 py-3 t-heading">
-          {title}
-        </h3>
+        <h3 className="shrink-0 truncate border-b border-border px-4 py-3 t-heading">{title}</h3>
       )}
       <div className={`relative min-h-0 flex-1 ${heightClassName}`}>
         <MapStyleToggle value={tileStyle} onChange={setTileStyle} />

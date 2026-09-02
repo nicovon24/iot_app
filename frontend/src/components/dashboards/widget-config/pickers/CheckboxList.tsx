@@ -66,10 +66,18 @@ export function CheckboxList({
       <div className="flex items-center justify-between">
         <span className="t-field">
           {label}
-          {selected.size > 0 && <span className="ml-1.5 text-xs font-normal text-muted">({selected.size} selected)</span>}
+          {selected.size > 0 && (
+            <span className="ml-1.5 text-xs font-normal text-muted">
+              ({selected.size} selected)
+            </span>
+          )}
         </span>
         {visible.length > 0 && (
-          <button type="button" onClick={toggleAll} className="text-xs font-medium text-accent hover:underline">
+          <button
+            type="button"
+            onClick={toggleAll}
+            className="text-xs font-medium text-accent hover:underline"
+          >
             {allVisibleSelected ? 'Select none' : 'Select all'}
           </button>
         )}
@@ -85,8 +93,12 @@ export function CheckboxList({
         />
       )}
 
-      <div className={`table-scroll flex ${maxHeightClassName} flex-col gap-1 overflow-y-auto rounded-md border border-border p-2`}>
-        {visible.length === 0 && <span className="px-1.5 py-1 text-sm text-muted">{emptyLabel}</span>}
+      <div
+        className={`table-scroll flex ${maxHeightClassName} flex-col gap-1 overflow-y-auto rounded-md border border-border p-2`}
+      >
+        {visible.length === 0 && (
+          <span className="px-1.5 py-1 text-sm text-muted">{emptyLabel}</span>
+        )}
         {visible.map((item) => (
           <label
             key={item.value}

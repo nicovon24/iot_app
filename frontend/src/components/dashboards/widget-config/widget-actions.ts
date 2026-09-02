@@ -24,7 +24,10 @@ export interface WidgetActionConfig {
  * clicked a button labelled "Details", which is its own affordance, not the widget's row/card
  * click behaviour.
  */
-export function entityDetailsHref(entityId: string, entityType: 'DEVICE' | 'ASSET' = 'DEVICE'): string {
+export function entityDetailsHref(
+  entityId: string,
+  entityType: 'DEVICE' | 'ASSET' = 'DEVICE',
+): string {
   return `/entities/${entityId}?type=${entityType}`;
 }
 
@@ -36,7 +39,9 @@ export function entityDetailsHref(entityId: string, entityType: 'DEVICE' | 'ASSE
  * Centralised rather than calling `useRouter` inside each widget so that adding a destination
  * (a dashboard state, an external URL) is one change here instead of one per widget.
  */
-export function useWidgetAction(config: WidgetActionConfig): ((entityId: string) => void) | undefined {
+export function useWidgetAction(
+  config: WidgetActionConfig,
+): ((entityId: string) => void) | undefined {
   const router = useRouter();
   const action = config.action ?? 'NONE';
   const entityType = config.entityType ?? 'DEVICE';

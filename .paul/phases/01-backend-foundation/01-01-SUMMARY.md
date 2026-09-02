@@ -2,7 +2,7 @@
 phase: 01-backend-foundation
 plan: 01
 type: Summary
-about: "iot-app"
+about: 'iot-app'
 ---
 
 # Summary: Backend foundation & ThingsBoard auth

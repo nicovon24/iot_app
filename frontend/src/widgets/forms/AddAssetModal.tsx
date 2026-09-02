@@ -1,7 +1,15 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Select, SelectItem } from '@heroui/react';
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Select,
+  SelectItem,
+} from '@heroui/react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -67,17 +75,30 @@ export function AddAssetModal({ isOpen, onClose }: AddAssetModalProps) {
   const onSubmit = handleSubmit((values) => {
     if (!customerId || levelIndex === undefined || !parentId) return;
     createAsset.mutate(
-      { name: values.name, type: values.type, label: values.label, customerId, levelIndex, parentId },
+      {
+        name: values.name,
+        type: values.type,
+        label: values.label,
+        customerId,
+        levelIndex,
+        parentId,
+      },
       { onSuccess: close },
     );
   });
 
   const errorMessage =
-    createAsset.error instanceof ApiError ? createAsset.error.message : createAsset.error ? 'Unknown error' : null;
+    createAsset.error instanceof ApiError
+      ? createAsset.error.message
+      : createAsset.error
+        ? 'Unknown error'
+        : null;
 
-  const needsParentButNoneAvailable = levelIndex !== undefined && levelIndex > 0 && existingAssetsUnderCustomer.length === 0;
+  const needsParentButNoneAvailable =
+    levelIndex !== undefined && levelIndex > 0 && existingAssetsUnderCustomer.length === 0;
 
-  const canSubmit = !!customerId && levelIndex !== undefined && !!parentId && !needsParentButNoneAvailable;
+  const canSubmit =
+    !!customerId && levelIndex !== undefined && !!parentId && !needsParentButNoneAvailable;
 
   return (
     <Modal
@@ -100,154 +121,158 @@ export function AddAssetModal({ isOpen, onClose }: AddAssetModalProps) {
             if (canSubmit && !createAsset.isPending) onSubmit();
           }}
         >
-        <ModalHeader className="border-b border-border px-6 py-4">
-          <h2 className="t-heading text-base">Add Asset</h2>
-        </ModalHeader>
+          <ModalHeader className="border-b border-border px-6 py-4">
+            <h2 className="t-heading text-base">Add Asset</h2>
+          </ModalHeader>
 
-        <ModalBody className="flex flex-col gap-3 px-6 py-4">
-          <Select
-            label="Client"
-            placeholder="Select a Client"
-            labelPlacement="outside"
-            variant="bordered"
-            size="sm"
-            classNames={SELECT_CLASSNAMES}
-            selectedKeys={customerId ? [customerId] : []}
-            onSelectionChange={(keys) => {
-              const [key] = Array.from(keys) as string[];
-              setCustomerId(key);
-              setLevelIndex(undefined);
-              setParentId(undefined);
-            }}
-          >
-            {(customersQuery.data?.data ?? []).map((c) => (
-              <SelectItem key={c.id}>{c.name}</SelectItem>
-            ))}
-          </Select>
+          <ModalBody className="flex flex-col gap-3 px-6 py-4">
+            <Select
+              label="Client"
+              placeholder="Select a Client"
+              labelPlacement="outside"
+              variant="bordered"
+              size="sm"
+              classNames={SELECT_CLASSNAMES}
+              selectedKeys={customerId ? [customerId] : []}
+              onSelectionChange={(keys) => {
+                const [key] = Array.from(keys) as string[];
+                setCustomerId(key);
+                setLevelIndex(undefined);
+                setParentId(undefined);
+              }}
+            >
+              {(customersQuery.data?.data ?? []).map((c) => (
+                <SelectItem key={c.id}>{c.name}</SelectItem>
+              ))}
+            </Select>
 
-          <Select
-            label="Hierarchy level"
-            placeholder={customerId ? 'Select a level' : 'Pick a Client first'}
-            labelPlacement="outside"
-            variant="bordered"
-            size="sm"
-            isDisabled={!customerId}
-            classNames={SELECT_CLASSNAMES}
-            selectedKeys={levelIndex !== undefined ? [String(levelIndex)] : []}
-            onSelectionChange={(keys) => {
-              const [key] = Array.from(keys) as string[];
-              const idx = key !== undefined ? Number(key) : undefined;
-              setLevelIndex(idx);
-              setParentId(idx === 0 ? customerId : undefined);
-            }}
-          >
-            {(hierarchyQuery.data ?? []).map((l) => (
-              <SelectItem key={String(l.levelIndex)}>{l.name}</SelectItem>
-            ))}
-          </Select>
+            <Select
+              label="Hierarchy level"
+              placeholder={customerId ? 'Select a level' : 'Pick a Client first'}
+              labelPlacement="outside"
+              variant="bordered"
+              size="sm"
+              isDisabled={!customerId}
+              classNames={SELECT_CLASSNAMES}
+              selectedKeys={levelIndex !== undefined ? [String(levelIndex)] : []}
+              onSelectionChange={(keys) => {
+                const [key] = Array.from(keys) as string[];
+                const idx = key !== undefined ? Number(key) : undefined;
+                setLevelIndex(idx);
+                setParentId(idx === 0 ? customerId : undefined);
+              }}
+            >
+              {(hierarchyQuery.data ?? []).map((l) => (
+                <SelectItem key={String(l.levelIndex)}>{l.name}</SelectItem>
+              ))}
+            </Select>
 
-          <AnimatePresence initial={false}>
-            {levelIndex !== undefined && levelIndex > 0 && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2 }}
-                className="flex flex-col gap-1.5 overflow-hidden"
-              >
-                <Select
-                  label="Parent Asset"
-                  placeholder={
-                    needsParentButNoneAvailable ? 'No Assets available under this Client yet' : 'Select a parent Asset'
-                  }
-                  labelPlacement="outside"
-                  variant="bordered"
-                  size="sm"
-                  isDisabled={needsParentButNoneAvailable}
-                  classNames={SELECT_CLASSNAMES}
-                  selectedKeys={parentId ? [parentId] : []}
-                  onSelectionChange={(keys) => {
-                    const [key] = Array.from(keys) as string[];
-                    setParentId(key);
-                  }}
+            <AnimatePresence initial={false}>
+              {levelIndex !== undefined && levelIndex > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex flex-col gap-1.5 overflow-hidden"
                 >
-                  {existingAssetsUnderCustomer.map((a) => (
-                    <SelectItem key={a.id}>{a.name}</SelectItem>
-                  ))}
-                </Select>
-                {needsParentButNoneAvailable && (
-                  <span className="text-xs text-danger">Create a level-0 Asset for this Client first.</span>
-                )}
+                  <Select
+                    label="Parent Asset"
+                    placeholder={
+                      needsParentButNoneAvailable
+                        ? 'No Assets available under this Client yet'
+                        : 'Select a parent Asset'
+                    }
+                    labelPlacement="outside"
+                    variant="bordered"
+                    size="sm"
+                    isDisabled={needsParentButNoneAvailable}
+                    classNames={SELECT_CLASSNAMES}
+                    selectedKeys={parentId ? [parentId] : []}
+                    onSelectionChange={(keys) => {
+                      const [key] = Array.from(keys) as string[];
+                      setParentId(key);
+                    }}
+                  >
+                    {existingAssetsUnderCustomer.map((a) => (
+                      <SelectItem key={a.id}>{a.name}</SelectItem>
+                    ))}
+                  </Select>
+                  {needsParentButNoneAvailable && (
+                    <span className="text-xs text-danger">
+                      Create a level-0 Asset for this Client first.
+                    </span>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1">
+                <label className="t-field" htmlFor="asset-name">
+                  Name
+                </label>
+                <input
+                  id="asset-name"
+                  {...register('name')}
+                  className="rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-heading outline-none focus:border-accent"
+                />
+                {errors.name && <span className="text-xs text-danger">{errors.name.message}</span>}
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="t-field" htmlFor="asset-type">
+                  Type
+                </label>
+                <input
+                  id="asset-type"
+                  {...register('type')}
+                  className="rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-heading outline-none focus:border-accent"
+                  placeholder="warehouse"
+                />
+                {errors.type && <span className="text-xs text-danger">{errors.type.message}</span>}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="t-field" htmlFor="asset-label">
+                Label (optional)
+              </label>
+              <input
+                id="asset-label"
+                {...register('label')}
+                className="rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-heading outline-none focus:border-accent"
+              />
+            </div>
+
+            {errorMessage && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="rounded-md border border-danger/30 bg-danger/10 p-3 text-sm text-danger"
+              >
+                {errorMessage}
               </motion.div>
             )}
-          </AnimatePresence>
+          </ModalBody>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1">
-              <label className="t-field" htmlFor="asset-name">
-                Name
-              </label>
-              <input
-                id="asset-name"
-                {...register('name')}
-                className="rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-heading outline-none focus:border-accent"
-              />
-              {errors.name && <span className="text-xs text-danger">{errors.name.message}</span>}
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <label className="t-field" htmlFor="asset-type">
-                Type
-              </label>
-              <input
-                id="asset-type"
-                {...register('type')}
-                className="rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-heading outline-none focus:border-accent"
-                placeholder="warehouse"
-              />
-              {errors.type && <span className="text-xs text-danger">{errors.type.message}</span>}
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label className="t-field" htmlFor="asset-label">
-              Label (optional)
-            </label>
-            <input
-              id="asset-label"
-              {...register('label')}
-              className="rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-heading outline-none focus:border-accent"
-            />
-          </div>
-
-          {errorMessage && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="rounded-md border border-danger/30 bg-danger/10 p-3 text-sm text-danger"
+          <ModalFooter className="border-t border-border px-6 py-4">
+            <button
+              type="button"
+              onClick={close}
+              className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-tint"
             >
-              {errorMessage}
-            </motion.div>
-          )}
-        </ModalBody>
-
-        <ModalFooter className="border-t border-border px-6 py-4">
-          <button
-            type="button"
-            onClick={close}
-            className="rounded-md border border-border px-4 py-2 text-sm text-body hover:bg-tint"
-          >
-            Cancel
-          </button>
-          <motion.button
-            type="submit"
-            whileTap={{ scale: 0.97 }}
-            disabled={!canSubmit || createAsset.isPending}
-            className="btn-accent rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-60"
-          >
-            {createAsset.isPending ? 'Creating…' : 'Create Asset'}
-          </motion.button>
-        </ModalFooter>
+              Cancel
+            </button>
+            <motion.button
+              type="submit"
+              whileTap={{ scale: 0.97 }}
+              disabled={!canSubmit || createAsset.isPending}
+              className="btn-accent rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-60"
+            >
+              {createAsset.isPending ? 'Creating…' : 'Create Asset'}
+            </motion.button>
+          </ModalFooter>
         </form>
       </ModalContent>
     </Modal>

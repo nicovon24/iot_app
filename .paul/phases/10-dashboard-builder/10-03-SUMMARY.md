@@ -2,7 +2,7 @@
 phase: 10-dashboard-builder
 plan: 03
 type: Summary
-about: "iot-app"
+about: 'iot-app'
 ---
 
 # 10-03 Summary — Bulk-add

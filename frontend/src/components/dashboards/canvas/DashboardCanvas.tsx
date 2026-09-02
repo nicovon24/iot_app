@@ -23,7 +23,13 @@ const GridLayout = WidthProvider(RGL);
  *
  * `.widget-drag-grip` is exempt from the button rule on purpose — it *is* the drag affordance.
  */
-const DRAG_CANCEL_SELECTOR = ['button:not(.widget-drag-grip)', 'a', 'input', 'select', 'textarea'].join(',');
+const DRAG_CANCEL_SELECTOR = [
+  'button:not(.widget-drag-grip)',
+  'a',
+  'input',
+  'select',
+  'textarea',
+].join(',');
 
 /** Kept in sync with the exit animation below: the widget is only removed from state once
  * it has finished animating out, so the grid doesn't reflow mid-animation. */
@@ -91,7 +97,8 @@ export function DashboardCanvas({
     h: w.layout.h,
   }));
 
-  const rowHeight = layoutMode === 'FIT' ? fitRowHeight(containerHeight, layout) : ROW_HEIGHT_SCROLL;
+  const rowHeight =
+    layoutMode === 'FIT' ? fitRowHeight(containerHeight, layout) : ROW_HEIGHT_SCROLL;
 
   function confirmRemoval() {
     if (!pendingRemoval) return;
@@ -104,13 +111,17 @@ export function DashboardCanvas({
     return (
       <div className="glass-card flex h-full min-h-full items-center justify-center">
         <p className="text-sm text-muted">
-          {editMode ? 'No widgets yet — click "Add widget" to get started.' : 'This dashboard has no widgets.'}
+          {editMode
+            ? 'No widgets yet — click "Add widget" to get started.'
+            : 'This dashboard has no widgets.'}
         </p>
       </div>
     );
   }
 
-  const pendingLabel = pendingRemoval ? (WIDGET_REGISTRY[pendingRemoval.widgetType as WidgetType]?.label ?? 'widget') : '';
+  const pendingLabel = pendingRemoval
+    ? (WIDGET_REGISTRY[pendingRemoval.widgetType as WidgetType]?.label ?? 'widget')
+    : '';
 
   return (
     <div
@@ -203,7 +214,11 @@ export function DashboardCanvas({
                 <ContextMenu
                   disabled={!editMode}
                   items={[
-                    { label: 'Edit widget', icon: Pencil, onSelect: () => onEditWidget({ ...w, id: key }) },
+                    {
+                      label: 'Edit widget',
+                      icon: Pencil,
+                      onSelect: () => onEditWidget({ ...w, id: key }),
+                    },
                     {
                       label: 'Remove widget',
                       icon: Trash2,
