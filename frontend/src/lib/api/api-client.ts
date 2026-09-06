@@ -1,4 +1,4 @@
-import { getSessionToken } from '../session';
+import { endSession, getSessionToken } from '../session';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001';
 
@@ -31,6 +31,13 @@ async function request<T>(
   });
 
   if (!response.ok) {
+    // A 401 means the server-side session is gone while sessionStorage still holds
+    // a token. AuthGate only checks that a token is present, so without this the
+    // user sits on a fully rendered shell where every request silently fails.
+    if (response.status === 401) {
+      endSession();
+    }
+
     let errorBody: unknown = null;
     try {
       errorBody = await response.json();

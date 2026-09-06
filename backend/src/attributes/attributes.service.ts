@@ -3,6 +3,12 @@ import { RedisService } from '../thingsboard/redis.service';
 import { ThingsboardClientService } from '../thingsboard/thingsboard-client.service';
 import { EntityType, TbAttribute, TbAttributeScope } from '../types';
 
+/**
+ * Entity-scoped keys with no user or tenant component — safe only because every
+ * ThingsBoard fetch below uses the shared service-account token, so a cached value
+ * cannot vary by caller. Per-user tokens on this path would require a user
+ * component in the key, or this cache becomes a cross-customer data leak.
+ */
 const ATTRIBUTES_CACHE_TTL_SECONDS = 5;
 
 @Injectable()

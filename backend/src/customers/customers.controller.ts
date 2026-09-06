@@ -14,6 +14,7 @@ import { ApiOperation, ApiParam, ApiResponse, ApiSecurity, ApiTags } from '@nest
 import { EntitiesService } from '../entities/entities.service';
 import { EntityRef, TbPageData } from '../types';
 import { ParseTbIdPipe } from '../common/pipes/tb-id.pipe';
+import { ScopedEntity } from '../common/decorators/scoped-entity.decorator';
 import { CurrentSession } from '../common/decorators/current-session.decorator';
 import { AppSession } from '../auth/auth.service';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
@@ -42,6 +43,7 @@ export class CustomersController {
   }
 
   @Get(':id')
+  @ScopedEntity('CUSTOMER')
   @ApiOperation({ summary: 'Get a customer by id' })
   @ApiParam({ name: 'id' })
   async getById(@Param('id', ParseTbIdPipe) id: string): Promise<EntityRef> {
@@ -65,6 +67,7 @@ export class CustomersController {
   }
 
   @Get(':id/hierarchy')
+  @ScopedEntity('CUSTOMER')
   @ApiOperation({ summary: "Get a Customer's hierarchy levels, ordered by levelIndex ascending" })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200, description: 'Hierarchy levels in order' })
@@ -74,6 +77,7 @@ export class CustomersController {
   }
 
   @Patch(':id')
+  @ScopedEntity('CUSTOMER')
   @UseGuards(RolesGuard)
   @Roles('SYSADMIN')
   @ApiOperation({ summary: "Update a Client's title, sysadmin-only" })
@@ -84,6 +88,7 @@ export class CustomersController {
   }
 
   @Delete(':id')
+  @ScopedEntity('CUSTOMER')
   @HttpCode(204)
   @UseGuards(RolesGuard)
   @Roles('SYSADMIN')
@@ -99,6 +104,7 @@ export class CustomersController {
   }
 
   @Get(':id/children')
+  @ScopedEntity('CUSTOMER')
   @ApiOperation({
     summary: 'Direct level-0 Assets attached to this Customer via real TB Contains relations',
   })

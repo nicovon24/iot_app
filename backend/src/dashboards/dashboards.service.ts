@@ -1,9 +1,8 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Dashboard, DashboardCustomerAccess, DashboardWidget, Prisma } from '@prisma/client';
 import { AppSession } from '../auth/auth.service';
-import { isDescendantCustomer } from '../common/guards/ws-auth.util';
+import { EntitiesService } from '../entities/entities.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { ThingsboardClientService } from '../thingsboard/thingsboard-client.service';
 import { SaveDashboardDto } from './dto/save-dashboard.dto';
 import { validateWidgetConfig } from './widget-registry';
 import { validateTimeWindow } from './time-window';
@@ -24,7 +23,7 @@ const isSysadmin = (session: AppSession) =>
 export class DashboardsService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly tb: ThingsboardClientService,
+    private readonly entitiesService: EntitiesService,
   ) {}
 
   async list(session: AppSession): Promise<DashboardWithAccess[]> {
@@ -176,7 +175,10 @@ export class DashboardsService {
 
     for (const access of dashboard.customerAccess) {
       if (access.customerId === session.customerId) return true;
-      if (await isDescendantCustomer(access.customerId, session.customerId, this.tb)) return true;
+      // Shared downward: a dashboard granted to a parent customer stays visible to
+      // its sub-customers.
+      if (await this.entitiesService.isDescendantCustomer(access.customerId, session.customerId))
+        return true;
     }
     return false;
   }

@@ -6,7 +6,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { Tab, Tabs } from '@heroui/react';
 import { Select } from '@/components';
-import { apiClient, suggestUnit } from '@/lib';
+import { ApiError, apiClient, suggestUnit } from '@/lib';
 import { useEntityAttributes } from '@/hooks';
 import { useTelemetryKeys, useTelemetryHistory, useTelemetryLatest } from '@/hooks';
 import { useLiveTelemetry } from '@/hooks';
@@ -22,7 +22,6 @@ import type { Alarm, EntityRef, EntityType } from '@/types';
 const MapWidget = dynamic(() => import('@/widgets/maps').then((m) => m.MapWidget), { ssr: false });
 
 const ENTITY_TYPES: EntityType[] = ['DEVICE', 'ASSET', 'CUSTOMER'];
-const LIST_PATH: Record<'DEVICE' | 'ASSET', string> = { DEVICE: 'devices', ASSET: 'assets' };
 
 const TABS_CLASSNAMES = {
   tabList: 'gap-6 border-b border-border bg-transparent p-0',
@@ -43,10 +42,16 @@ export default function EntityDetailPage() {
   const id = params.id;
   const type = parseType(searchParams.get('type'));
 
-  const { data: entity } = useQuery({
+  // /entities/:id?type= is the customer-scoped route; /devices/:id and /assets/:id
+  // are not (see backend CustomerScopeGuard). This id comes straight from the URL,
+  // so it is the one place a user can point the page at an arbitrary entity.
+  // `type` was already parsed above and was simply being dropped.
+  // retry: false because the global default is retry: 1, which would request
+  // every 403 twice.
+  const { data: entity, error: entityError } = useQuery({
     queryKey: ['entity', id, type],
-    queryFn: () =>
-      apiClient.get<EntityRef>(`/${LIST_PATH[type as 'DEVICE' | 'ASSET'] ?? 'devices'}/${id}`),
+    queryFn: () => apiClient.get<EntityRef>(`/entities/${id}?type=${type}`),
+    retry: false,
   });
 
   const attributesQuery = useEntityAttributes(id, type);
@@ -128,6 +133,22 @@ export default function EntityDetailPage() {
   const lng = locationQuery.data?.longitude
     ? Number(locationQuery.data.longitude.value)
     : undefined;
+
+  if (entityError) {
+    const notFound = entityError instanceof ApiError && entityError.status === 404;
+    const forbidden = entityError instanceof ApiError && entityError.status === 403;
+    return (
+      <div className="flex h-full items-center justify-center">
+        <p className="text-sm text-muted">
+          {notFound
+            ? 'Entity not found.'
+            : forbidden
+              ? 'This entity is outside your customer hierarchy.'
+              : 'Failed to load entity.'}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">

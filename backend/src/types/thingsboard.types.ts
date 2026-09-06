@@ -10,17 +10,30 @@ export interface TbDevice {
   name: string;
   type: string;
   label?: string;
+  version?: number;
   tenantId?: TbEntityId;
   customerId?: TbEntityId;
   ownerId?: TbEntityId;
   additionalInfo?: unknown;
 }
 
+/**
+ * `version` is ThingsBoard's optimistic-locking counter, present on recent TB
+ * versions. The update methods in EntitiesService read an entity and POST it back
+ * with `...existing`, so this field rides along and TB rejects a write carrying a
+ * stale value instead of silently overwriting a concurrent edit. Declared rather
+ * than left implicit so the read-modify-write in updateAsset/updateDevice/
+ * updateCustomer is understood to depend on it.
+ *
+ * Optional because an older TB simply omits it — in that case those updates remain
+ * last-write-wins and concurrent edits can still lose data.
+ */
 export interface TbAsset {
   id: TbEntityId;
   name: string;
   type: string;
   label?: string;
+  version?: number;
   tenantId?: TbEntityId;
   customerId?: TbEntityId;
   assetProfileId?: TbEntityId;
@@ -31,6 +44,7 @@ export interface TbAsset {
 export interface TbCustomer {
   id: TbEntityId;
   title: string;
+  version?: number;
   tenantId?: TbEntityId;
   parentCustomerId?: TbEntityId;
   ownerId?: TbEntityId;

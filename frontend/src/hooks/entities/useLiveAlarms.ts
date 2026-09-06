@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { createWsClient, type SubscribeTarget } from '@/lib';
+import { createWsClient, endSession, toastError, type SubscribeTarget } from '@/lib';
 import type { Alarm } from '@/types';
 
 export function useLiveAlarms(
@@ -13,6 +13,11 @@ export function useLiveAlarms(
     const unsubscribe = client.subscribe(target, (frame) => {
       if (frame.event !== 'alarm') return;
       onAlarm(frame.data);
+    });
+
+    client.onClosed(({ sessionEnded }) => {
+      if (sessionEnded) endSession();
+      else toastError('Live alarms disconnected', 'Reload the page to reconnect.');
     });
 
     return () => {

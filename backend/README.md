@@ -51,6 +51,7 @@ Create a `.env` file in this directory:
 | `THINGSBOARD_PASSWORD` |   yes    | —                        | ThingsBoard login password            |
 | `REDIS_URL`            |    no    | `redis://localhost:6379` | Redis connection string               |
 | `DATABASE_URL`         |   yes    | —                        | PostgreSQL connection string (Prisma) |
+| `FRONTEND_URL`         |    no    | `http://localhost:3000`  | Allowed CORS origin                   |
 | `PORT`                 |    no    | `3001`                   | Port the API listens on               |
 
 Configuration is validated at startup via [`config.schema.ts`](src/config/config.schema.ts) — the app fails fast if required variables are missing or malformed.

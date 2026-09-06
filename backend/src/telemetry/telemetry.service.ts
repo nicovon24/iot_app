@@ -3,6 +3,15 @@ import { RedisService } from '../thingsboard/redis.service';
 import { ThingsboardClientService } from '../thingsboard/thingsboard-client.service';
 import { EntityType, TbTimeseriesLatest, TelemetryLatest, TelemetryValue } from '../types';
 
+/**
+ * Cache keys here are entity-scoped, with no user or tenant component. That is
+ * only safe because every ThingsBoard fetch below goes through the shared
+ * service-account token, so a cached value cannot vary by caller.
+ *
+ * If per-user ThingsBoard tokens are ever introduced on this path, these keys MUST
+ * gain a user component — otherwise the cache silently becomes a cross-customer
+ * data leak, with nothing in this file having changed.
+ */
 const LATEST_CACHE_TTL_SECONDS = 3;
 
 function serialize(latest: TbTimeseriesLatest): TelemetryLatest {
@@ -42,20 +51,25 @@ export class TelemetryService {
       return JSON.parse(cached) as TelemetryLatest;
     }
 
-    const resolvedKeys = keys ?? (await this.getKeys(entityId, entityType));
-    if (resolvedKeys.length === 0) {
-      return {};
-    }
+    // Dashboard widgets poll this every TELEMETRY_POLL_MS (5s) each, against a 3s
+    // TTL — without single-flight, every widget on the same entity issues its own
+    // identical TB request at each expiry.
+    return this.redis.single(cacheKey, async () => {
+      const resolvedKeys = keys ?? (await this.getKeys(entityId, entityType));
+      if (resolvedKeys.length === 0) {
+        return {};
+      }
 
-    const params = new URLSearchParams({ keys: resolvedKeys.join(',') });
-    const raw = await this.tb.request<TbTimeseriesLatest>(
-      'GET',
-      `/api/plugins/telemetry/${entityType}/${entityId}/values/timeseries?${params.toString()}`,
-    );
-    const serialized = serialize(raw);
+      const params = new URLSearchParams({ keys: resolvedKeys.join(',') });
+      const raw = await this.tb.request<TbTimeseriesLatest>(
+        'GET',
+        `/api/plugins/telemetry/${entityType}/${entityId}/values/timeseries?${params.toString()}`,
+      );
+      const serialized = serialize(raw);
 
-    await this.redis.set(cacheKey, JSON.stringify(serialized), LATEST_CACHE_TTL_SECONDS);
-    return serialized;
+      await this.redis.set(cacheKey, JSON.stringify(serialized), LATEST_CACHE_TTL_SECONDS);
+      return serialized;
+    });
   }
 
   async getTimeseries(

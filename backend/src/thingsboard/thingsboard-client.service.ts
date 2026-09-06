@@ -71,7 +71,8 @@ export class ThingsboardClientService {
   async getToken(): Promise<string> {
     const cached = await this.redis.get(JWT_CACHE_KEY);
     if (cached) return cached;
-    return this.login();
+    // Concurrent misses would otherwise each open their own TB login.
+    return this.redis.single(JWT_CACHE_KEY, () => this.login());
   }
 
   /**

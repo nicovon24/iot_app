@@ -36,20 +36,29 @@ iot_app/
 
 ## Getting started
 
-Requires PostgreSQL and Redis running locally (or reachable), plus a ThingsBoard instance (cloud or Docker).
+Requires Docker (for Postgres and Redis) and a ThingsBoard instance (cloud or Docker).
+
+The compose Postgres is published on host port **15432**, not 5432, so it doesn't
+collide with a locally installed Postgres — `DATABASE_URL` must use 15432. Redis is
+on the standard 6379.
 
 ```bash
-# backend
+# 1. install — ONCE, from the repo root. This is an npm workspaces monorepo;
+#    running `npm install` inside backend/ or frontend/ produces a partial tree.
+npm install             # installs both workspaces, runs `prisma generate`
+
+# 2. infrastructure — Postgres on host port 15432, Redis on 6379
+docker compose up -d postgres redis
+
+# 3. backend
 cd backend
-cp .env.example .env   # fill in THINGSBOARD_URL/USERNAME/PASSWORD, REDIS_URL, DATABASE_URL
-npm install             # runs `prisma generate` via postinstall
+cp .env.example .env    # fill in THINGSBOARD_URL/USERNAME/PASSWORD
 npx prisma migrate deploy
 npm run start:dev       # http://localhost:3001
 
-# frontend (separate terminal)
+# 4. frontend (separate terminal, from the repo root)
 cd frontend
-npm install
-npm run dev              # http://localhost:3000
+npm run dev             # http://localhost:3000
 ```
 
 Frontend env vars (optional, default to `localhost:3001`): `NEXT_PUBLIC_API_BASE_URL`, `NEXT_PUBLIC_WS_BASE_URL`.

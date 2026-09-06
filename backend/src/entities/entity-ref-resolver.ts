@@ -1,14 +1,8 @@
+import { HttpException } from '@nestjs/common';
 import { ThingsboardClientService } from '../thingsboard/thingsboard-client.service';
 import { RedisService } from '../thingsboard/redis.service';
-import {
-  EntityRef,
-  EntityRefLink,
-  EntityType,
-  TbAsset,
-  TbCustomer,
-  TbDevice,
-  TbPageData,
-} from '../types';
+import { fetchAllPages } from './fetch-all-pages';
+import { EntityRef, EntityRefLink, EntityType, TbAsset, TbCustomer, TbDevice } from '../types';
 
 export type RefKind = 'tenant' | 'customer' | 'assetProfile';
 
@@ -19,6 +13,17 @@ export const TB_NULL_CUSTOMER_ID = '13814000-1dd2-11b2-8080-808080808080';
 
 /** Reference names/labels change rarely — a much longer TTL than the ~3s telemetry cache. */
 const REF_CACHE_TTL_SECONDS = 300;
+
+/**
+ * Negative-cache TTL, deliberately shorter than the positive one. Without it an
+ * entity pointing at a deleted customer re-triggers a full customer fetch on every
+ * request that touches it, forever — stale references are common enough in practice
+ * to make that a permanent tax rather than an edge case.
+ */
+const REF_MISS_TTL_SECONDS = 45;
+
+/** Marks "looked this up, it genuinely does not exist" as distinct from a cache miss. */
+const MISS_SENTINEL = '__miss__';
 
 /**
  * Batched + Redis-cached resolution of tenant/customer/assetProfile reference names/labels
@@ -52,26 +57,28 @@ export class EntityRefResolver {
 
     for (const [kind, ids] of byKind) {
       const uncached: string[] = [];
-      for (const id of ids) {
-        const cached = await this.redis.get(`refname:${kind}:${id}`);
+      // One MGET instead of one GET per id: the ThingsBoard calls below are already
+      // batched, so serialising the cache reads was the remaining round-trip cost.
+      const idList = [...ids];
+      const cachedValues = await this.redis.mget(idList.map((id) => `refname:${kind}:${id}`));
+      idList.forEach((id, i) => {
+        const cached = cachedValues[i];
+        if (cached === MISS_SENTINEL) return; // known absent — don't refetch
         if (cached) {
           result.set(`${kind}:${id}`, JSON.parse(cached) as EntityRefLink);
         } else {
           uncached.push(id);
         }
-      }
+      });
       if (uncached.length === 0) continue;
 
       if (kind === 'customer') {
         // One call resolves every uncached customer id at once — TB has no per-customer-name
         // batch endpoint, but a single full-page fetch is far cheaper than N individual GETs.
         try {
-          const page = await this.tb.request<TbPageData<TbCustomer>>(
-            'GET',
-            '/api/customers?pageSize=1000&page=0',
-          );
+          const customers = await fetchAllPages<TbCustomer>(this.tb, '/api/customers');
           for (const id of uncached) {
-            const customer = page.data.find((c) => c.id.id === id);
+            const customer = customers.find((c) => c.id.id === id);
             if (customer) {
               const link: EntityRefLink = { id, name: customer.title };
               result.set(`customer:${id}`, link);
@@ -80,6 +87,12 @@ export class EntityRefResolver {
                 JSON.stringify(link),
                 REF_CACHE_TTL_SECONDS,
               );
+            } else {
+              // The fetch SUCCEEDED and this id is genuinely absent — a deleted
+              // customer still referenced by an entity. Only reachable on success:
+              // a thrown request skips this block entirely, so a ThingsBoard outage
+              // can never be cached as "this does not exist".
+              await this.redis.set(`refname:customer:${id}`, MISS_SENTINEL, REF_MISS_TTL_SECONDS);
             }
           }
         } catch {
@@ -105,8 +118,13 @@ export class EntityRefResolver {
               JSON.stringify(link),
               REF_CACHE_TTL_SECONDS,
             );
-          } catch {
+          } catch (err) {
             // Stale/deleted reference — degrade to {id} only, don't fail the whole batch.
+            // Tombstone ONLY a definitive 404: anything else (network blip, TB 5xx)
+            // must stay uncached, or an outage would be remembered as "absent".
+            if (err instanceof HttpException && err.getStatus() === 404) {
+              await this.redis.set(`refname:${kind}:${id}`, MISS_SENTINEL, REF_MISS_TTL_SECONDS);
+            }
           }
         }),
       );

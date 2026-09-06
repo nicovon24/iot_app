@@ -23,7 +23,6 @@ const SESSION: AppSession = {
   customerId: 'c1',
   appRole: 'ADMIN',
   tbToken: 'tb-token',
-  tbRefreshToken: 'tb-refresh',
 };
 
 describe('SessionAuthGuard', () => {

@@ -38,9 +38,31 @@ export function createWsClient(channel: WsChannel) {
     };
   }
 
+  // Set when the caller closes deliberately (unmount, navigation), so onClosed
+  // stays silent for those — otherwise every page change would report a dropped
+  // connection.
+  let closedByCaller = false;
+
   function close() {
+    closedByCaller = true;
     socket.close();
   }
 
-  return { socket, subscribe, close };
+  /**
+   * Without this the socket dropping is completely silent — a backend restart, a
+   * network blip, or the server ending the session all leave the dashboard frozen
+   * on stale values with no indication and no recovery short of a page reload.
+   *
+   * Close code 1008 is the backend's "session ended" (logout or TTL expiry): the
+   * session is genuinely gone, so retrying is pointless and the caller should send
+   * the user to login. Any other code is a transport failure worth surfacing.
+   */
+  function onClosed(handler: (info: { sessionEnded: boolean }) => void) {
+    socket.addEventListener('close', (evt) => {
+      if (closedByCaller) return;
+      handler({ sessionEnded: evt.code === 1008 });
+    });
+  }
+
+  return { socket, subscribe, close, onClosed };
 }

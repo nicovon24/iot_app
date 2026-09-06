@@ -21,6 +21,9 @@ interface SubscribePayload {
   entityType: EntityType;
 }
 
+/** How often an open socket re-checks that its session still exists in Redis. */
+const SESSION_REVALIDATE_MS = 60_000;
+
 const TB_ID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 const VALID_ENTITY_TYPES: EntityType[] = ['DEVICE', 'ASSET', 'CUSTOMER'];
 
@@ -48,8 +51,10 @@ function isValidSubscribePayload(data: unknown): data is SubscribePayload {
 @WebSocketGateway({ path: '/ws/telemetry' })
 export class TelemetryGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(TelemetryGateway.name);
-  private readonly sessions = new WeakMap<WebSocket, AppSession>();
+  // Holds the in-flight session lookup, not the resolved session — see handleConnection.
+  private readonly sessions = new WeakMap<WebSocket, Promise<AppSession | null>>();
   private readonly subscriptions = new WeakMap<WebSocket, Map<string, () => void>>();
+  private readonly revalidators = new WeakMap<WebSocket, NodeJS.Timeout>();
 
   constructor(
     private readonly authService: AuthService,
@@ -62,17 +67,60 @@ export class TelemetryGateway implements OnGatewayConnection, OnGatewayDisconnec
     const url = new URL(request.url ?? '', 'http://localhost');
     const token = url.searchParams.get('token');
 
-    const session = token ? await resolveWsSession(token, this.authService) : null;
+    if (!token) {
+      client.close(1008, 'Missing or invalid session token');
+      return;
+    }
+
+    // Both maps are populated synchronously, before the first await. Nest starts
+    // dispatching inbound messages as soon as they arrive, and the browser sends
+    // `subscribe` the instant the socket opens — so that message routinely reaches
+    // handleSubscribe while this handler is still awaiting Redis. Storing the
+    // pending promise rather than the resolved value means handleSubscribe awaits
+    // this same lookup instead of finding an empty map and closing with 1008,
+    // which the frontend reads as "session ended" and turns into a full logout.
+    // (Verified: an immediate subscribe closed 1008 while one delayed 500ms did not.)
+    const sessionPromise = resolveWsSession(token, this.authService);
+    this.sessions.set(client, sessionPromise);
+    this.subscriptions.set(client, new Map());
+
+    const session = await sessionPromise;
     if (!session) {
       client.close(1008, 'Missing or invalid session token');
       return;
     }
 
-    this.sessions.set(client, session);
-    this.subscriptions.set(client, new Map());
+    // Telemetry is server-pushed, so a subscribed client may never send another
+    // frame — checking on inbound messages would never fire. Poll Redis instead,
+    // so logout and session expiry actually terminate the stream rather than
+    // leaving it live until the tab closes.
+    const timer = setInterval(() => {
+      void (async () => {
+        try {
+          const live = await resolveWsSession(token, this.authService);
+          if (live) return;
+        } catch (err) {
+          // ioredis REJECTS when Redis is unreachable (MaxRetriesPerRequestError,
+          // ~1.2s) — it does not resolve null. Treating that as "session ended"
+          // would close every live dashboard during a blip, and the client has no
+          // reconnect logic to recover with. Keep the socket, retry next tick.
+          this.logger.warn(`Session revalidation failed, keeping socket open: ${String(err)}`);
+          return;
+        }
+        this.handleDisconnect(client);
+        client.close(1008, 'Session ended');
+      })();
+    }, SESSION_REVALIDATE_MS);
+    this.revalidators.set(client, timer);
   }
 
   handleDisconnect(client: WebSocket): void {
+    const timer = this.revalidators.get(client);
+    if (timer) {
+      clearInterval(timer);
+      this.revalidators.delete(client);
+    }
+
     const clientSubs = this.subscriptions.get(client);
     if (!clientSubs) return;
 
@@ -87,7 +135,7 @@ export class TelemetryGateway implements OnGatewayConnection, OnGatewayDisconnec
     @ConnectedSocket() client: WebSocket,
     @MessageBody() data: unknown,
   ): Promise<void> {
-    const session = this.sessions.get(client);
+    const session = await this.sessions.get(client);
     if (!session) {
       client.close(1008, 'No session');
       return;
@@ -112,13 +160,7 @@ export class TelemetryGateway implements OnGatewayConnection, OnGatewayDisconnec
     clientSubs.set(key, () => {});
 
     try {
-      const inScope = await isEntityInScope(
-        session,
-        entityId,
-        entityType,
-        this.entitiesService,
-        this.tb,
-      );
+      const inScope = await isEntityInScope(session, entityId, entityType, this.entitiesService);
       if (!inScope) {
         clientSubs.delete(key);
         client.send(JSON.stringify({ event: 'error', entityId, message: 'forbidden' }));

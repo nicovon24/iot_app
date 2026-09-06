@@ -1,5 +1,7 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { FastifyRequest } from 'fastify';
+import { SCOPED_ENTITY } from '../decorators/scoped-entity.decorator';
 import { AppSession } from '../../auth/auth.service';
 import { EntitiesService } from '../../entities/entities.service';
 import { ThingsboardClientService } from '../../thingsboard/thingsboard-client.service';
@@ -21,6 +23,7 @@ import { isEntityInScope } from './ws-auth.util';
 @Injectable()
 export class CustomerScopeGuard implements CanActivate {
   constructor(
+    private readonly reflector: Reflector,
     private readonly entitiesService: EntitiesService,
     private readonly tb: ThingsboardClientService,
   ) {}
@@ -40,18 +43,25 @@ export class CustomerScopeGuard implements CanActivate {
 
     const params = request.params as { id?: string };
     const query = request.query as { type?: EntityType };
-    if (!params.id || !query.type) {
-      // Not an entity-scoped route (e.g. list endpoints) — scoping happens per-entity only.
+
+    // The entity type comes from the handler's own @ScopedEntity() when it has
+    // one (assets/devices/customers), falling back to ?type= for the generic
+    // /entities routes. Without the metadata the fixed-type controllers fell
+    // through unscoped, because they never pass a type query parameter.
+    const routeType = this.reflector.getAllAndOverride<EntityType>(SCOPED_ENTITY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    const type = routeType ?? query.type;
+
+    if (!params.id || !type) {
+      // Genuinely unscoped route — list endpoints, and POST /devices/:id/claim,
+      // whose target Device has no owning Customer by definition. Those handlers
+      // and their services are responsible for their own authorization.
       return true;
     }
 
-    const inScope = await isEntityInScope(
-      session,
-      params.id,
-      query.type,
-      this.entitiesService,
-      this.tb,
-    );
+    const inScope = await isEntityInScope(session, params.id, type, this.entitiesService);
     if (!inScope) {
       throw new ForbiddenException('Entity is outside your customer hierarchy');
     }

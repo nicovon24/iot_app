@@ -19,7 +19,6 @@ const SYSADMIN_SESSION: AppSession = {
   customerId: null,
   appRole: null,
   tbToken: 'tb-token',
-  tbRefreshToken: 'tb-refresh',
 };
 
 const CUSTOMER_SESSION: AppSession = {
