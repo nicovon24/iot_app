@@ -1,4 +1,6 @@
 node_modules
-# Keep environment variables out of version control
+# Keep environment variables out of version control — but the placeholder
+# template must be committed (same pattern as frontend/.gitignore).
 .env
 .env.production
+!.env.example

@@ -1,6 +1,7 @@
 import {
   ConflictException,
   ForbiddenException,
+  HttpException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -18,6 +19,12 @@ import {
   TbRelation,
 } from '../types';
 import { EntityRefResolver, TB_NULL_CUSTOMER_ID } from './entity-ref-resolver';
+import { fetchAllPages } from './fetch-all-pages';
+
+/** Descendant-set cache TTL. Sub-customers are created rarely, and only by a
+ *  sysadmin — whose own session bypasses scoping anyway — so a short window of
+ *  staleness costs nothing. Invalidated explicitly on customer create/delete. */
+const SCOPE_CACHE_TTL_SECONDS = 60;
 
 export function buildPageParams(pagination?: PaginationQueryDto): string {
   const params = new URLSearchParams();
@@ -65,11 +72,13 @@ export class EntitiesService {
    * list endpoints for CUSTOMER_USER sessions — TENANT_ADMIN/SYS_ADMIN stay unscoped.
    */
   async resolveScopedCustomerIds(rootCustomerId: string): Promise<string[]> {
-    const page = await this.tb.request<TbPageData<TbCustomer>>(
-      'GET',
-      '/api/customers?pageSize=1000&page=0',
-    );
-    const all = page.data;
+    // Runs on every scoped list and every isInScope call, and fetches the whole
+    // customer table each time — the single hottest uncached path in the backend.
+    const cacheKey = `scope:${rootCustomerId}`;
+    const cached = await this.redis.get(cacheKey);
+    if (cached) return JSON.parse(cached) as string[];
+
+    const all = await fetchAllPages<TbCustomer>(this.tb, '/api/customers');
     const result = new Set<string>([rootCustomerId]);
     let added = true;
     while (added) {
@@ -83,7 +92,10 @@ export class EntitiesService {
         }
       }
     }
-    return [...result];
+
+    const ids = [...result];
+    await this.redis.set(cacheKey, JSON.stringify(ids), SCOPE_CACHE_TTL_SECONDS);
+    return ids;
   }
 
   async list(
@@ -102,11 +114,10 @@ export class EntitiesService {
     const scopedCustomerIds = await this.resolveScopedCustomerIds(customerId);
 
     if (type === 'CUSTOMER') {
-      const page = await this.tb.request<TbPageData<TbCustomer>>(
-        'GET',
-        '/api/customers?pageSize=1000&page=0',
-      );
-      const filtered = page.data.filter((c) => scopedCustomerIds.includes(c.id.id));
+      // applyClientSidePagination below slices in memory, so it needs the complete
+      // set — a truncated first page would silently hide customers.
+      const allCustomers = await fetchAllPages<TbCustomer>(this.tb, '/api/customers');
+      const filtered = allCustomers.filter((c) => scopedCustomerIds.includes(c.id.id));
       const mapped = await this.refResolver.mapWithRefs(filtered, 'CUSTOMER');
       return applyClientSidePagination(mapped, pagination);
     }
@@ -114,13 +125,10 @@ export class EntitiesService {
     const path = type === 'DEVICE' ? 'devices' : 'assets';
     const perCustomer = await Promise.all(
       scopedCustomerIds.map((cid) =>
-        this.tb.request<TbPageData<TbDevice | TbAsset>>(
-          'GET',
-          `/api/customer/${cid}/${path}?pageSize=1000&page=0`,
-        ),
+        fetchAllPages<TbDevice | TbAsset>(this.tb, `/api/customer/${cid}/${path}`),
       ),
     );
-    const merged = perCustomer.flatMap((p) => p.data);
+    const merged = perCustomer.flat();
     const textFiltered = pagination?.textSearch
       ? merged.filter((e) => e.name.toLowerCase().includes(pagination.textSearch!.toLowerCase()))
       : merged;
@@ -198,7 +206,10 @@ export class EntitiesService {
     entityId: string,
     entityType: EntityType,
   ): Promise<boolean> {
-    if (!session) return true;
+    // Fail closed. A caller that forgets to pass the session gets nothing rather
+    // than everything — the permissive default was a trap for the next route
+    // added. @Public() routes have no session and must skip this call entirely.
+    if (!session) return false;
     if (session.authority === 'TENANT_ADMIN' || session.authority === 'SYS_ADMIN') return true;
     if (!session.customerId) return false;
 
@@ -207,6 +218,23 @@ export class EntitiesService {
 
     const scopedIds = await this.resolveScopedCustomerIds(session.customerId);
     return scopedIds.includes(targetCustomerId);
+  }
+
+  /**
+   * True when `candidateCustomerId` sits at or below `ancestorCustomerId` in the
+   * ThingsBoard customer hierarchy.
+   *
+   * Expressed through resolveScopedCustomerIds so the hierarchy is walked in
+   * exactly one place — cached, fully paginated, and cycle-safe by construction.
+   * This replaces a second, upward-walking implementation that issued one
+   * uncached TB request per level and could disagree with this one.
+   */
+  async isDescendantCustomer(
+    ancestorCustomerId: string,
+    candidateCustomerId: string,
+  ): Promise<boolean> {
+    const scopedIds = await this.resolveScopedCustomerIds(ancestorCustomerId);
+    return scopedIds.includes(candidateCustomerId);
   }
 
   /**
@@ -249,6 +277,8 @@ export class EntitiesService {
         ? { parentCustomerId: { id: parentCustomerId, entityType: 'CUSTOMER' } }
         : {}),
     });
+    // A new customer can change any existing customer's descendant set.
+    await this.redis.delByPattern('scope:*');
     const [mapped] = await this.refResolver.mapWithRefs([created], 'CUSTOMER');
     return mapped;
   }
@@ -268,6 +298,8 @@ export class EntitiesService {
 
   async deleteCustomer(id: string): Promise<void> {
     await this.tb.request('DELETE', `/api/customer/${id}`);
+    // Any cached scope set may now name a customer that no longer exists.
+    await this.redis.delByPattern('scope:*');
   }
 
   async deleteAsset(id: string): Promise<void> {
@@ -305,6 +337,9 @@ export class EntitiesService {
       ...existing,
       title: updates.title ?? existing.title,
     });
+    // Must happen BEFORE mapWithRefs, or the resolver repopulates the cache from
+    // the stale entry and the rename appears not to have taken for up to 5 minutes.
+    await this.redis.del(`refname:customer:${id}`);
     const [mapped] = await this.refResolver.mapWithRefs([updated], 'CUSTOMER');
     return mapped;
   }
@@ -360,9 +395,37 @@ export class EntitiesService {
     const assetIds = contains.filter((r) => r.to.entityType === 'ASSET').map((r) => r.to.id);
     const deviceIds = contains.filter((r) => r.to.entityType === 'DEVICE').map((r) => r.to.id);
 
+    // Fetch raw, then map ONCE per type. getById maps each entity on its own, which
+    // throws away EntityRefResolver's cross-entity reference deduplication — every
+    // child could trigger its own full customer fetch, so expanding a node with
+    // twenty children meant forty-plus ThingsBoard calls.
+    //
+    // A child can disappear between reading the relation and fetching it, which
+    // getById used to surface as a 404 for the whole request; here a missing child
+    // is dropped from the listing instead of failing the parent's expansion.
+    const fetchRaw = async <T>(path: string): Promise<T | null> => {
+      try {
+        return await this.tb.request<T>('GET', path);
+      } catch (err) {
+        if (err instanceof HttpException && err.getStatus() === 404) return null;
+        throw err;
+      }
+    };
+
+    const [rawAssets, rawDevices] = await Promise.all([
+      Promise.all(assetIds.map((id) => fetchRaw<TbAsset>(`/api/asset/${id}`))),
+      Promise.all(deviceIds.map((id) => fetchRaw<TbDevice>(`/api/device/${id}`))),
+    ]);
+
     const [assets, devices] = await Promise.all([
-      Promise.all(assetIds.map((id) => this.getById(id, 'ASSET'))),
-      Promise.all(deviceIds.map((id) => this.getById(id, 'DEVICE'))),
+      this.refResolver.mapWithRefs(
+        rawAssets.filter((a): a is TbAsset => a !== null),
+        'ASSET',
+      ),
+      this.refResolver.mapWithRefs(
+        rawDevices.filter((d): d is TbDevice => d !== null),
+        'DEVICE',
+      ),
     ]);
     return { assets, devices };
   }

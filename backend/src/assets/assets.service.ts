@@ -27,7 +27,14 @@ export class AssetsService {
    * fails, same compensating pattern as CustomersService.create), then creates a real TB
    * "Contains" relation from the parent (Customer or Asset) to the new Asset.
    */
-  async create(dto: CreateAssetDto): Promise<EntityRef> {
+  async create(dto: CreateAssetDto, session: AppSession | null): Promise<EntityRef> {
+    // The customerId arrives in the request body, so CustomerScopeGuard never sees
+    // it — same gap linkDevice already guards against for deviceId. Without this a
+    // Customer User could create assets inside another customer's hierarchy.
+    if (!(await this.entitiesService.isInScope(session, dto.customerId, 'CUSTOMER'))) {
+      throw new ForbiddenException('That customer is outside your hierarchy');
+    }
+
     const level = await this.prisma.customerHierarchyLevels.findUnique({
       where: { customerId_levelIndex: { customerId: dto.customerId, levelIndex: dto.levelIndex } },
     });

@@ -2,12 +2,20 @@ services:
   redis:
     image: redis:7-alpine
     container_name: iot_app_redis
+    # Redis holds every active session token and the ThingsBoard service-account
+    # JWT in plaintext, and 6379 is published to the host — so it is reachable by
+    # anything on the machine, and on an open network by anything on the LAN.
+    # The default keeps a fresh clone working with no extra setup; override
+    # REDIS_PASSWORD (and REDIS_URL) for anything shared or deployed.
+    command: redis-server --requirepass ${REDIS_PASSWORD:-devpassword}
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      # Must authenticate too, or the container never reports healthy and
+      # depends_on blocks the backend forever.
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-devpassword}", "ping"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -38,7 +46,7 @@ services:
     env_file:
       - backend/.env
     environment:
-      REDIS_URL: redis://redis:6379
+      REDIS_URL: redis://:${REDIS_PASSWORD:-devpassword}@redis:6379
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/iot_app
       FRONTEND_URL: http://localhost:3000
       # Overrides backend/.env's PORT so it always matches the 3001 port mapping below.

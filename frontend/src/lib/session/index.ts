@@ -40,6 +40,28 @@ export function setSessionToken(token: string | null): void {
 }
 
 /**
+ * Single exit path for "the server-side session is gone": a 401 from the REST
+ * client, or a 1008 close from the telemetry/alarms socket. Clears the stored
+ * token and hard-navigates to login — a full navigation rather than a router
+ * push, so all in-memory React Query state is dropped along with it.
+ *
+ * No-ops when already on /login, so a failed sign-in does not bounce the page
+ * it is already sitting on.
+ */
+export function endSession(): void {
+  if (typeof window === 'undefined') return;
+  setSessionToken(null);
+  if (window.location.pathname !== '/login') {
+    // A full navigation, not router.push(): the point is to discard every
+    // in-memory React Query cache built under the dead session. endSession() is
+    // also called from non-React contexts (the fetch wrapper, a socket close
+    // handler) where useRouter() is not available.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+    window.location.href = '/login';
+  }
+}
+
+/**
  * Eagerly warms the cache at app start. getSessionToken() no longer depends on this having
  * run, so it is now a convenience rather than a prerequisite — AuthGate still calls it so the
  * authenticated check on mount is a plain synchronous read.

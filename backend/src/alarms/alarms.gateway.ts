@@ -57,7 +57,8 @@ interface ClientSubscription {
 @WebSocketGateway({ path: '/ws/alarms' })
 export class AlarmsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(AlarmsGateway.name);
-  private readonly sessions = new WeakMap<WebSocket, AppSession>();
+  // Holds the in-flight session lookup, not the resolved session — see handleConnection.
+  private readonly sessions = new WeakMap<WebSocket, Promise<AppSession | null>>();
   private readonly subscriptions = new WeakMap<WebSocket, Map<string, ClientSubscription>>();
 
   constructor(
@@ -71,14 +72,26 @@ export class AlarmsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const url = new URL(request.url ?? '', 'http://localhost');
     const token = url.searchParams.get('token');
 
-    const session = token ? await resolveWsSession(token, this.authService) : null;
-    if (!session) {
+    if (!token) {
       client.close(1008, 'Missing or invalid session token');
       return;
     }
 
-    this.sessions.set(client, session);
+    // Populated synchronously, before the first await — the browser sends `subscribe`
+    // the instant the socket opens, and that message reaches handleSubscribe while
+    // this handler is still awaiting Redis. Storing the pending promise rather than
+    // the resolved session keeps handleSubscribe waiting on the same lookup instead
+    // of closing with 1008, which the frontend turns into a logout. Mirrors
+    // TelemetryGateway, which had the identical race.
+    const sessionPromise = resolveWsSession(token, this.authService);
+    this.sessions.set(client, sessionPromise);
     this.subscriptions.set(client, new Map());
+
+    const session = await sessionPromise;
+    if (!session) {
+      client.close(1008, 'Missing or invalid session token');
+      return;
+    }
   }
 
   handleDisconnect(client: WebSocket): void {
@@ -96,7 +109,7 @@ export class AlarmsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: WebSocket,
     @MessageBody() data: unknown,
   ): Promise<void> {
-    const session = this.sessions.get(client);
+    const session = await this.sessions.get(client);
     if (!session) {
       client.close(1008, 'No session');
       return;
@@ -115,13 +128,7 @@ export class AlarmsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     try {
-      const inScope = await isEntityInScope(
-        session,
-        entityId,
-        entityType,
-        this.entitiesService,
-        this.tb,
-      );
+      const inScope = await isEntityInScope(session, entityId, entityType, this.entitiesService);
       if (!inScope) {
         client.send(JSON.stringify({ event: 'error', entityId, message: 'forbidden' }));
         return;

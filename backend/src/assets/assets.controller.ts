@@ -6,6 +6,7 @@ import { CreateAssetDto } from './dto/create-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { LinkDeviceDto } from './dto/link-device.dto';
 import { ParseTbIdPipe } from '../common/pipes/tb-id.pipe';
+import { ScopedEntity } from '../common/decorators/scoped-entity.decorator';
 import { CurrentSession } from '../common/decorators/current-session.decorator';
 import { AppSession } from '../auth/auth.service';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
@@ -30,6 +31,7 @@ export class AssetsController {
   }
 
   @Get(':id')
+  @ScopedEntity('ASSET')
   @ApiOperation({ summary: 'Get an asset by id' })
   @ApiParam({ name: 'id' })
   async getById(@Param('id', ParseTbIdPipe) id: string): Promise<EntityRef> {
@@ -46,11 +48,15 @@ export class AssetsController {
   @ApiResponse({ status: 201, description: 'Asset created and linked' })
   @ApiResponse({ status: 400, description: 'Invalid levelIndex or parent/level mismatch' })
   @ApiResponse({ status: 404, description: 'parentId is not a tracked hierarchy member' })
-  async create(@Body() dto: CreateAssetDto): Promise<EntityRef> {
-    return this.assetsService.create(dto);
+  async create(
+    @Body() dto: CreateAssetDto,
+    @CurrentSession() session: AppSession | null,
+  ): Promise<EntityRef> {
+    return this.assetsService.create(dto, session);
   }
 
   @Delete(':id')
+  @ScopedEntity('ASSET')
   @HttpCode(204)
   @ApiOperation({
     summary: 'Delete an Asset',
@@ -64,6 +70,7 @@ export class AssetsController {
   }
 
   @Patch(':id')
+  @ScopedEntity('ASSET')
   @ApiOperation({ summary: "Update an Asset's name/type/label" })
   @ApiParam({ name: 'id' })
   async update(
@@ -74,6 +81,7 @@ export class AssetsController {
   }
 
   @Get(':id/children')
+  @ScopedEntity('ASSET')
   @ApiOperation({
     summary: 'Direct children of this Asset via real TB Contains relations, split by type',
   })
@@ -85,6 +93,7 @@ export class AssetsController {
   }
 
   @Post(':id/devices')
+  @ScopedEntity('ASSET')
   @ApiOperation({
     summary: 'Link an existing Device to this Asset via a real TB Contains relation',
     description:
@@ -104,6 +113,7 @@ export class AssetsController {
   }
 
   @Delete(':id/devices/:deviceId')
+  @ScopedEntity('ASSET')
   @HttpCode(204)
   @ApiOperation({
     summary:

@@ -3,6 +3,7 @@ import { ApiOperation, ApiParam, ApiResponse, ApiSecurity, ApiTags } from '@nest
 import { EntitiesService } from '../entities/entities.service';
 import { EntityRef, TbPageData } from '../types';
 import { ParseTbIdPipe } from '../common/pipes/tb-id.pipe';
+import { ScopedEntity } from '../common/decorators/scoped-entity.decorator';
 import { CurrentSession } from '../common/decorators/current-session.decorator';
 import { AppSession } from '../auth/auth.service';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
@@ -24,6 +25,7 @@ export class DevicesController {
   }
 
   @Get(':id')
+  @ScopedEntity('DEVICE')
   @ApiOperation({ summary: 'Get a device by id' })
   @ApiParam({ name: 'id' })
   async getById(@Param('id', ParseTbIdPipe) id: string): Promise<EntityRef> {
@@ -31,6 +33,7 @@ export class DevicesController {
   }
 
   @Patch(':id')
+  @ScopedEntity('DEVICE')
   @ApiOperation({ summary: "Update a Device's label" })
   @ApiParam({ name: 'id' })
   async update(

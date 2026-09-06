@@ -16,7 +16,6 @@ export interface AppSession {
   customerId: string | null;
   appRole: 'ADMIN' | 'READER' | null;
   tbToken: string;
-  tbRefreshToken: string;
 }
 
 @Injectable()
@@ -27,11 +26,12 @@ export class AuthService {
     private readonly prisma: PrismaService,
   ) {}
 
-  private buildSession(
-    profile: TbUserProfile,
-    tbToken: string,
-    tbRefreshToken: string,
-  ): AppSession {
+  // The ThingsBoard refresh token used to be stored here and was never read by
+  // anything: requestWithToken documents that it deliberately does not refresh on
+  // 401, so the field looked like a working refresh mechanism while doing nothing.
+  // Dropped rather than left as misleading state — reintroduce it together with an
+  // actual refresh path if per-user TB calls ever need one.
+  private buildSession(profile: TbUserProfile, tbToken: string): AppSession {
     return {
       tbUserId: profile.id.id,
       email: profile.email,
@@ -39,7 +39,6 @@ export class AuthService {
       customerId: profile.customerId?.id ?? null,
       appRole: profile.additionalInfo?.appRole ?? null,
       tbToken,
-      tbRefreshToken,
     };
   }
 
@@ -47,12 +46,9 @@ export class AuthService {
     // V1 (Phase 2.2): real ThingsBoard authentication — sysadmin is a pre-existing TB
     // Tenant Admin, admin/reader are TB Customer Users created via the users module.
     // No shared/config credential fallback.
-    const { token, refreshToken } = await this.thingsboard.loginWithCredentials(
-      dto.username,
-      dto.password,
-    );
+    const { token } = await this.thingsboard.loginWithCredentials(dto.username, dto.password);
     const profile = await this.thingsboard.getUserProfile(token);
-    const session = this.buildSession(profile, token, refreshToken);
+    const session = this.buildSession(profile, token);
 
     const sessionToken = randomUUID();
     await this.redis.set(
@@ -67,7 +63,7 @@ export class AuthService {
     impersonator: AppSession,
     targetUserId: string,
   ): Promise<{ sessionToken: string; logId: string }> {
-    // Reuses the impersonator's own tbToken/tbRefreshToken rather than a second real TB login
+    // Reuses the impersonator's own tbToken rather than a second real TB login
     // for the target — consistent with this project's existing architecture where entity-scoped
     // TB calls already go through the shared service-account credential regardless of whose app
     // session is active (see STATE.md Blockers/Concerns).
@@ -75,7 +71,7 @@ export class AuthService {
       'GET',
       `/api/user/${targetUserId}`,
     );
-    const session = this.buildSession(target, impersonator.tbToken, impersonator.tbRefreshToken);
+    const session = this.buildSession(target, impersonator.tbToken);
 
     const sessionToken = randomUUID();
     await this.redis.set(
@@ -116,7 +112,15 @@ export class AuthService {
   }
 
   async getSession(sessionToken: string): Promise<AppSession | null> {
-    const value = await this.redis.get(`${SESSION_PREFIX}${sessionToken}`);
-    return value ? (JSON.parse(value) as AppSession) : null;
+    const key = `${SESSION_PREFIX}${sessionToken}`;
+    const value = await this.redis.get(key);
+    if (!value) return null;
+
+    // Sliding expiry. The TTL used to be absolute, so an actively working user was
+    // logged out mid-task exactly 8h after signing in. Every authenticated request
+    // passes through here, so refreshing it keeps active sessions alive while an
+    // abandoned one still expires on schedule.
+    await this.redis.expire(key, SESSION_TTL_SECONDS);
+    return JSON.parse(value) as AppSession;
   }
 }

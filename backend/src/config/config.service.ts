@@ -33,6 +33,10 @@ export class ConfigService {
     return this.config.DATABASE_URL;
   }
 
+  get frontendUrl(): string {
+    return this.config.FRONTEND_URL;
+  }
+
   get port(): number {
     return this.config.PORT;
   }

@@ -16,7 +16,6 @@ const READER: AppSession = {
   customerId: 'c1',
   appRole: 'READER',
   tbToken: 'tb-token',
-  tbRefreshToken: 'tb-refresh',
 };
 
 const ADMIN: AppSession = { ...READER, appRole: 'ADMIN' };
