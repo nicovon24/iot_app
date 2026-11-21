@@ -12,11 +12,13 @@ datasource db {
 // never duplicated here. See CustomersService for creation flow.
 model CustomerHierarchyLevels {
   id         String @id @default(uuid())
+  instanceUrl String?
   customerId String
   levelIndex Int
   name       String
 
-  @@unique([customerId, levelIndex])
+  @@unique([instanceUrl, customerId, levelIndex])
+  @@index([customerId, levelIndex])
 }
 
 // Tracks which hierarchy level a real ThingsBoard Asset occupies. ThingsBoard has no
@@ -24,17 +26,21 @@ model CustomerHierarchyLevels {
 // One row per Asset (assetId is unique): an Asset belongs to exactly one hierarchy position.
 model AssetHierarchyAssignment {
   id         String @id @default(uuid())
+  instanceUrl String?
   customerId String
-  assetId    String @unique
+  assetId    String
   levelIndex Int
 
   @@index([customerId])
+  @@unique([instanceUrl, assetId])
+  @@index([assetId])
 }
 
 // Audit trail for sysadmin "Login as" impersonation (Phase 9.2). Narrowly scoped to
 // impersonation only — not a general audit-logging system.
 model ImpersonationLog {
   id             String    @id @default(uuid())
+  instanceUrl    String?
   impersonatorId String
   targetUserId   String
   startedAt      DateTime  @default(now())
@@ -57,6 +63,7 @@ enum DashboardCustomerScope {
 
 model Dashboard {
   id            String                 @id @default(uuid())
+  instanceUrl   String?
   title         String
   createdBy     String // TB user id of the creator
   createdAt     DateTime               @default(now())
@@ -78,6 +85,8 @@ model Dashboard {
 
   widgets        DashboardWidget[]
   customerAccess DashboardCustomerAccess[]
+
+  @@index([instanceUrl])
 }
 
 enum DashboardLayoutMode {
@@ -113,4 +122,14 @@ model DashboardWidget {
   dashboard Dashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
 
   @@index([dashboardId])
+}
+
+// Per ThingsBoard user AI connection. The key is encrypted by the backend; no
+// ThingsBoard entity or user profile is copied into this table.
+model AiProviderConnection {
+  tbUserId       String   @id
+  provider       String
+  model          String
+  encryptedKey   String
+  updatedAt      DateTime @updatedAt
 }

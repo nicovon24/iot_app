@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Layers, Maximize2, Pencil, Plus, Save, ScrollText } from 'lucide-react';
+import { Layers, Maximize2, Pencil, Plus, Save, ScrollText, Sparkles } from 'lucide-react';
 import type { Layout } from 'react-grid-layout';
 import { ApiError } from '@/lib';
 import { useCreateDashboard, useDashboard, useSaveDashboard } from '@/hooks';
@@ -13,9 +13,11 @@ import {
   AddWidgetPanel,
   type NewWidgetInput,
   BulkAddPanel,
+  AiDashboardPanel,
   TimeWindowPicker,
   TimeWindowProvider,
 } from '@/components';
+import { packWidgets } from '@/components/dashboards/canvas';
 import { Tooltip } from '@/components';
 import { Input } from '@/components';
 import type {
@@ -52,6 +54,7 @@ export default function DashboardDetailPage() {
   const [staged, setStaged] = useState<StagedWidget[]>([]);
   const [panelOpen, setPanelOpen] = useState(false);
   const [bulkPanelOpen, setBulkPanelOpen] = useState(false);
+  const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [editingWidget, setEditingWidget] = useState<DashboardWidget | null>(null);
   const [timeWindow, setTimeWindow] = useState<DashboardTimeWindow | null>(null);
   const [layoutMode, setLayoutMode] = useState<DashboardLayoutMode>('SCROLL');
@@ -124,6 +127,21 @@ export default function DashboardDetailPage() {
         layout: w.layout,
       })),
     ]);
+  }
+
+  function handleAiDraft(draft: { title: string; widgets: NewWidgetInput[] }) {
+    if (isNew || staged.length === 0) setTitle(draft.title);
+    setStaged((prev) => {
+      const layouts = packWidgets(prev.map((w) => w.layout), draft.widgets.map((w) => w.layout));
+      return [
+        ...prev,
+        ...draft.widgets.map((widget, index) => ({
+          ...widget,
+          layout: layouts[index],
+          id: `ai-${Date.now()}-${index}`,
+        })),
+      ];
+    });
   }
 
   async function handleSave() {
@@ -245,6 +263,13 @@ export default function DashboardDetailPage() {
                 >
                   <Layers size={15} /> Bulk add
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setAiPanelOpen(true)}
+                  className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 t-field hover:bg-tint"
+                >
+                  <Sparkles size={15} /> Crear con IA
+                </button>
               </>
             )}
             {editMode ? (
@@ -297,6 +322,11 @@ export default function DashboardDetailPage() {
         onClose={() => setBulkPanelOpen(false)}
         existingLayouts={staged.map((w) => w.layout)}
         onAdd={handleBulkAdd}
+      />
+      <AiDashboardPanel
+        isOpen={aiPanelOpen}
+        onClose={() => setAiPanelOpen(false)}
+        onDraft={handleAiDraft}
       />
     </div>
   );

@@ -14,6 +14,7 @@ import { isEntityInScope, resolveWsSession } from '../common/guards/ws-auth.util
 import { EntitiesService } from '../entities/entities.service';
 import { ThingsboardClientService } from '../thingsboard/thingsboard-client.service';
 import { ThingsboardWsService } from '../thingsboard/thingsboard-ws.service';
+import { thingsboardContext } from '../thingsboard/thingsboard-context';
 import { EntityType } from '../types';
 
 interface SubscribePayload {
@@ -160,14 +161,16 @@ export class TelemetryGateway implements OnGatewayConnection, OnGatewayDisconnec
     clientSubs.set(key, () => {});
 
     try {
-      const inScope = await isEntityInScope(session, entityId, entityType, this.entitiesService);
+      const inScope = await thingsboardContext.run(session, () =>
+        isEntityInScope(session, entityId, entityType, this.entitiesService),
+      );
       if (!inScope) {
         clientSubs.delete(key);
         client.send(JSON.stringify({ event: 'error', entityId, message: 'forbidden' }));
         return;
       }
 
-      const unsubscribe = await this.tbWs.subscribe(entityType, entityId, (update) => {
+      const unsubscribe = await this.tbWs.subscribe(session, entityType, entityId, (update) => {
         if (client.readyState === WebSocket.OPEN) {
           client.send(JSON.stringify({ event: 'telemetry', entityId, entityType, data: update }));
         }

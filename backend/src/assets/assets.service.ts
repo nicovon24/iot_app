@@ -8,6 +8,8 @@ import {
 } from '@nestjs/common';
 import { EntitiesService } from '../entities/entities.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { ConfigService } from '../config/config.service';
+import { currentInstance, currentInstanceWhere } from '../thingsboard/instance-scope';
 import { AppSession } from '../auth/auth.service';
 import { EntityRef } from '../types';
 import { CreateAssetDto } from './dto/create-asset.dto';
@@ -19,6 +21,7 @@ export class AssetsService {
   constructor(
     private readonly entitiesService: EntitiesService,
     private readonly prisma: PrismaService,
+    private readonly config: ConfigService,
   ) {}
 
   /**
@@ -35,8 +38,8 @@ export class AssetsService {
       throw new ForbiddenException('That customer is outside your hierarchy');
     }
 
-    const level = await this.prisma.customerHierarchyLevels.findUnique({
-      where: { customerId_levelIndex: { customerId: dto.customerId, levelIndex: dto.levelIndex } },
+    const level = await this.prisma.customerHierarchyLevels.findFirst({
+      where: { customerId: dto.customerId, levelIndex: dto.levelIndex, ...currentInstanceWhere(this.config) },
     });
     if (!level) {
       throw new BadRequestException(
@@ -51,8 +54,8 @@ export class AssetsService {
       }
       parentType = 'CUSTOMER';
     } else {
-      const parentAssignment = await this.prisma.assetHierarchyAssignment.findUnique({
-        where: { assetId: dto.parentId },
+      const parentAssignment = await this.prisma.assetHierarchyAssignment.findFirst({
+        where: { assetId: dto.parentId, ...currentInstanceWhere(this.config) },
       });
       if (!parentAssignment) {
         throw new NotFoundException(
@@ -82,7 +85,7 @@ export class AssetsService {
 
     try {
       await this.prisma.assetHierarchyAssignment.create({
-        data: { customerId: dto.customerId, assetId: created.id, levelIndex: dto.levelIndex },
+        data: { customerId: dto.customerId, assetId: created.id, levelIndex: dto.levelIndex, instanceUrl: currentInstance(this.config) },
       });
     } catch (err) {
       this.logger.error(
@@ -98,7 +101,7 @@ export class AssetsService {
       this.logger.error(
         `Rolling back Asset ${created.id} — Contains relation creation failed: ${(err as Error).message}`,
       );
-      await this.prisma.assetHierarchyAssignment.delete({ where: { assetId: created.id } });
+      await this.prisma.assetHierarchyAssignment.deleteMany({ where: { assetId: created.id, ...currentInstanceWhere(this.config) } });
       await this.entitiesService.deleteAsset(created.id);
       throw err;
     }
@@ -126,7 +129,7 @@ export class AssetsService {
     } catch (err) {
       if (!(err instanceof HttpException) || err.getStatus() !== 404) throw err;
     }
-    await this.prisma.assetHierarchyAssignment.deleteMany({ where: { assetId: id } });
+    await this.prisma.assetHierarchyAssignment.deleteMany({ where: { assetId: id, ...currentInstanceWhere(this.config) } });
   }
 
   async update(
@@ -158,8 +161,8 @@ export class AssetsService {
     }
 
     await this.entitiesService.createRelation(assetId, 'ASSET', deviceId, 'DEVICE');
-    const assignment = await this.prisma.assetHierarchyAssignment.findUnique({
-      where: { assetId },
+    const assignment = await this.prisma.assetHierarchyAssignment.findFirst({
+      where: { assetId, ...currentInstanceWhere(this.config) },
     });
     if (assignment) {
       await this.entitiesService.assignDeviceToCustomer(assignment.customerId, deviceId);

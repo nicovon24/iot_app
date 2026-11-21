@@ -17,12 +17,11 @@ export class ConfigService {
     return this.config.THINGSBOARD_URL;
   }
 
-  get thingsboardUsername(): string {
-    return this.config.THINGSBOARD_USERNAME;
-  }
-
-  get thingsboardPassword(): string {
-    return this.config.THINGSBOARD_PASSWORD;
+  get thingsboardAllowedUrls(): string[] {
+    return [this.config.THINGSBOARD_URL, ...(this.config.THINGSBOARD_ALLOWED_URLS?.split(',') ?? [])]
+      .map((url) => url.trim())
+      .filter(Boolean)
+      .map((url) => new URL(url).origin);
   }
 
   get redisUrl(): string {
@@ -31,6 +30,10 @@ export class ConfigService {
 
   get databaseUrl(): string {
     return this.config.DATABASE_URL;
+  }
+
+  get aiCredentialEncryptionKey(): string | undefined {
+    return this.config.AI_CREDENTIAL_ENCRYPTION_KEY;
   }
 
   get frontendUrl(): string {

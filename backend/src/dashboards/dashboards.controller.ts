@@ -9,11 +9,13 @@ import {
   Put,
   UnauthorizedException,
 } from '@nestjs/common';
+import { IsString, MaxLength, MinLength } from 'class-validator';
 import { ApiOperation, ApiParam, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { AppSession } from '../auth/auth.service';
 import { CurrentSession } from '../common/decorators/current-session.decorator';
 import { ParseTbIdPipe } from '../common/pipes/tb-id.pipe';
 import { DashboardsService } from './dashboards.service';
+import { DashboardAiService } from './dashboard-ai.service';
 import { SaveDashboardDto } from './dto/save-dashboard.dto';
 
 function requireSession(session: AppSession | null): AppSession {
@@ -21,11 +23,49 @@ function requireSession(session: AppSession | null): AppSession {
   return session;
 }
 
+class GenerateDashboardDto {
+  @IsString()
+  @MinLength(3)
+  @MaxLength(1000)
+  prompt!: string;
+}
+
 @ApiTags('dashboards')
 @ApiSecurity('session-token')
 @Controller('dashboards')
 export class DashboardsController {
-  constructor(private readonly dashboardsService: DashboardsService) {}
+  constructor(
+    private readonly dashboardsService: DashboardsService,
+    private readonly dashboardAiService: DashboardAiService,
+  ) {}
+
+  @Post('generate')
+  @ApiOperation({ summary: 'Generate an editable dashboard draft from visible ThingsBoard telemetry' })
+  async generate(
+    @Body() dto: GenerateDashboardDto,
+    @CurrentSession() session: AppSession | null,
+  ) {
+    return this.dashboardAiService.generate(dto.prompt, requireSession(session));
+  }
+
+  @Get('ai-settings')
+  @ApiOperation({ summary: 'Get the current user AI provider and model without exposing the key' })
+  async getAiSettings(@CurrentSession() session: AppSession | null) {
+    return this.dashboardAiService.getSettings(requireSession(session));
+  }
+
+  @Put('ai-settings')
+  @ApiOperation({ summary: 'Save the current user AI provider, model and encrypted key' })
+  async saveAiSettings(@Body() body: unknown, @CurrentSession() session: AppSession | null) {
+    return this.dashboardAiService.saveSettings(body, requireSession(session));
+  }
+
+  @Delete('ai-settings')
+  @HttpCode(204)
+  @ApiOperation({ summary: 'Remove the current user AI connection' })
+  async deleteAiSettings(@CurrentSession() session: AppSession | null): Promise<void> {
+    await this.dashboardAiService.deleteSettings(requireSession(session));
+  }
 
   @Get()
   @ApiOperation({
