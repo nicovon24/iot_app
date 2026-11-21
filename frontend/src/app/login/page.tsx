@@ -47,7 +47,7 @@ const ACTIVE_MODULE = 4;
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
-  const [thingsboardUrl, setThingsboardUrl] = useState('');
+  const [thingsboardUrl, setThingsboardUrl] = useState('https://thingsboard.cloud');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
