@@ -48,7 +48,8 @@ export class DashboardsService {
       include: { widgets: true, customerAccess: true },
     });
     if (!dashboard) throw new NotFoundException('Dashboard not found');
-    if (!(await this.belongsToInstance(dashboard, session))) throw new NotFoundException('Dashboard not found');
+    if (!(await this.belongsToInstance(dashboard, session)))
+      throw new NotFoundException('Dashboard not found');
     if (!(await this.canView(dashboard, session))) {
       throw new ForbiddenException('Dashboard is outside your customer hierarchy');
     }
@@ -56,6 +57,7 @@ export class DashboardsService {
   }
 
   async create(dto: SaveDashboardDto, session: AppSession): Promise<DashboardWithRelations> {
+    if (session.appRole === 'READER') throw new ForbiddenException('Dashboard editing is required');
     const customerIds = this.resolveCustomerIds(dto, session);
     dto.widgets.forEach((w) => validateWidgetConfig(w.widgetType, w.config));
     validateTimeWindow(dto.timeWindow);
@@ -108,9 +110,11 @@ export class DashboardsService {
     dto: SaveDashboardDto,
     session: AppSession,
   ): Promise<DashboardWithRelations> {
+    if (session.appRole === 'READER') throw new ForbiddenException('Dashboard editing is required');
     const existing = await this.prisma.dashboard.findUnique({ where: { id } });
     if (!existing) throw new NotFoundException('Dashboard not found');
-    if (!(await this.belongsToInstance(existing, session))) throw new NotFoundException('Dashboard not found');
+    if (!(await this.belongsToInstance(existing, session)))
+      throw new NotFoundException('Dashboard not found');
     if (existing.createdBy !== session.tbUserId && !isSysadmin(session)) {
       throw new ForbiddenException('Only the creator or a sysadmin can edit this dashboard');
     }
@@ -158,9 +162,11 @@ export class DashboardsService {
   }
 
   async delete(id: string, session: AppSession): Promise<void> {
+    if (session.appRole === 'READER') throw new ForbiddenException('Dashboard editing is required');
     const existing = await this.prisma.dashboard.findUnique({ where: { id } });
     if (!existing) throw new NotFoundException('Dashboard not found');
-    if (!(await this.belongsToInstance(existing, session))) throw new NotFoundException('Dashboard not found');
+    if (!(await this.belongsToInstance(existing, session)))
+      throw new NotFoundException('Dashboard not found');
     if (existing.createdBy !== session.tbUserId && !isSysadmin(session)) {
       throw new ForbiddenException('Only the creator or a sysadmin can delete this dashboard');
     }
@@ -193,10 +199,12 @@ export class DashboardsService {
 
   private async belongsToInstance(dashboard: Dashboard, session: AppSession): Promise<boolean> {
     const scope = instanceWhere(session, this.config);
-    return Boolean(await this.prisma.dashboard.findFirst({
-      where: { id: dashboard.id, ...scope },
-      select: { id: true },
-    }));
+    return Boolean(
+      await this.prisma.dashboard.findFirst({
+        where: { id: dashboard.id, ...scope },
+        select: { id: true },
+      }),
+    );
   }
 
   /**

@@ -3,8 +3,8 @@ ALTER TABLE "AssetHierarchyAssignment" ADD COLUMN "instanceUrl" TEXT;
 ALTER TABLE "ImpersonationLog" ADD COLUMN "instanceUrl" TEXT;
 ALTER TABLE "Dashboard" ADD COLUMN "instanceUrl" TEXT;
 
-ALTER TABLE "CustomerHierarchyLevels" DROP CONSTRAINT "CustomerHierarchyLevels_customerId_levelIndex_key";
-ALTER TABLE "AssetHierarchyAssignment" DROP CONSTRAINT "AssetHierarchyAssignment_assetId_key";
+DROP INDEX "CustomerHierarchyLevels_customerId_levelIndex_key";
+DROP INDEX "AssetHierarchyAssignment_assetId_key";
 
 CREATE UNIQUE INDEX "CustomerHierarchyLevels_instanceUrl_customerId_levelIndex_key"
   ON "CustomerHierarchyLevels"("instanceUrl", "customerId", "levelIndex");

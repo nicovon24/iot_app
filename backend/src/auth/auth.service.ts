@@ -5,7 +5,7 @@ import { RedisService } from '../thingsboard/redis.service';
 import { ThingsboardClientService } from '../thingsboard/thingsboard-client.service';
 import { LoginDto } from './dto/login.dto';
 import { TbAuthority, TbUserProfile } from '../types';
-import { currentInstance } from '../thingsboard/instance-scope';
+import { currentInstance, instanceWhere } from '../thingsboard/instance-scope';
 import { ConfigService } from '../config/config.service';
 
 const SESSION_PREFIX = 'app:session:';
@@ -101,20 +101,28 @@ export class AuthService {
     );
 
     const log = await this.prisma.impersonationLog.create({
-      data: { impersonatorId: impersonator.tbUserId, targetUserId, instanceUrl: currentInstance(this.config) },
+      data: {
+        impersonatorId: impersonator.tbUserId,
+        targetUserId,
+        instanceUrl: currentInstance(this.config),
+      },
     });
 
     return { sessionToken, logId: log.id };
   }
 
-  async endImpersonation(logId: string): Promise<void> {
+  async endImpersonation(logId: string, session: AppSession): Promise<void> {
     // The impersonated Redis session itself is not invalidated — it simply expires on its own
     // TTL, or the sysadmin's browser just stops using it once it swaps back. No live kill-switch
     // (explicit scope cut, see PLAN.md boundaries).
     // `updateMany` (not `update`) so a bad/already-processed logId surfaces as a clean 404
     // instead of an unhandled Prisma P2025 bubbling up as a raw 500.
     const { count } = await this.prisma.impersonationLog.updateMany({
-      where: { id: logId },
+      where: {
+        id: logId,
+        impersonatorId: session.tbUserId,
+        ...instanceWhere(session, this.config),
+      },
       data: { endedAt: new Date() },
     });
     if (count === 0) {
@@ -141,6 +149,11 @@ export class AuthService {
     // passes through here, so refreshing it keeps active sessions alive while an
     // abandoned one still expires on schedule.
     await this.redis.expire(key, SESSION_TTL_SECONDS);
-    return { ...(JSON.parse(value) as AppSession), appSessionToken: sessionToken };
+    const session = JSON.parse(value) as AppSession;
+    return {
+      ...session,
+      thingsboardUrl: session.thingsboardUrl ?? this.thingsboard.defaultUrl,
+      appSessionToken: sessionToken,
+    };
   }
 }

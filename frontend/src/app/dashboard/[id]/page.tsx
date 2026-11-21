@@ -17,7 +17,6 @@ import {
   TimeWindowPicker,
   TimeWindowProvider,
 } from '@/components';
-import { packWidgets } from '@/components/dashboards/canvas';
 import { Tooltip } from '@/components';
 import { Input } from '@/components';
 import type {
@@ -55,6 +54,12 @@ export default function DashboardDetailPage() {
   const [panelOpen, setPanelOpen] = useState(false);
   const [bulkPanelOpen, setBulkPanelOpen] = useState(false);
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
+  const [aiProposal, setAiProposal] = useState<{
+    previousTitle: string;
+    previousWidgets: StagedWidget[];
+    added: number;
+    removed: number;
+  } | null>(null);
   const [editingWidget, setEditingWidget] = useState<DashboardWidget | null>(null);
   const [timeWindow, setTimeWindow] = useState<DashboardTimeWindow | null>(null);
   const [layoutMode, setLayoutMode] = useState<DashboardLayoutMode>('SCROLL');
@@ -130,18 +135,40 @@ export default function DashboardDetailPage() {
   }
 
   function handleAiDraft(draft: { title: string; widgets: NewWidgetInput[] }) {
-    if (isNew || staged.length === 0) setTitle(draft.title);
-    setStaged((prev) => {
-      const layouts = packWidgets(prev.map((w) => w.layout), draft.widgets.map((w) => w.layout));
-      return [
-        ...prev,
-        ...draft.widgets.map((widget, index) => ({
-          ...widget,
-          layout: layouts[index],
-          id: `ai-${Date.now()}-${index}`,
-        })),
-      ];
+    const oldKeys = new Set(
+      staged.map(
+        (widget) => `${widget.widgetType}:${widget.config.entityId}:${widget.config.telemetryKey}`,
+      ),
+    );
+    const newKeys = new Set(
+      draft.widgets.map(
+        (widget) => `${widget.widgetType}:${widget.config.entityId}:${widget.config.telemetryKey}`,
+      ),
+    );
+    setAiProposal({
+      previousTitle: aiProposal?.previousTitle ?? title,
+      previousWidgets: aiProposal?.previousWidgets ?? staged,
+      added: draft.widgets.filter(
+        (widget) =>
+          !oldKeys.has(
+            `${widget.widgetType}:${widget.config.entityId}:${widget.config.telemetryKey}`,
+          ),
+      ).length,
+      removed: staged.filter(
+        (widget) =>
+          !newKeys.has(
+            `${widget.widgetType}:${widget.config.entityId}:${widget.config.telemetryKey}`,
+          ),
+      ).length,
     });
+    setTitle(draft.title);
+    setStaged(
+      draft.widgets.map((widget, index) => ({
+        ...widget,
+        id: `ai-${Date.now()}-${index}`,
+      })),
+    );
+    setEditMode(true);
   }
 
   async function handleSave() {
@@ -168,6 +195,7 @@ export default function DashboardDetailPage() {
         await saveDashboard.mutateAsync({ id: params.id, dto });
         toastSuccess('Dashboard saved');
         setEditMode(false);
+        setAiProposal(null);
       }
     } catch (err) {
       toastError('Could not save dashboard', err);
@@ -293,6 +321,26 @@ export default function DashboardDetailPage() {
         )}
       </div>
 
+      {aiProposal && (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-accent px-3 py-2 text-sm text-muted">
+          <span>
+            Propuesta de IA sin guardar · {aiProposal.added} agregados · {aiProposal.removed}{' '}
+            quitados. Revisá los widgets antes de guardar.
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              setTitle(aiProposal.previousTitle);
+              setStaged(aiProposal.previousWidgets);
+              setAiProposal(null);
+            }}
+            className="text-heading underline"
+          >
+            Descartar propuesta
+          </button>
+        </div>
+      )}
+
       <div
         className={`min-h-0 flex-1 ${layoutMode === 'FIT' ? 'overflow-hidden' : 'overflow-auto'}`}
       >
@@ -327,6 +375,8 @@ export default function DashboardDetailPage() {
         isOpen={aiPanelOpen}
         onClose={() => setAiPanelOpen(false)}
         onDraft={handleAiDraft}
+        dashboardId={isNew ? undefined : params.id}
+        currentWidgets={staged}
       />
     </div>
   );

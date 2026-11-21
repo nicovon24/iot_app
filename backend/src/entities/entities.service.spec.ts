@@ -4,6 +4,7 @@ import { RedisService } from '../thingsboard/redis.service';
 import { ThingsboardClientService } from '../thingsboard/thingsboard-client.service';
 import { EntitiesService } from './entities.service';
 import { TB_NULL_CUSTOMER_ID } from './entity-ref-resolver';
+import { thingsboardContext } from '../thingsboard/thingsboard-context';
 
 /**
  * Covers EntitiesService.isInScope — the single rule CustomerScopeGuard,
@@ -74,17 +75,26 @@ describe('EntitiesService.isInScope', () => {
 
   it('lets a customer user reach an entity owned by its own customer', async () => {
     mockTb('c1');
-    await expect(service.isInScope(CUSTOMER_SESSION, 'e1', 'DEVICE')).resolves.toBe(true);
+    await thingsboardContext.run(
+      { ...CUSTOMER_SESSION, thingsboardUrl: 'https://tb.example' },
+      () => expect(service.isInScope(CUSTOMER_SESSION, 'e1', 'DEVICE')).resolves.toBe(true),
+    );
   });
 
   it('lets a customer user reach an entity owned by a descendant sub-customer', async () => {
     mockTb('c3');
-    await expect(service.isInScope(CUSTOMER_SESSION, 'e1', 'DEVICE')).resolves.toBe(true);
+    await thingsboardContext.run(
+      { ...CUSTOMER_SESSION, thingsboardUrl: 'https://tb.example' },
+      () => expect(service.isInScope(CUSTOMER_SESSION, 'e1', 'DEVICE')).resolves.toBe(true),
+    );
   });
 
   it('blocks an entity owned by an unrelated sibling customer', async () => {
     mockTb('sibling');
-    await expect(service.isInScope(CUSTOMER_SESSION, 'e1', 'DEVICE')).resolves.toBe(false);
+    await thingsboardContext.run(
+      { ...CUSTOMER_SESSION, thingsboardUrl: 'https://tb.example' },
+      () => expect(service.isInScope(CUSTOMER_SESSION, 'e1', 'DEVICE')).resolves.toBe(false),
+    );
   });
 
   it('blocks an entity ThingsBoard never assigned to a real customer', async () => {

@@ -18,7 +18,10 @@ export class ConfigService {
   }
 
   get thingsboardAllowedUrls(): string[] {
-    return [this.config.THINGSBOARD_URL, ...(this.config.THINGSBOARD_ALLOWED_URLS?.split(',') ?? [])]
+    return [
+      this.config.THINGSBOARD_URL,
+      ...(this.config.THINGSBOARD_ALLOWED_URLS?.split(',') ?? []),
+    ]
       .map((url) => url.trim())
       .filter(Boolean)
       .map((url) => new URL(url).origin);
@@ -34,6 +37,13 @@ export class ConfigService {
 
   get aiCredentialEncryptionKey(): string | undefined {
     return this.config.AI_CREDENTIAL_ENCRYPTION_KEY;
+  }
+
+  get aiAllowedBaseUrls(): string[] {
+    return (this.config.AI_ALLOWED_BASE_URLS?.split(',') ?? [])
+      .map((url) => url.trim())
+      .filter(Boolean)
+      .map((url) => new URL(url).origin);
   }
 
   get frontendUrl(): string {

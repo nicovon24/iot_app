@@ -38,6 +38,33 @@ export class RedisService implements OnModuleDestroy {
     await this.client.del(key);
   }
 
+  async acquire(key: string, value: string, ttlSeconds: number): Promise<boolean> {
+    return (await this.client.set(key, value, 'EX', ttlSeconds, 'NX')) === 'OK';
+  }
+
+  async release(key: string, value: string): Promise<void> {
+    await this.client.eval(
+      'if redis.call("GET", KEYS[1]) == ARGV[1] then return redis.call("DEL", KEYS[1]) end return 0',
+      1,
+      key,
+      value,
+    );
+  }
+
+  async consumeDaily(key: string, limit: number): Promise<number> {
+    return Number(
+      await this.client.eval(
+        'local n = tonumber(redis.call("GET", KEYS[1]) or "0") ' +
+          'if n >= tonumber(ARGV[1]) then return -1 end ' +
+          'n = redis.call("INCR", KEYS[1]) ' +
+          'if n == 1 then redis.call("EXPIRE", KEYS[1], 172800) end return n',
+        1,
+        key,
+        limit,
+      ),
+    );
+  }
+
   /** Resets a key's TTL without rewriting its value — used for sliding sessions. */
   async expire(key: string, ttlSeconds: number): Promise<void> {
     await this.client.expire(key, ttlSeconds);
@@ -50,8 +77,7 @@ export class RedisService implements OnModuleDestroy {
    *
    * Dashboard widgets poll telemetry every 5s each against a 3s cache TTL, so
    * without this a board with eight widgets on one device fires eight identical
-   * ThingsBoard requests at every expiry, forever. Same for the service-account
-   * JWT: several requests arriving on an empty cache each ran their own login.
+   * ThingsBoard requests at every expiry, forever.
    *
    * In-process only, which is correct for a single instance. More than one
    * backend instance would need a Redis SET NX lock instead.

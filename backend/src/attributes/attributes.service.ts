@@ -1,14 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { RedisService } from '../thingsboard/redis.service';
 import { ThingsboardClientService } from '../thingsboard/thingsboard-client.service';
+import { scopedCacheKey } from '../thingsboard/thingsboard-context';
 import { EntityType, TbAttribute, TbAttributeScope } from '../types';
 
-/**
- * Entity-scoped keys with no user or tenant component — safe only because every
- * ThingsBoard fetch below uses the shared service-account token, so a cached value
- * cannot vary by caller. Per-user tokens on this path would require a user
- * component in the key, or this cache becomes a cross-customer data leak.
- */
+/** Short-lived attributes cache partitioned by ThingsBoard origin and user. */
 const ATTRIBUTES_CACHE_TTL_SECONDS = 5;
 
 @Injectable()
@@ -25,7 +21,7 @@ export class AttributesService {
     keys?: string[],
   ): Promise<TbAttribute[]> {
     const keysSuffix = keys ? [...keys].sort().join(',') : 'all';
-    const cacheKey = `attrs:${entityType}:${entityId}:${scope}:${keysSuffix}`;
+    const cacheKey = scopedCacheKey(`attrs:${entityType}:${entityId}:${scope}:${keysSuffix}`);
     const cached = await this.redis.get(cacheKey);
     if (cached) {
       return JSON.parse(cached) as TbAttribute[];
@@ -58,6 +54,6 @@ export class AttributesService {
       values,
     );
 
-    await this.redis.delByPattern(`attrs:${entityType}:${entityId}:${scope}:*`);
+    await this.redis.delByPattern(scopedCacheKey(`attrs:${entityType}:${entityId}:${scope}:*`));
   }
 }

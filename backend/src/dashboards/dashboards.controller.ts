@@ -9,7 +9,7 @@ import {
   Put,
   UnauthorizedException,
 } from '@nestjs/common';
-import { IsString, MaxLength, MinLength } from 'class-validator';
+import { IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
 import { ApiOperation, ApiParam, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { AppSession } from '../auth/auth.service';
 import { CurrentSession } from '../common/decorators/current-session.decorator';
@@ -28,6 +28,10 @@ class GenerateDashboardDto {
   @MinLength(3)
   @MaxLength(1000)
   prompt!: string;
+
+  @IsOptional() @IsUUID() connectionId?: string;
+  @IsOptional() @IsUUID() conversationId?: string;
+  @IsOptional() @IsUUID() dashboardId?: string;
 }
 
 @ApiTags('dashboards')
@@ -40,12 +44,11 @@ export class DashboardsController {
   ) {}
 
   @Post('generate')
-  @ApiOperation({ summary: 'Generate an editable dashboard draft from visible ThingsBoard telemetry' })
-  async generate(
-    @Body() dto: GenerateDashboardDto,
-    @CurrentSession() session: AppSession | null,
-  ) {
-    return this.dashboardAiService.generate(dto.prompt, requireSession(session));
+  @ApiOperation({
+    summary: 'Generate an editable dashboard draft from visible ThingsBoard telemetry',
+  })
+  async generate(@Body() dto: GenerateDashboardDto, @CurrentSession() session: AppSession | null) {
+    return this.dashboardAiService.generate(dto, requireSession(session));
   }
 
   @Get('ai-settings')
@@ -60,11 +63,58 @@ export class DashboardsController {
     return this.dashboardAiService.saveSettings(body, requireSession(session));
   }
 
+  @Put('ai-settings/:id')
+  async updateAiConnection(
+    @Param('id') id: string,
+    @Body() body: unknown,
+    @CurrentSession() session: AppSession | null,
+  ) {
+    return this.dashboardAiService.saveSettings(body, requireSession(session), id);
+  }
+
+  @Get('ai-settings/:id/models')
+  async listAiModels(@Param('id') id: string, @CurrentSession() session: AppSession | null) {
+    return this.dashboardAiService.listModels(id, requireSession(session));
+  }
+
   @Delete('ai-settings')
   @HttpCode(204)
   @ApiOperation({ summary: 'Remove the current user AI connection' })
   async deleteAiSettings(@CurrentSession() session: AppSession | null): Promise<void> {
     await this.dashboardAiService.deleteSettings(requireSession(session));
+  }
+
+  @Delete('ai-settings/:id')
+  @HttpCode(204)
+  async deleteAiConnection(
+    @Param('id') id: string,
+    @CurrentSession() session: AppSession | null,
+  ): Promise<void> {
+    await this.dashboardAiService.deleteSettings(requireSession(session), id);
+  }
+
+  @Put('ai-limits')
+  async saveAiLimits(@Body() body: unknown, @CurrentSession() session: AppSession | null) {
+    return this.dashboardAiService.saveLimits(body, requireSession(session));
+  }
+
+  @Get('ai-conversations')
+  async listAiConversations(@CurrentSession() session: AppSession | null) {
+    return this.dashboardAiService.listConversations(requireSession(session));
+  }
+
+  @Get('ai-conversations/:id')
+  async getAiConversation(@Param('id') id: string, @CurrentSession() session: AppSession | null) {
+    return this.dashboardAiService.getConversation(id, requireSession(session));
+  }
+
+  @Delete('ai-conversations/:id')
+  @HttpCode(204)
+  async deleteAiConversation(
+    @Param('id') id: string,
+    @CurrentSession() session: AppSession | null,
+  ): Promise<void> {
+    await this.dashboardAiService.deleteConversation(id, requireSession(session));
   }
 
   @Get()

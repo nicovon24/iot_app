@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { ThingsboardClientService } from '../thingsboard/thingsboard-client.service';
 import { RedisService } from '../thingsboard/redis.service';
+import { scopedCacheKey } from '../thingsboard/thingsboard-context';
 import { AppSession } from '../auth/auth.service';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import {
@@ -74,7 +75,7 @@ export class EntitiesService {
   async resolveScopedCustomerIds(rootCustomerId: string): Promise<string[]> {
     // Runs on every scoped list and every isInScope call, and fetches the whole
     // customer table each time — the single hottest uncached path in the backend.
-    const cacheKey = `scope:${rootCustomerId}`;
+    const cacheKey = scopedCacheKey(`scope:${rootCustomerId}`);
     const cached = await this.redis.get(cacheKey);
     if (cached) return JSON.parse(cached) as string[];
 
@@ -278,7 +279,7 @@ export class EntitiesService {
         : {}),
     });
     // A new customer can change any existing customer's descendant set.
-    await this.redis.delByPattern('scope:*');
+    await this.redis.delByPattern('tb:*:scope:*');
     const [mapped] = await this.refResolver.mapWithRefs([created], 'CUSTOMER');
     return mapped;
   }
@@ -299,7 +300,7 @@ export class EntitiesService {
   async deleteCustomer(id: string): Promise<void> {
     await this.tb.request('DELETE', `/api/customer/${id}`);
     // Any cached scope set may now name a customer that no longer exists.
-    await this.redis.delByPattern('scope:*');
+    await this.redis.delByPattern('tb:*:scope:*');
   }
 
   async deleteAsset(id: string): Promise<void> {
@@ -339,7 +340,7 @@ export class EntitiesService {
     });
     // Must happen BEFORE mapWithRefs, or the resolver repopulates the cache from
     // the stale entry and the rename appears not to have taken for up to 5 minutes.
-    await this.redis.del(`refname:customer:${id}`);
+    await this.redis.delByPattern(`tb:*:refname:customer:${id}`);
     const [mapped] = await this.refResolver.mapWithRefs([updated], 'CUSTOMER');
     return mapped;
   }
