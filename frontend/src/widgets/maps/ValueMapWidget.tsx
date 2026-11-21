@@ -72,7 +72,7 @@ export function ValueMapWidget({
   unit,
   onEntityClick,
 }: ValueMapWidgetProps) {
-  const [tileStyle, setTileStyle] = useState<MapTileStyle>('dark');
+  const [tileStyle, setTileStyle] = useState<MapTileStyle>('color');
 
   if (isLoading && entries.length === 0) return <Centered text="Loading…" />;
   if (entries.length === 0) return <Centered text="No entities with location data" />;

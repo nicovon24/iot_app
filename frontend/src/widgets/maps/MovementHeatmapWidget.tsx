@@ -87,7 +87,7 @@ export function MovementHeatmapWidget({
   heightClassName = 'h-full',
   emptyReason,
 }: MovementHeatmapWidgetProps) {
-  const [tileStyle, setTileStyle] = useState<MapTileStyle>('dark');
+  const [tileStyle, setTileStyle] = useState<MapTileStyle>('color');
 
   if (isLoading && points.length === 0) return <Centered text="Loading position history…" />;
   if (points.length === 0) {

@@ -56,7 +56,6 @@ export function endSession(): void {
     // in-memory React Query cache built under the dead session. endSession() is
     // also called from non-React contexts (the fetch wrapper, a socket close
     // handler) where useRouter() is not available.
-    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
     window.location.href = '/login';
   }
 }

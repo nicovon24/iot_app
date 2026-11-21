@@ -132,7 +132,7 @@ export function FleetMapWidget({
   entityType = 'DEVICE',
   refetchInterval,
 }: FleetMapWidgetProps = {}) {
-  const [tileStyle, setTileStyle] = useState<MapTileStyle>('dark');
+  const [tileStyle, setTileStyle] = useState<MapTileStyle>('color');
   const { data, isLoading, isError, error } = useEntities(entityType, undefined, {
     refetchInterval,
   });
