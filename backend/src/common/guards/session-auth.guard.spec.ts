@@ -56,7 +56,12 @@ describe('SessionAuthGuard', () => {
     authService.getSession.mockResolvedValue(null);
     const { context } = makeContext({ 'x-session-token': 'bad-token' });
 
-    await expect(guard.canActivate(context)).rejects.toThrow(UnauthorizedException);
+    await expect(guard.canActivate(context)).rejects.toMatchObject({
+      response: {
+        code: 'APP_SESSION_INVALID',
+        message: 'Missing or invalid session token',
+      },
+    });
   });
 
   it('attaches the resolved session to the request and passes for a valid token', async () => {

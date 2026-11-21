@@ -25,7 +25,10 @@ export class SessionAuthGuard implements CanActivate {
 
     const session = token ? await this.authService.getSession(token) : null;
     if (!session) {
-      throw new UnauthorizedException('Missing or invalid session token');
+      throw new UnauthorizedException({
+        code: 'APP_SESSION_INVALID',
+        message: 'Missing or invalid session token',
+      });
     }
 
     (request as FastifyRequest & { session: typeof session }).session = session;

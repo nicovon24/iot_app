@@ -60,6 +60,9 @@ export function createWsClient(channel: WsChannel) {
   function onClosed(handler: (info: { sessionEnded: boolean }) => void) {
     socket.addEventListener('close', (evt) => {
       if (closedByCaller) return;
+      // A socket opened under an older login may close after a newer login succeeds.
+      // Its 1008 must not invalidate the newer app session.
+      if (token !== getSessionToken()) return;
       handler({ sessionEnded: evt.code === 1008 });
     });
   }
