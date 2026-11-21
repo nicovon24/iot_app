@@ -9,7 +9,7 @@ import {
   Put,
   UnauthorizedException,
 } from '@nestjs/common';
-import { IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
+import { IsObject, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
 import { ApiOperation, ApiParam, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { AppSession } from '../auth/auth.service';
 import { CurrentSession } from '../common/decorators/current-session.decorator';
@@ -32,6 +32,11 @@ class GenerateDashboardDto {
   @IsOptional() @IsUUID() connectionId?: string;
   @IsOptional() @IsUUID() conversationId?: string;
   @IsOptional() @IsUUID() dashboardId?: string;
+  @IsOptional() @IsObject() baseDraft?: Record<string, unknown>;
+}
+
+class LinkAiConversationDto {
+  @IsUUID() dashboardId!: string;
 }
 
 @ApiTags('dashboards')
@@ -57,7 +62,7 @@ export class DashboardsController {
     return this.dashboardAiService.getSettings(requireSession(session));
   }
 
-  @Put('ai-settings')
+  @Post('ai-settings')
   @ApiOperation({ summary: 'Save the current user AI provider, model and encrypted key' })
   async saveAiSettings(@Body() body: unknown, @CurrentSession() session: AppSession | null) {
     return this.dashboardAiService.saveSettings(body, requireSession(session));
@@ -106,6 +111,15 @@ export class DashboardsController {
   @Get('ai-conversations/:id')
   async getAiConversation(@Param('id') id: string, @CurrentSession() session: AppSession | null) {
     return this.dashboardAiService.getConversation(id, requireSession(session));
+  }
+
+  @Put('ai-conversations/:id/dashboard')
+  async linkAiConversation(
+    @Param('id') id: string,
+    @Body() body: LinkAiConversationDto,
+    @CurrentSession() session: AppSession | null,
+  ) {
+    return this.dashboardAiService.linkConversation(id, body.dashboardId, requireSession(session));
   }
 
   @Delete('ai-conversations/:id')

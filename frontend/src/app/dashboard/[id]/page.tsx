@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Layers, Maximize2, Pencil, Plus, Save, ScrollText, Sparkles } from 'lucide-react';
 import type { Layout } from 'react-grid-layout';
-import { ApiError } from '@/lib';
+import { ApiError, apiClient } from '@/lib';
 import { useCreateDashboard, useDashboard, useSaveDashboard } from '@/hooks';
 import { usePermissions } from '@/hooks';
 import { toastError, toastSuccess } from '@/lib';
@@ -14,6 +14,7 @@ import {
   type NewWidgetInput,
   BulkAddPanel,
   AiDashboardPanel,
+  draftChanges,
   TimeWindowPicker,
   TimeWindowProvider,
 } from '@/components';
@@ -58,7 +59,10 @@ export default function DashboardDetailPage() {
     previousTitle: string;
     previousWidgets: StagedWidget[];
     added: number;
+    changed: number;
+    moved: number;
     removed: number;
+    conversationId?: string;
   } | null>(null);
   const [editingWidget, setEditingWidget] = useState<DashboardWidget | null>(null);
   const [timeWindow, setTimeWindow] = useState<DashboardTimeWindow | null>(null);
@@ -134,32 +138,17 @@ export default function DashboardDetailPage() {
     ]);
   }
 
-  function handleAiDraft(draft: { title: string; widgets: NewWidgetInput[] }) {
-    const oldKeys = new Set(
-      staged.map(
-        (widget) => `${widget.widgetType}:${widget.config.entityId}:${widget.config.telemetryKey}`,
-      ),
-    );
-    const newKeys = new Set(
-      draft.widgets.map(
-        (widget) => `${widget.widgetType}:${widget.config.entityId}:${widget.config.telemetryKey}`,
-      ),
-    );
+  function handleAiDraft(draft: {
+    title: string;
+    widgets: NewWidgetInput[];
+    conversationId?: string;
+  }) {
+    const changes = draftChanges(staged, draft.widgets);
     setAiProposal({
       previousTitle: aiProposal?.previousTitle ?? title,
       previousWidgets: aiProposal?.previousWidgets ?? staged,
-      added: draft.widgets.filter(
-        (widget) =>
-          !oldKeys.has(
-            `${widget.widgetType}:${widget.config.entityId}:${widget.config.telemetryKey}`,
-          ),
-      ).length,
-      removed: staged.filter(
-        (widget) =>
-          !newKeys.has(
-            `${widget.widgetType}:${widget.config.entityId}:${widget.config.telemetryKey}`,
-          ),
-      ).length,
+      ...changes,
+      conversationId: draft.conversationId,
     });
     setTitle(draft.title);
     setStaged(
@@ -189,6 +178,18 @@ export default function DashboardDetailPage() {
     try {
       if (isNew) {
         const created = await createDashboard.mutateAsync(dto);
+        if (aiProposal?.conversationId) {
+          try {
+            await apiClient.put(
+              `/dashboards/ai-conversations/${aiProposal.conversationId}/dashboard`,
+              {
+                dashboardId: created.id,
+              },
+            );
+          } catch (error) {
+            toastError('El dashboard se guardó, pero no se pudo asociar el historial de IA', error);
+          }
+        }
         toastSuccess('Dashboard created');
         router.replace(`/dashboard/${created.id}`);
       } else {
@@ -324,8 +325,9 @@ export default function DashboardDetailPage() {
       {aiProposal && (
         <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-accent px-3 py-2 text-sm text-muted">
           <span>
-            Propuesta de IA sin guardar · {aiProposal.added} agregados · {aiProposal.removed}{' '}
-            quitados. Revisá los widgets antes de guardar.
+            Propuesta de IA sin guardar · {aiProposal.added} agregados · {aiProposal.changed}{' '}
+            cambiados · {aiProposal.moved} movidos · {aiProposal.removed} quitados. Revisá los
+            widgets antes de guardar.
           </span>
           <button
             type="button"
@@ -372,10 +374,12 @@ export default function DashboardDetailPage() {
         onAdd={handleBulkAdd}
       />
       <AiDashboardPanel
+        key={params.id}
         isOpen={aiPanelOpen}
         onClose={() => setAiPanelOpen(false)}
         onDraft={handleAiDraft}
         dashboardId={isNew ? undefined : params.id}
+        currentTitle={title}
         currentWidgets={staged}
       />
     </div>

@@ -22,15 +22,16 @@ describe('DashboardAiService isolation', () => {
   const prisma = {
     aiProviderConnection: { findMany: jest.fn() },
     aiUserLimits: { findUnique: jest.fn() },
-    aiConversation: { findFirst: jest.fn() },
+    aiConversation: { findFirst: jest.fn(), update: jest.fn() },
   };
+  const dashboards = { getById: jest.fn() };
   const service = new DashboardAiService(
     config as ConfigService,
     prisma as unknown as PrismaService,
     {} as EntitiesService,
     {} as TelemetryService,
     {} as RedisService,
-    {} as DashboardsService,
+    dashboards as unknown as DashboardsService,
   );
 
   beforeEach(() => {
@@ -69,6 +70,19 @@ describe('DashboardAiService isolation', () => {
       service.generate({ prompt: 'Create a dashboard' }, { ...session, appRole: 'READER' }),
     ).rejects.toMatchObject({ status: 403 });
     expect(prisma.aiConversation.findFirst).not.toHaveBeenCalled();
+  });
+
+  it('links only a private conversation to an editable dashboard', async () => {
+    prisma.aiConversation.findFirst.mockResolvedValue({ id: 'conversation-a', dashboardId: null });
+    dashboards.getById.mockResolvedValue({ id: 'dashboard-a', createdBy: session.tbUserId });
+    await service.linkConversation('conversation-a', 'dashboard-a', session);
+    expect(prisma.aiConversation.findFirst).toHaveBeenCalledWith({
+      where: { id: 'conversation-a', tbUserId: 'user-a', instanceUrl: 'https://tb-one.example' },
+    });
+    expect(prisma.aiConversation.update).toHaveBeenCalledWith({
+      where: { id: 'conversation-a' },
+      data: { dashboardId: 'dashboard-a' },
+    });
   });
 });
 
@@ -159,6 +173,138 @@ describe('DashboardAiService generation', () => {
       'https://api.openai.com/v1/responses',
       expect.objectContaining({ method: 'POST', redirect: 'manual' }),
     );
+  });
+
+  it('uses the current editor draft for a first revision and stores the assistant explanation', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      text: async () =>
+        JSON.stringify({
+          output: [
+            {
+              content: [
+                {
+                  type: 'output_text',
+                  text: JSON.stringify({
+                    title: 'Revised pump dashboard',
+                    explanation: 'Conservé la temperatura y moví el widget.',
+                    widgets: [{ existingWidgetIndex: 0, layout: { x: 6, y: 0, w: 6, h: 4 } }],
+                  }),
+                },
+              ],
+            },
+          ],
+        }),
+    });
+    const baseDraft = {
+      title: 'Manual edits',
+      widgets: [
+        {
+          widgetType: 'value-tile',
+          config: {
+            entityId: '11111111-1111-4111-8111-111111111111',
+            entityType: 'DEVICE',
+            telemetryKey: 'temperature',
+          },
+          layout: { x: 0, y: 0, w: 6, h: 4 },
+        },
+      ],
+    };
+    const result = await service.generate(
+      { prompt: 'Move the temperature widget', baseDraft },
+      session,
+    );
+    expect(result.widgets[0].layout.x).toBe(6);
+    expect(result.message).toContain('Conservé');
+    expect(prisma.aiConversation.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          messages: {
+            create: expect.arrayContaining([
+              expect.objectContaining({ role: 'ASSISTANT', content: result.message }),
+            ]),
+          },
+        }),
+      }),
+    );
+    expect(dashboards.save).not.toHaveBeenCalled();
+  });
+
+  it('rejects editor context outside the visible catalog before contacting the model', async () => {
+    const baseDraft = {
+      title: 'Other device',
+      widgets: [
+        {
+          widgetType: 'value-tile',
+          config: {
+            entityId: '22222222-2222-4222-8222-222222222222',
+            entityType: 'DEVICE',
+            telemetryKey: 'temperature',
+          },
+          layout: { x: 0, y: 0, w: 6, h: 4 },
+        },
+      ],
+    };
+    await expect(
+      service.generate({ prompt: 'Show temperature', baseDraft }, session),
+    ).rejects.toMatchObject({ status: 400 });
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it('accepts text, alarm and multi-value widgets from the widget catalog', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      text: async () =>
+        JSON.stringify({
+          output: [
+            {
+              content: [
+                {
+                  type: 'output_text',
+                  text: JSON.stringify({
+                    title: 'Operations',
+                    widgets: [
+                      { widgetType: 'label', text: 'Pump overview' },
+                      { widgetType: 'alarm-count' },
+                      { widgetType: 'value-cards', entityIndex: 0, telemetryKeys: ['temperature'] },
+                    ],
+                  }),
+                },
+              ],
+            },
+          ],
+        }),
+    });
+    const result = await service.generate({ prompt: 'Make an operations dashboard' }, session);
+    expect(result.widgets.map((widget) => widget.widgetType)).toEqual([
+      'label',
+      'alarm-count',
+      'value-cards',
+    ]);
+    expect(result.widgets[0].config).toEqual({ text: 'Pump overview' });
+    expect(result.widgets[2].config).toMatchObject({ telemetryKeys: ['temperature'] });
+  });
+
+  it('rejects malformed model output without saving a conversation or dashboard', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      text: async () =>
+        JSON.stringify({ output: [{ content: [{ type: 'output_text', text: 'not json' }] }] }),
+    });
+    await expect(service.generate({ prompt: 'Make a dashboard' }, session)).rejects.toMatchObject({
+      status: 502,
+    });
+    expect(prisma.aiConversation.create).not.toHaveBeenCalled();
+    expect(dashboards.save).not.toHaveBeenCalled();
+  });
+
+  it('rejects concurrent generation before contacting the provider', async () => {
+    redis.acquire.mockResolvedValue(false);
+    await expect(service.generate({ prompt: 'Make a dashboard' }, session)).rejects.toMatchObject({
+      status: 429,
+    });
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(redis.consumeDaily).not.toHaveBeenCalled();
   });
 
   it('blocks daily limit exhaustion before contacting a provider', async () => {

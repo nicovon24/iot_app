@@ -8,6 +8,7 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { createCipheriv, createDecipheriv, randomBytes, randomUUID } from 'node:crypto';
+import { lookup } from 'node:dns/promises';
 import { isIP } from 'node:net';
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
@@ -19,7 +20,7 @@ import { TelemetryService } from '../telemetry/telemetry.service';
 import { RedisService } from '../thingsboard/redis.service';
 import { instanceWhere } from '../thingsboard/instance-scope';
 import { DashboardsService } from './dashboards.service';
-import { validateWidgetConfig } from './widget-registry';
+import { validateWidgetConfig, WIDGET_TYPES } from './widget-registry';
 
 const providerSchema = z.enum(['OPENAI', 'ANTHROPIC', 'GEMINI', 'GROQ', 'OPENROUTER', 'CUSTOM']);
 export type AiProvider = z.infer<typeof providerSchema>;
@@ -43,12 +44,18 @@ const limitsSchema = z.object({
 
 const draftSchema = z.object({
   title: z.string().trim().min(1).max(100),
+  explanation: z.string().trim().min(1).max(500).optional(),
   widgets: z
     .array(
       z.object({
         entityIndex: z.number().int().min(0).optional(),
         telemetryKey: z.string().min(1).optional(),
-        widgetType: z.enum(['value-tile', 'line-chart', 'bar-chart', 'gauge']).optional(),
+        widgetType: z.enum(WIDGET_TYPES).optional(),
+        telemetryKeys: z.array(z.string().min(1)).min(1).max(8).optional(),
+        xKey: z.string().min(1).optional(),
+        yKey: z.string().min(1).optional(),
+        text: z.string().trim().min(1).max(2000).optional(),
+        groupBy: z.enum(['ALARM_SEVERITY', 'ALARM_STATUS', 'ENTITY_TYPE']).optional(),
         existingWidgetIndex: z.number().int().min(0).optional(),
         title: z.string().trim().max(120).optional(),
         layout: z
@@ -69,6 +76,25 @@ const generateSchema = z.object({
   connectionId: z.string().uuid().optional(),
   conversationId: z.string().uuid().optional(),
   dashboardId: z.string().uuid().optional(),
+  baseDraft: z
+    .object({
+      title: z.string().trim().min(1).max(100),
+      widgets: z
+        .array(
+          z.object({
+            widgetType: z.string().min(1).max(50),
+            config: z.record(z.string(), z.unknown()),
+            layout: z.object({
+              x: z.number().int().min(0).max(11),
+              y: z.number().int().min(0).max(100),
+              w: z.number().int().min(1).max(12),
+              h: z.number().int().min(1).max(12),
+            }),
+          }),
+        )
+        .max(20),
+    })
+    .optional(),
 });
 
 type CatalogEntity = { id: string; name: string; type: 'DEVICE' | 'ASSET'; keys: string[] };
@@ -90,6 +116,39 @@ export class DashboardAiService {
 
   private origin(session: AppSession): string {
     return session.thingsboardUrl ?? new URL(this.config.thingsboardUrl).origin;
+  }
+
+  private assertVisibleWidget(
+    widgetType: string,
+    config: Record<string, unknown>,
+    inventory: CatalogEntity[],
+  ): void {
+    validateWidgetConfig(widgetType, config);
+    const entityId = config.entityId;
+    const entity = inventory.find((item) => item.id === entityId);
+    if (typeof entityId === 'string' && !entity)
+      throw new BadRequestException('Dashboard widget has an entity outside the visible catalog');
+    if (entity && entity.type !== config.entityType)
+      throw new BadRequestException('Dashboard widget entity type does not match the catalog');
+    const keys = [
+      config.telemetryKey,
+      config.xKey,
+      config.yKey,
+      ...(Array.isArray(config.telemetryKeys) ? config.telemetryKeys : []),
+      ...(Array.isArray(config.dataKeys)
+        ? config.dataKeys
+            .filter(
+              (item): item is { source: string; key: string } =>
+                Boolean(item) && typeof item === 'object' && item.source === 'TELEMETRY',
+            )
+            .map((item) => item.key)
+        : []),
+    ].filter((key): key is string => typeof key === 'string' && key !== 'TIME' && key !== '*');
+    const candidates = entity
+      ? [entity]
+      : inventory.filter((item) => item.type === config.entityType);
+    if (keys.some((key) => !candidates.some((item) => item.keys.includes(key))))
+      throw new BadRequestException('Dashboard widget has a key outside the visible catalog');
   }
 
   private connectionWhere(session: AppSession) {
@@ -124,6 +183,43 @@ export class DashboardAiService {
       throw new BadRequestException('Custom provider URL is not approved');
     }
     return url.toString();
+  }
+
+  private async assertPublicEndpoint(url: string): Promise<void> {
+    const addresses = await lookup(new URL(url).hostname, { all: true });
+    if (
+      !addresses.length ||
+      addresses.some(({ address, family }) => {
+        if (family === 4) {
+          const [a, b] = address.split('.').map(Number);
+          return (
+            a === 0 ||
+            a === 10 ||
+            a === 127 ||
+            a >= 224 ||
+            (a === 100 && b >= 64 && b <= 127) ||
+            (a === 169 && b === 254) ||
+            (a === 172 && b >= 16 && b <= 31) ||
+            (a === 192 && b === 168) ||
+            (a === 192 && b === 0) ||
+            (a === 198 && (b === 18 || b === 19))
+          );
+        }
+        const normalized = address.toLowerCase();
+        return (
+          normalized === '::1' ||
+          normalized === '::' ||
+          normalized.startsWith('fc') ||
+          normalized.startsWith('fd') ||
+          normalized.startsWith('fe8') ||
+          normalized.startsWith('fe9') ||
+          normalized.startsWith('fea') ||
+          normalized.startsWith('feb') ||
+          normalized.startsWith('::ffff:')
+        );
+      })
+    )
+      throw new BadRequestException('Custom provider host must resolve to a public address');
   }
 
   private encryptionKey(): Buffer {
@@ -309,6 +405,23 @@ export class DashboardAiService {
     });
   }
 
+  async linkConversation(id: string, dashboardId: string, session: AppSession): Promise<void> {
+    this.requireEditor(session);
+    const conversation = await this.prisma.aiConversation.findFirst({
+      where: { id, tbUserId: session.tbUserId, instanceUrl: this.origin(session) },
+    });
+    if (!conversation) throw new NotFoundException('Conversation not found');
+    if (conversation.dashboardId && conversation.dashboardId !== dashboardId)
+      throw new BadRequestException('Conversation is already linked to another dashboard');
+    const dashboard = await this.dashboards.getById(dashboardId, session);
+    if (
+      dashboard.createdBy !== session.tbUserId &&
+      !['SYS_ADMIN', 'TENANT_ADMIN'].includes(session.authority)
+    )
+      throw new ForbiddenException('You cannot edit this dashboard');
+    await this.prisma.aiConversation.update({ where: { id }, data: { dashboardId } });
+  }
+
   private async catalog(session: AppSession): Promise<CatalogEntity[]> {
     const pages = await Promise.all([
       this.entities.list('DEVICE', session, { pageSize: 50, page: 0 }),
@@ -332,7 +445,9 @@ export class DashboardAiService {
     this.requireEditor(session);
     const parsedInput = generateSchema.safeParse(input);
     if (!parsedInput.success) throw new BadRequestException('Invalid dashboard request');
-    const { prompt, conversationId, connectionId, dashboardId } = parsedInput.data;
+    const { prompt, conversationId, connectionId, dashboardId, baseDraft } = parsedInput.data;
+    if (JSON.stringify(baseDraft ?? {}).length > 20_000)
+      throw new BadRequestException('Dashboard context is too large');
     const origin = this.origin(session);
     const conversation = conversationId
       ? await this.prisma.aiConversation.findFirst({
@@ -368,33 +483,47 @@ export class DashboardAiService {
     ) {
       throw new ForbiddenException('You cannot edit this dashboard');
     }
-    const previous = conversation?.draft
-      ? (conversation.draft as unknown as {
-          title: string;
-          widgets: {
-            widgetType: string;
-            config: Record<string, unknown>;
-            layout: Record<string, number>;
-          }[];
-        })
-      : original
-        ? {
-            title: original.title,
-            widgets: original.widgets.map((widget) => ({
-              widgetType: widget.widgetType,
-              config: widget.config as Record<string, unknown>,
-              layout: widget.layout as Record<string, number>,
-            })),
-          }
-        : null;
-    const inventory = (await this.catalog(session)).filter((entity) => entity.keys.length > 0);
-    if (inventory.length === 0)
-      throw new BadRequestException('No visible sensors have telemetry keys');
+    const previous = baseDraft
+      ? baseDraft
+      : conversation?.draft
+        ? (conversation.draft as unknown as {
+            title: string;
+            widgets: {
+              widgetType: string;
+              config: Record<string, unknown>;
+              layout: Record<string, number>;
+            }[];
+          })
+        : original
+          ? {
+              title: original.title,
+              widgets: original.widgets.map((widget) => ({
+                widgetType: widget.widgetType,
+                config: widget.config as Record<string, unknown>,
+                layout: widget.layout as Record<string, number>,
+              })),
+            }
+          : null;
+    const inventory = await this.catalog(session);
+    if (baseDraft) {
+      for (const widget of baseDraft.widgets) {
+        if (widget.layout.x + widget.layout.w > 12)
+          throw new BadRequestException('Invalid dashboard context layout');
+        this.assertVisibleWidget(widget.widgetType, widget.config, inventory);
+      }
+    }
     const catalog = inventory.map(({ name, type, keys }, index) => ({ index, name, type, keys }));
     const instructions = [
-      'Return only a JSON dashboard draft with title and widgets array.',
-      'For new widgets use entityIndex, telemetryKey, widgetType and optional title/layout.',
-      'New widgetType may be value-tile, line-chart, bar-chart or gauge.',
+      'Return only a JSON dashboard draft with title, explanation and widgets array.',
+      'Explanation is a short Spanish summary of your choices, with no invented measurements.',
+      'For new widgets use entityIndex, widgetType and optional title/layout.',
+      'Supported widget types: ' + WIDGET_TYPES.join(', ') + '.',
+      'Single-key types: value-tile, line-chart, bar-chart, gauge, battery, rssi, calendar-heatmap, value-map; include telemetryKey and entityIndex.',
+      'List-key types: timeseries-table and value-cards need telemetryKeys (at least one); multi-key-chart needs telemetryKeys (at least two).',
+      'Scatter needs entityIndex, xKey and yKey from the same entity; xKey may be TIME.',
+      'Attributes-table and movement-heatmap need entityIndex but no telemetry key.',
+      'Alarms-list, alarm-count, map and donut may omit entityIndex; donut needs groupBy.',
+      'Label needs text and no entityIndex.',
       'To keep or move a previous widget use existingWidgetIndex and optional layout.',
       'Omit a previous widget to remove it. Use at most 20 widgets.',
       'Choose only entityIndex and telemetryKey pairs in the catalog.',
@@ -457,31 +586,41 @@ export class DashboardAiService {
       if (item.existingWidgetIndex !== undefined) {
         const existing = previous?.widgets[item.existingWidgetIndex];
         if (!existing) throw new BadGatewayException('AI selected an unknown previous widget');
-        const entityId = existing.config.entityId;
-        const telemetryKey = existing.config.telemetryKey;
-        if (
-          typeof entityId === 'string' &&
-          typeof telemetryKey === 'string' &&
-          !inventory.some((entity) => entity.id === entityId && entity.keys.includes(telemetryKey))
-        ) {
+        try {
+          this.assertVisibleWidget(existing.widgetType, existing.config, inventory);
+        } catch {
           throw new BadGatewayException('AI kept a widget outside the visible catalog');
         }
-        validateWidgetConfig(existing.widgetType, existing.config);
         return { widgetType: existing.widgetType, config: existing.config, layout };
       }
       const entity = inventory[item.entityIndex ?? -1];
+      const optionalEntityTypes = ['alarms-list', 'alarm-count', 'map', 'donut'];
+      const entityNotNeeded =
+        item.widgetType === 'label' || optionalEntityTypes.includes(item.widgetType ?? '');
+      const selectedKeys = [
+        item.telemetryKey,
+        item.xKey,
+        item.yKey,
+        ...(item.telemetryKeys ?? []),
+      ].filter((key): key is string => typeof key === 'string' && key !== 'TIME');
       if (
-        !entity ||
-        !item.telemetryKey ||
-        !entity.keys.includes(item.telemetryKey) ||
+        (item.entityIndex !== undefined && !entity) ||
+        (!entity && !entityNotNeeded) ||
+        selectedKeys.some((key) => !entity?.keys.includes(key)) ||
         !item.widgetType
       ) {
         throw new BadGatewayException('AI selected a sensor, key or widget outside the catalog');
       }
       const config = {
-        entityId: entity.id,
-        entityType: entity.type,
-        telemetryKey: item.telemetryKey,
+        ...(entity && item.widgetType !== 'label'
+          ? { entityId: entity.id, entityType: entity.type }
+          : {}),
+        ...(item.telemetryKey ? { telemetryKey: item.telemetryKey } : {}),
+        ...(item.telemetryKeys ? { telemetryKeys: item.telemetryKeys } : {}),
+        ...(item.xKey ? { xKey: item.xKey } : {}),
+        ...(item.yKey ? { yKey: item.yKey } : {}),
+        ...(item.text ? { text: item.text } : {}),
+        ...(item.widgetType === 'donut' ? { groupBy: item.groupBy ?? 'ALARM_SEVERITY' } : {}),
         ...(item.title ? { title: item.title } : {}),
       };
       try {
@@ -492,7 +631,8 @@ export class DashboardAiService {
       return { widgetType: item.widgetType, config, layout };
     });
     const draft = { title: parsed.title, widgets };
-    const assistantMessage = `Dashboard draft ready: ${draft.title} (${draft.widgets.length} widgets).`;
+    const assistantMessage =
+      parsed.explanation ?? `Borrador listo: ${draft.title} (${draft.widgets.length} widgets).`;
     const saved = conversation
       ? await this.prisma.aiConversation.update({
           where: { id: conversation.id },
@@ -532,7 +672,12 @@ export class DashboardAiService {
             },
           },
         });
-    return { ...draft, conversationId: saved.id, remainingRequests: limits.dailyRequests - used };
+    return {
+      ...draft,
+      message: assistantMessage,
+      conversationId: saved.id,
+      remainingRequests: limits.dailyRequests - used,
+    };
   }
 
   private async callProvider(
@@ -584,7 +729,10 @@ export class DashboardAiService {
             : provider === 'OPENROUTER'
               ? 'https://openrouter.ai/api/v1/chat/completions'
               : (endpointUrl ?? '');
-        if (provider === 'CUSTOM') this.validateEndpoint(provider, url);
+        if (provider === 'CUSTOM') {
+          this.validateEndpoint(provider, url);
+          await this.assertPublicEndpoint(url);
+        }
         headers = { Authorization: `Bearer ${apiKey}` };
         body = {
           model,
