@@ -4,38 +4,39 @@
 
 Validated at startup via Zod (`backend/src/config/config.schema.ts`) — the app fails fast if required vars are missing or malformed. See `backend/.env.example`.
 
-| Variable               | Required | Default                  | Notes                                                                          |
-| ---------------------- | :------: | ------------------------ | ------------------------------------------------------------------------------ |
-| `THINGSBOARD_URL`      |   yes    | —                        | Base URL of the ThingsBoard instance (Cloud dev or local Docker)               |
-| `THINGSBOARD_USERNAME` |   yes    | —                        | Service-account login for the backend's own cached session (not an end-user's) |
-| `THINGSBOARD_PASSWORD` |   yes    | —                        |                                                                                |
-| `REDIS_URL`            |    no    | `redis://localhost:6379` |                                                                                |
-| `PORT`                 |    no    | `3001`                   |                                                                                |
+| Variable                       | Required | Default                  | Notes                                                                                       |
+| ------------------------------ | :------: | ------------------------ | ------------------------------------------------------------------------------------------- |
+| `THINGSBOARD_URL`              |   yes    | —                        | Base URL of the ThingsBoard instance (Cloud dev or local Docker)                            |
+| `THINGSBOARD_ALLOWED_URLS`     |    no    | —                        | Additional operator-approved login origins, comma separated                                 |
+| `DATABASE_URL`                 |   yes    | —                        | PostgreSQL connection for app metadata                                                      |
+| `DIRECT_URL`                   |    no    | —                        | Optional direct PostgreSQL URL for migrations; Neon pooler URLs are converted automatically |
+| `FRONTEND_URL`                 |    no    | `http://localhost:3000`  | Allowed CORS origin                                                                         |
+| `AI_CREDENTIAL_ENCRYPTION_KEY` |    no    | —                        | Required when saving AI connections; 32-byte hex key                                        |
+| `AI_ALLOWED_BASE_URLS`         |    no    | —                        | Approved origins for custom LLM endpoints, comma separated                                  |
+| `REDIS_URL`                    |    no    | `redis://localhost:6379` |                                                                                             |
+| `PORT`                         |    no    | `3001`                   |                                                                                             |
 
-Never commit real `THINGSBOARD_USERNAME`/`PASSWORD` values — `.env` is local-only, `.env.example` stays blank.
+The optional movement seed script uses `SEED_THINGSBOARD_USERNAME` and `SEED_THINGSBOARD_PASSWORD`. The server does not read those variables.
 
 ## ThingsBoard connection model
 
-- One shared **service-account session** (`ThingsboardClientService.getToken()`) is cached in Redis under `tb:jwt`, reused for all backend→TB calls that aren't on behalf of a specific end-user. TTL is derived from the JWT's own `exp` claim minus a 30s safety margin, falling back to 15 min if `exp` can't be decoded.
-- On a 401 from TB, the cached token is dropped and login is retried exactly once (`ThingsboardClientService.request()`) — no further retry loop.
-- **End-user credentials** (`loginWithCredentials`) are authenticated directly against TB per login and never cached by the service-account path — they produce the app's own session (see `auth.service.ts`), stored separately.
+- End-user credentials are authenticated against an operator-approved ThingsBoard origin at login. REST and live telemetry use that user's token and origin.
+- On a 401 from ThingsBoard, the backend refreshes the user's token once using the session refresh token.
 - Frontend never holds a ThingsBoard token — only the app's own `x-session-token`, checked against Redis by `SessionAuthGuard`.
 
 ## Redis usage
 
-Two distinct concerns share the same Redis instance in V1:
-
-1. ThingsBoard service-account JWT cache (`tb:jwt`).
-2. App session store (`x-session-token` → `AppSession`, set at `/auth/login`).
+Redis stores app sessions (`x-session-token` → `AppSession`, set at `/auth/login`).
 
 No telemetry/attribute read-cache exists yet despite being planned in PROJECT.md — don't assume it's implemented; check `RedisService` usage before relying on it.
 
 ## Local/dev topology
 
-- No Docker Compose file exists yet in this repo. Local dev currently points `THINGSBOARD_URL` at ThingsBoard Cloud (`https://thingsboard.cloud`, see `.env.example` default) rather than a local TB container.
-- Backend runs standalone via `npm run start:dev` (Fastify adapter, listens on `0.0.0.0:<PORT>`); Redis must be reachable separately (local install or container — no compose wiring committed yet).
-- If/when a local ThingsBoard container is added, document its compose service name and port mapping here before relying on it in scripts.
+- `docker-compose.yml` runs PostgreSQL, Redis, the backend, and the frontend. Local development defaults to `https://thingsboard.cloud` for ThingsBoard.
+- The backend can also run standalone via `npm run start:dev` (Fastify adapter, listens on `0.0.0.0:<PORT>`), with PostgreSQL and Redis reachable separately.
 
 ## Deploy
 
-Not yet defined — no deploy target, CI, or hosting decision has been made (solo/local project, prototype stage). Update this section once a deploy path is chosen instead of assuming Vercel/Docker/etc.
+GitHub Actions runs lint, typecheck, tests, build, and formatting on pull requests and `main`. The frontend is hosted on Vercel and the backend on Render; their Git integration is configured outside this repository and must be checked in each service dashboard.
+
+The backend `start:prod` command runs `migrate:deploy` before starting NestJS. When `DATABASE_URL` points to a pooled Neon host, the migration script uses the matching unpooled host. `DIRECT_URL` can be set explicitly and must match the same database and user. The script rejects other pooled or mismatched migration URLs. Keep the same `AI_CREDENTIAL_ENCRYPTION_KEY` across deploys so saved provider keys remain readable. Set `FRONTEND_URL` to the deployed frontend origin and the frontend's `NEXT_PUBLIC_API_BASE_URL` to the deployed backend origin.

@@ -3,6 +3,7 @@ import { Reflector } from '@nestjs/core';
 import { FastifyRequest } from 'fastify';
 import { AuthService } from '../../auth/auth.service';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+import { setRequestThingsboardSession } from '../../thingsboard/thingsboard-context';
 
 @Injectable()
 export class SessionAuthGuard implements CanActivate {
@@ -24,10 +25,14 @@ export class SessionAuthGuard implements CanActivate {
 
     const session = token ? await this.authService.getSession(token) : null;
     if (!session) {
-      throw new UnauthorizedException('Missing or invalid session token');
+      throw new UnauthorizedException({
+        code: 'APP_SESSION_INVALID',
+        message: 'Missing or invalid session token',
+      });
     }
 
     (request as FastifyRequest & { session: typeof session }).session = session;
+    setRequestThingsboardSession(session);
     return true;
   }
 }

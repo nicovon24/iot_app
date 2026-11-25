@@ -11,6 +11,7 @@ export type { WidgetDatasource } from '@/types';
  * this window with no user action — that's the whole point of storing a filter instead of ids. */
 const ENTITY_LIST_POLL_MS = 60_000;
 const ENTITY_LIST_PAGE_SIZE = 200;
+type EntityPage = { page: number; pageSize: number };
 
 const LIST_PATH: Record<'DEVICE' | 'ASSET', string> = { DEVICE: 'devices', ASSET: 'assets' };
 
@@ -26,19 +27,22 @@ export function isAllScope(config: WidgetDatasource): boolean {
  * for the single-entity case — an ALL-scope widget with zero entities isn't an error, it's
  * an empty fleet.
  */
-export function useDatasourceEntities(config: WidgetDatasource): {
+export function useDatasourceEntities(
+  config: WidgetDatasource,
+  requestedPage?: EntityPage,
+): {
   entities: EntityRef[];
   isLoading: boolean;
   notFound: boolean;
+  totalElements: number;
 } {
   const all = isAllScope(config);
   const entityType = config.entityType ?? 'DEVICE';
 
-  const listQuery = useEntities(
-    entityType,
-    { pageSize: ENTITY_LIST_PAGE_SIZE },
-    { enabled: all, refetchInterval: ENTITY_LIST_POLL_MS },
-  );
+  const listQuery = useEntities(entityType, requestedPage ?? { pageSize: ENTITY_LIST_PAGE_SIZE }, {
+    enabled: all,
+    refetchInterval: ENTITY_LIST_POLL_MS,
+  });
 
   const singleQuery = useQuery({
     queryKey: ['entity', config.entityId, entityType],
@@ -52,6 +56,7 @@ export function useDatasourceEntities(config: WidgetDatasource): {
       entities: listQuery.data?.data ?? [],
       isLoading: listQuery.isLoading,
       notFound: false,
+      totalElements: listQuery.data?.totalElements ?? 0,
     };
   }
 
@@ -62,5 +67,6 @@ export function useDatasourceEntities(config: WidgetDatasource): {
       singleQuery.isError &&
       singleQuery.error instanceof ApiError &&
       singleQuery.error.status === 404,
+    totalElements: singleQuery.data ? 1 : 0,
   };
 }

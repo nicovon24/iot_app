@@ -68,6 +68,7 @@ export function ValueMapCell({ config }: { config: EntityWidgetConfig }) {
 
   return (
     <ValueMapWidget
+      streetOnly
       title={config.title}
       entries={entries}
       telemetryKey={config.telemetryKey}
@@ -170,6 +171,7 @@ export function MovementHeatmapCell({ config }: { config: EntityWidgetConfig }) 
 
   return (
     <MovementHeatmapWidget
+      streetOnly
       title={config.title}
       points={points}
       emptyReason={emptyReason}
@@ -193,6 +195,7 @@ export function MapCell({ config }: { config: EntityWidgetConfig }) {
   if (!single) {
     return (
       <FleetMapWidget
+        streetOnly
         heightClassName="h-full"
         entityType={entityType}
         refetchInterval={ENTITY_POLL_MS}
@@ -209,6 +212,7 @@ export function MapCell({ config }: { config: EntityWidgetConfig }) {
 
   return (
     <MapWidget
+      streetOnly
       id={config.entityId as string}
       type={entityType}
       name={entities[0]?.name ?? 'Entity'}

@@ -1,6 +1,7 @@
 import { HttpException } from '@nestjs/common';
 import { ThingsboardClientService } from '../thingsboard/thingsboard-client.service';
 import { RedisService } from '../thingsboard/redis.service';
+import { scopedCacheKey } from '../thingsboard/thingsboard-context';
 import { fetchAllPages } from './fetch-all-pages';
 import { EntityRef, EntityRefLink, EntityType, TbAsset, TbCustomer, TbDevice } from '../types';
 
@@ -60,7 +61,9 @@ export class EntityRefResolver {
       // One MGET instead of one GET per id: the ThingsBoard calls below are already
       // batched, so serialising the cache reads was the remaining round-trip cost.
       const idList = [...ids];
-      const cachedValues = await this.redis.mget(idList.map((id) => `refname:${kind}:${id}`));
+      const cachedValues = await this.redis.mget(
+        idList.map((id) => scopedCacheKey(`refname:${kind}:${id}`)),
+      );
       idList.forEach((id, i) => {
         const cached = cachedValues[i];
         if (cached === MISS_SENTINEL) return; // known absent — don't refetch
@@ -83,7 +86,7 @@ export class EntityRefResolver {
               const link: EntityRefLink = { id, name: customer.title };
               result.set(`customer:${id}`, link);
               await this.redis.set(
-                `refname:customer:${id}`,
+                scopedCacheKey(`refname:customer:${id}`),
                 JSON.stringify(link),
                 REF_CACHE_TTL_SECONDS,
               );
@@ -92,7 +95,11 @@ export class EntityRefResolver {
               // customer still referenced by an entity. Only reachable on success:
               // a thrown request skips this block entirely, so a ThingsBoard outage
               // can never be cached as "this does not exist".
-              await this.redis.set(`refname:customer:${id}`, MISS_SENTINEL, REF_MISS_TTL_SECONDS);
+              await this.redis.set(
+                scopedCacheKey(`refname:customer:${id}`),
+                MISS_SENTINEL,
+                REF_MISS_TTL_SECONDS,
+              );
             }
           }
         } catch {
@@ -114,7 +121,7 @@ export class EntityRefResolver {
             const link: EntityRefLink = { id, name: entity.title ?? entity.name };
             result.set(`${kind}:${id}`, link);
             await this.redis.set(
-              `refname:${kind}:${id}`,
+              scopedCacheKey(`refname:${kind}:${id}`),
               JSON.stringify(link),
               REF_CACHE_TTL_SECONDS,
             );
@@ -123,7 +130,11 @@ export class EntityRefResolver {
             // Tombstone ONLY a definitive 404: anything else (network blip, TB 5xx)
             // must stay uncached, or an outage would be remembered as "absent".
             if (err instanceof HttpException && err.getStatus() === 404) {
-              await this.redis.set(`refname:${kind}:${id}`, MISS_SENTINEL, REF_MISS_TTL_SECONDS);
+              await this.redis.set(
+                scopedCacheKey(`refname:${kind}:${id}`),
+                MISS_SENTINEL,
+                REF_MISS_TTL_SECONDS,
+              );
             }
           }
         }),

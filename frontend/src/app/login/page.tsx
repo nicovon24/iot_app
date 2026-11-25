@@ -47,6 +47,7 @@ const ACTIVE_MODULE = 4;
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
+  const [thingsboardUrl, setThingsboardUrl] = useState('https://thingsboard.cloud');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -57,7 +58,7 @@ export default function LoginPage() {
     setError(null);
     setSubmitting(true);
     try {
-      await login(email, password);
+      await login(email, password, thingsboardUrl.trim());
       router.push('/dashboard');
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
@@ -133,6 +134,20 @@ export default function LoginPage() {
             </h1>
 
             <form className="flex flex-1 flex-col" onSubmit={handleSubmit} noValidate>
+              <div className="mb-5 flex flex-col gap-[9px]">
+                <label htmlFor="thingsboardUrl" className="t-field">
+                  Instancia de ThingsBoard
+                </label>
+                <input
+                  id="thingsboardUrl"
+                  type="url"
+                  placeholder="https://tu-instancia.example.com"
+                  value={thingsboardUrl}
+                  onChange={(e) => setThingsboardUrl(e.target.value)}
+                  required
+                  className={`w-full border bg-ink-950 px-[15px] py-[14px] text-sm text-body outline-none transition-colors duration-fast ease-out focus:border-accent ${fieldBorder}`}
+                />
+              </div>
               <div className="flex flex-col gap-[9px]">
                 <label htmlFor="email" className="t-field">
                   Email

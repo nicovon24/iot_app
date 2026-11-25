@@ -90,7 +90,11 @@ export class UsersController {
   @HttpCode(204)
   @ApiOperation({ summary: 'Marks an impersonation session as ended in the audit log' })
   @ApiResponse({ status: 204 })
-  async endImpersonation(@Param('logId') logId: string): Promise<void> {
-    await this.authService.endImpersonation(logId);
+  async endImpersonation(
+    @Param('logId') logId: string,
+    @CurrentSession() session: AppSession | null,
+  ): Promise<void> {
+    if (!session) throw new ForbiddenException('No active session');
+    await this.authService.endImpersonation(logId, session);
   }
 }

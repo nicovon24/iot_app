@@ -22,9 +22,18 @@ export interface MapWidgetProps {
   /** Tailwind height class. Defaults to a fixed height for standalone (non-grid) usage;
    * dashboard cells pass `h-full` so the map fills whatever the grid cell is sized to. */
   heightClassName?: string;
+  streetOnly?: boolean;
 }
 
-export function MapWidget({ id, type, name, lat, lng, heightClassName = 'h-96' }: MapWidgetProps) {
+export function MapWidget({
+  id,
+  type,
+  name,
+  lat,
+  lng,
+  heightClassName = 'h-96',
+  streetOnly = false,
+}: MapWidgetProps) {
   const [tileStyle, setTileStyle] = useState<MapTileStyle>('color');
   const alarmsQuery = useEntityAlarms(id, type);
   const telemetryQuery = useTelemetryLatest(id, type);
@@ -51,7 +60,7 @@ export function MapWidget({ id, type, name, lat, lng, heightClassName = 'h-96' }
     <div
       className={`relative ${heightClassName} overflow-hidden rounded-xl border border-border shadow-sm`}
     >
-      <MapStyleToggle value={tileStyle} onChange={setTileStyle} />
+      <MapStyleToggle value={tileStyle} onChange={setTileStyle} streetOnly={streetOnly} />
       <MapContainer center={[lat, lng]} zoom={13} className="h-full w-full">
         <TileLayer attribution={tile.attribution} url={tile.url} />
         <MapAutoResize />

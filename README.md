@@ -125,14 +125,14 @@ docker run -d --name iot_app_redis -p 6379:6379 -v iot_app_redis_data:/data redi
 
 ## Repo commands
 
-| Command                     | Where       | What                                |
-| :-------------------------- | :---------- | :---------------------------------- |
-| `npm run start:dev`         | `backend/`  | Dev server, watch mode              |
-| `npm run build`             | `backend/`  | Compile (`nest build`)              |
-| `npm run start:prod`        | `backend/`  | Run compiled build (`dist/main.js`) |
-| `npx prisma migrate deploy` | `backend/`  | Apply DB migrations                 |
-| `npx prisma studio`         | `backend/`  | Browse the DB                       |
-| `npm run dev`               | `frontend/` | Dev server (Next.js, Turbopack)     |
-| `npm run build`             | `frontend/` | Production build                    |
-| `npm run start`             | `frontend/` | Run production build                |
-| `npx tsc --noEmit`          | either      | Type-check without emitting         |
+| Command                  | Where       | What                                            |
+| :----------------------- | :---------- | :---------------------------------------------- |
+| `npm run start:dev`      | `backend/`  | Dev server, watch mode                          |
+| `npm run build`          | `backend/`  | Compile (`nest build`)                          |
+| `npm run start:prod`     | `backend/`  | Apply migrations, then run the compiled backend |
+| `npm run migrate:deploy` | `backend/`  | Apply migrations through a direct DB connection |
+| `npx prisma studio`      | `backend/`  | Browse the DB                                   |
+| `npm run dev`            | `frontend/` | Dev server (Next.js, Turbopack)                 |
+| `npm run build`          | `frontend/` | Production build                                |
+| `npm run start`          | `frontend/` | Run production build                            |
+| `npx tsc --noEmit`       | either      | Type-check without emitting                     |

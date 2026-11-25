@@ -103,12 +103,13 @@ export function EntityMapMarker({
     () => buildIcon(status),
     [status.level, status.connectivity], // eslint-disable-line react-hooks/exhaustive-deps
   );
+  const position = useMemo<[number, number]>(() => [lat, lng], [lat, lng]);
 
   const color = markerColor(status);
   const offline = status.connectivity === 'offline';
 
   return (
-    <Marker position={[lat, lng]} icon={icon}>
+    <Marker position={position} icon={icon}>
       <Popup>
         <div className="flex w-[232px] flex-col gap-3">
           <div className="flex items-center gap-2 pr-4">

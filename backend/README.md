@@ -44,15 +44,17 @@ Requests are protected by a `SessionAuthGuard` that validates the `x-session-tok
 
 Create a `.env` file in this directory:
 
-| Variable               | Required | Default                  | Description                           |
-| ---------------------- | :------: | ------------------------ | ------------------------------------- |
-| `THINGSBOARD_URL`      |   yes    | —                        | Base URL of the ThingsBoard instance  |
-| `THINGSBOARD_USERNAME` |   yes    | —                        | ThingsBoard login username            |
-| `THINGSBOARD_PASSWORD` |   yes    | —                        | ThingsBoard login password            |
-| `REDIS_URL`            |    no    | `redis://localhost:6379` | Redis connection string               |
-| `DATABASE_URL`         |   yes    | —                        | PostgreSQL connection string (Prisma) |
-| `FRONTEND_URL`         |    no    | `http://localhost:3000`  | Allowed CORS origin                   |
-| `PORT`                 |    no    | `3001`                   | Port the API listens on               |
+| Variable                       | Required | Default                  | Description                                        |
+| ------------------------------ | :------: | ------------------------ | -------------------------------------------------- |
+| `THINGSBOARD_URL`              |   yes    | —                        | Base URL of the ThingsBoard instance               |
+| `THINGSBOARD_ALLOWED_URLS`     |    no    | —                        | Additional approved login origins, comma separated |
+| `REDIS_URL`                    |    no    | `redis://localhost:6379` | Redis connection string                            |
+| `DATABASE_URL`                 |   yes    | —                        | PostgreSQL connection string (Prisma)              |
+| `FRONTEND_URL`                 |    no    | `http://localhost:3000`  | Allowed CORS origin                                |
+| `PORT`                         |    no    | `3001`                   | Port the API listens on                            |
+| `AI_CREDENTIAL_ENCRYPTION_KEY` |    no    | —                        | 32-byte hex key required to save AI connections    |
+
+The optional `seed-movement` script accepts `SEED_THINGSBOARD_USERNAME` and `SEED_THINGSBOARD_PASSWORD`; the server never reads them.
 
 Configuration is validated at startup via [`config.schema.ts`](src/config/config.schema.ts) — the app fails fast if required variables are missing or malformed.
 

@@ -1,17 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { RedisService } from '../thingsboard/redis.service';
 import { ThingsboardClientService } from '../thingsboard/thingsboard-client.service';
+import { scopedCacheKey } from '../thingsboard/thingsboard-context';
 import { EntityType, TbTimeseriesLatest, TelemetryLatest, TelemetryValue } from '../types';
 
-/**
- * Cache keys here are entity-scoped, with no user or tenant component. That is
- * only safe because every ThingsBoard fetch below goes through the shared
- * service-account token, so a cached value cannot vary by caller.
- *
- * If per-user ThingsBoard tokens are ever introduced on this path, these keys MUST
- * gain a user component — otherwise the cache silently becomes a cross-customer
- * data leak, with nothing in this file having changed.
- */
+/** Latest telemetry cache is partitioned by ThingsBoard origin and user. */
 const LATEST_CACHE_TTL_SECONDS = 3;
 
 function serialize(latest: TbTimeseriesLatest): TelemetryLatest {
@@ -45,7 +38,7 @@ export class TelemetryService {
     keys?: string[],
   ): Promise<TelemetryLatest> {
     const sortedKeys = keys ? [...keys].sort().join(',') : 'all';
-    const cacheKey = `latest:${entityType}:${entityId}:${sortedKeys}`;
+    const cacheKey = scopedCacheKey(`latest:${entityType}:${entityId}:${sortedKeys}`);
     const cached = await this.redis.get(cacheKey);
     if (cached) {
       return JSON.parse(cached) as TelemetryLatest;

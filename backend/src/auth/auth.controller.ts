@@ -10,6 +10,7 @@ export interface CurrentUserResponse {
   authority: AppSession['authority'];
   appRole: AppSession['appRole'];
   customerId: string | null;
+  thingsboardUrl: string | null;
 }
 
 @ApiTags('auth')
@@ -54,6 +55,7 @@ export class AuthController {
       authority: session.authority,
       appRole: session.appRole,
       customerId: session.customerId,
+      thingsboardUrl: session.thingsboardUrl ?? null,
     };
   }
 }

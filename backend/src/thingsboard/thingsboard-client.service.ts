@@ -1,11 +1,13 @@
-import { HttpException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '../config/config.service';
 import { RedisService } from './redis.service';
 import { TbLoginResponse, TbUserProfile } from '../types';
-
-const JWT_CACHE_KEY = 'tb:jwt';
-const DEFAULT_TTL_SECONDS = 60 * 15;
-const TTL_SAFETY_MARGIN_SECONDS = 30;
+import { currentThingsboardSession } from './thingsboard-context';
 
 function decodeJwtExpiry(token: string): number | null {
   const [, payload] = token.split('.');
@@ -43,46 +45,85 @@ export class ThingsboardClientService {
     private readonly redis: RedisService,
   ) {}
 
-  private async login(): Promise<string> {
-    const response = await fetch(`${this.config.thingsboardUrl}/api/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username: this.config.thingsboardUsername,
-        password: this.config.thingsboardPassword,
-      }),
-    });
+  get defaultUrl(): string {
+    return this.config.thingsboardUrl.replace(/\/$/, '');
+  }
 
-    if (!response.ok) {
-      throw new UnauthorizedException('Failed to authenticate against ThingsBoard');
+  validateUrl(input: string): string {
+    let normalized: string;
+    try {
+      const url = new URL(input);
+      if (
+        url.username ||
+        url.password ||
+        url.search ||
+        url.hash ||
+        url.pathname !== '/' ||
+        !['http:', 'https:'].includes(url.protocol) ||
+        (process.env.NODE_ENV === 'production' && url.protocol !== 'https:')
+      ) {
+        throw new Error('Unexpected URL components');
+      }
+      normalized = url.origin;
+    } catch {
+      throw new BadRequestException('Invalid ThingsBoard URL');
     }
+    if (!this.config.thingsboardAllowedUrls.includes(normalized)) {
+      throw new BadRequestException('ThingsBoard URL is not allowed');
+    }
+    return normalized;
+  }
 
-    const body = (await response.json()) as TbLoginResponse;
+  private baseUrl(): string {
+    return currentThingsboardSession()?.thingsboardUrl ?? this.defaultUrl;
+  }
 
-    const expiry = decodeJwtExpiry(body.token);
-    const ttl = expiry
-      ? Math.max(expiry - Math.floor(Date.now() / 1000) - TTL_SAFETY_MARGIN_SECONDS, 1)
-      : DEFAULT_TTL_SECONDS;
-
-    await this.redis.set(JWT_CACHE_KEY, body.token, ttl);
-    return body.token;
+  private async refreshUserToken(): Promise<string> {
+    const session = currentThingsboardSession();
+    if (!session?.tbRefreshToken) throw new UnauthorizedException('ThingsBoard session expired');
+    const response = await fetch(`${this.baseUrl()}/api/auth/token`, {
+      method: 'POST',
+      redirect: 'manual',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken: session.tbRefreshToken }),
+    });
+    if (!response.ok) throw new UnauthorizedException('ThingsBoard session expired');
+    const fresh = (await response.json()) as TbLoginResponse;
+    session.tbToken = fresh.token;
+    session.tbRefreshToken = fresh.refreshToken;
+    if (session.appSessionToken) {
+      const { appSessionToken, ...persisted } = session;
+      await this.redis.set(
+        `app:session:${appSessionToken}`,
+        JSON.stringify(persisted),
+        60 * 60 * 8,
+      );
+    }
+    return fresh.token;
   }
 
   async getToken(): Promise<string> {
-    const cached = await this.redis.get(JWT_CACHE_KEY);
-    if (cached) return cached;
-    // Concurrent misses would otherwise each open their own TB login.
-    return this.redis.single(JWT_CACHE_KEY, () => this.login());
+    const session = currentThingsboardSession();
+    if (!session) throw new UnauthorizedException('ThingsBoard session required');
+    const exp = decodeJwtExpiry(session.tbToken);
+    if (exp && exp <= Math.floor(Date.now() / 1000) + 30) {
+      return this.refreshUserToken();
+    }
+    return session.tbToken;
   }
 
   /**
    * Authenticates the given end-user credentials directly against ThingsBoard.
-   * Distinct from `login()`/`getToken()` (the backend's own service-account session,
-   * never cached here) — used to resolve a real per-user tbUserId/authority/customerId at app login.
+   * Resolves the caller's ThingsBoard identity before creating an app session.
    */
-  async loginWithCredentials(username: string, password: string): Promise<TbLoginResponse> {
-    const response = await fetch(`${this.config.thingsboardUrl}/api/auth/login`, {
+  async loginWithCredentials(
+    username: string,
+    password: string,
+    url = this.defaultUrl,
+  ): Promise<TbLoginResponse> {
+    const response = await fetch(`${url}/api/auth/login`, {
       method: 'POST',
+      redirect: 'manual',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password }),
     });
@@ -94,9 +135,10 @@ export class ThingsboardClientService {
     return (await response.json()) as TbLoginResponse;
   }
 
-  async getUserProfile(userToken: string): Promise<TbUserProfile> {
-    const response = await fetch(`${this.config.thingsboardUrl}/api/auth/user`, {
+  async getUserProfile(userToken: string, url = this.defaultUrl): Promise<TbUserProfile> {
+    const response = await fetch(`${url}/api/auth/user`, {
       method: 'GET',
+      redirect: 'manual',
       headers: { 'X-Authorization': `Bearer ${userToken}` },
     });
 
@@ -107,15 +149,16 @@ export class ThingsboardClientService {
     return parseJsonBody<TbUserProfile>(response);
   }
 
-  /** Same request contract as `request()`, but authenticated with a caller-supplied user token instead of the cached service-account token — no refresh-on-401 (the caller's session is invalid, not the service account's). */
+  /** Same request contract as `request()`, but authenticated with a caller-supplied user token. */
   async requestWithToken<T>(
     userToken: string,
     method: string,
     path: string,
     body?: unknown,
   ): Promise<T> {
-    const response = await fetch(`${this.config.thingsboardUrl}${path}`, {
+    const response = await fetch(`${this.baseUrl()}${path}`, {
       method,
+      redirect: 'manual',
       headers: {
         'Content-Type': 'application/json',
         'X-Authorization': `Bearer ${userToken}`,
@@ -138,16 +181,17 @@ export class ThingsboardClientService {
    */
   async requestText(method: string, path: string): Promise<string> {
     const token = await this.getToken();
-    const response = await fetch(`${this.config.thingsboardUrl}${path}`, {
+    const response = await fetch(`${this.baseUrl()}${path}`, {
       method,
+      redirect: 'manual',
       headers: { 'X-Authorization': `Bearer ${token}` },
     });
 
     if (response.status === 401) {
-      await this.redis.del(JWT_CACHE_KEY);
-      const freshToken = await this.getToken();
-      const retry = await fetch(`${this.config.thingsboardUrl}${path}`, {
+      const freshToken = await this.refreshUserToken();
+      const retry = await fetch(`${this.baseUrl()}${path}`, {
         method,
+        redirect: 'manual',
         headers: { 'X-Authorization': `Bearer ${freshToken}` },
       });
       if (!retry.ok) {
@@ -165,8 +209,9 @@ export class ThingsboardClientService {
 
   async request<T>(method: string, path: string, body?: unknown): Promise<T> {
     const token = await this.getToken();
-    const response = await fetch(`${this.config.thingsboardUrl}${path}`, {
+    const response = await fetch(`${this.baseUrl()}${path}`, {
       method,
+      redirect: 'manual',
       headers: {
         'Content-Type': 'application/json',
         'X-Authorization': `Bearer ${token}`,
@@ -176,10 +221,10 @@ export class ThingsboardClientService {
 
     if (response.status === 401) {
       // Cached token expired/invalid server-side — drop cache and retry once.
-      await this.redis.del(JWT_CACHE_KEY);
-      const freshToken = await this.getToken();
-      const retry = await fetch(`${this.config.thingsboardUrl}${path}`, {
+      const freshToken = await this.refreshUserToken();
+      const retry = await fetch(`${this.baseUrl()}${path}`, {
         method,
+        redirect: 'manual',
         headers: {
           'Content-Type': 'application/json',
           'X-Authorization': `Bearer ${freshToken}`,

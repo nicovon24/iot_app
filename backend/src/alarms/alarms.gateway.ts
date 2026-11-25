@@ -13,6 +13,7 @@ import { AppSession, AuthService } from '../auth/auth.service';
 import { isEntityInScope, resolveWsSession } from '../common/guards/ws-auth.util';
 import { EntitiesService } from '../entities/entities.service';
 import { ThingsboardClientService } from '../thingsboard/thingsboard-client.service';
+import { thingsboardContext } from '../thingsboard/thingsboard-context';
 import { EntityType, TbAlarm } from '../types';
 import { AlarmsService } from './alarms.service';
 
@@ -128,7 +129,9 @@ export class AlarmsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     try {
-      const inScope = await isEntityInScope(session, entityId, entityType, this.entitiesService);
+      const inScope = await thingsboardContext.run(session, () =>
+        isEntityInScope(session, entityId, entityType, this.entitiesService),
+      );
       if (!inScope) {
         client.send(JSON.stringify({ event: 'error', entityId, message: 'forbidden' }));
         return;
@@ -138,7 +141,9 @@ export class AlarmsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       const poll = async () => {
         try {
-          const page = await this.alarmsService.getForEntity(entityId, entityType);
+          const page = await thingsboardContext.run(session, () =>
+            this.alarmsService.getForEntity(entityId, entityType),
+          );
           for (const alarm of page.data) {
             const fingerprint = alarmFingerprint(alarm);
             if (seen.has(fingerprint)) continue;

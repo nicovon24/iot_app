@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { Layers, Maximize2, Pencil, Plus, Save, ScrollText } from 'lucide-react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { Layers, Maximize2, Pencil, Plus, Save, ScrollText, Sparkles } from 'lucide-react';
 import type { Layout } from 'react-grid-layout';
-import { ApiError } from '@/lib';
+import { ApiError, apiClient } from '@/lib';
 import { useCreateDashboard, useDashboard, useSaveDashboard } from '@/hooks';
 import { usePermissions } from '@/hooks';
 import { toastError, toastSuccess } from '@/lib';
@@ -13,6 +13,8 @@ import {
   AddWidgetPanel,
   type NewWidgetInput,
   BulkAddPanel,
+  AiDashboardPanel,
+  draftChanges,
   TimeWindowPicker,
   TimeWindowProvider,
 } from '@/components';
@@ -39,8 +41,10 @@ function toStaged(widgets: DashboardWidget[]): StagedWidget[] {
 
 export default function DashboardDetailPage() {
   const params = useParams<{ id: string }>();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const isNew = params.id === 'new';
+  const aiEntryRequested = isNew && searchParams.get('ai') === '1';
   const { canWrite } = usePermissions();
 
   const dashboardQuery = useDashboard(isNew ? undefined : params.id);
@@ -52,10 +56,26 @@ export default function DashboardDetailPage() {
   const [staged, setStaged] = useState<StagedWidget[]>([]);
   const [panelOpen, setPanelOpen] = useState(false);
   const [bulkPanelOpen, setBulkPanelOpen] = useState(false);
+  const [aiPanelOpen, setAiPanelOpen] = useState(aiEntryRequested);
+  const [aiProposal, setAiProposal] = useState<{
+    previousTitle: string;
+    previousWidgets: StagedWidget[];
+    added: number;
+    changed: number;
+    moved: number;
+    removed: number;
+    conversationId?: string;
+  } | null>(null);
   const [editingWidget, setEditingWidget] = useState<DashboardWidget | null>(null);
   const [timeWindow, setTimeWindow] = useState<DashboardTimeWindow | null>(null);
   const [layoutMode, setLayoutMode] = useState<DashboardLayoutMode>('SCROLL');
   const [loadedFrom, setLoadedFrom] = useState<Dashboard | null>(null);
+
+  useEffect(() => {
+    // A sidebar visit can reuse this route component when coming from another dashboard.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setAiPanelOpen(aiEntryRequested);
+  }, [aiEntryRequested, params.id]);
 
   useEffect(() => {
     if (!dashboardQuery.data) return;
@@ -75,12 +95,20 @@ export default function DashboardDetailPage() {
   }, [dashboardQuery.data]);
 
   function handleLayoutChange(layout: Layout[]) {
-    setStaged((prev) =>
-      prev.map((w) => {
+    setStaged((prev) => {
+      const changed = prev.some((w) => {
+        const l = layout.find((li) => li.i === w.id);
+        return (
+          l &&
+          (w.layout.x !== l.x || w.layout.y !== l.y || w.layout.w !== l.w || w.layout.h !== l.h)
+        );
+      });
+      if (!changed) return prev;
+      return prev.map((w) => {
         const l = layout.find((li) => li.i === w.id);
         return l ? { ...w, layout: { x: l.x, y: l.y, w: l.w, h: l.h } } : w;
-      }),
-    );
+      });
+    });
   }
 
   function handleAddWidget(newWidget: NewWidgetInput) {
@@ -126,6 +154,28 @@ export default function DashboardDetailPage() {
     ]);
   }
 
+  function handleAiDraft(draft: {
+    title: string;
+    widgets: NewWidgetInput[];
+    conversationId?: string;
+  }) {
+    const changes = draftChanges(staged, draft.widgets);
+    setAiProposal({
+      previousTitle: aiProposal?.previousTitle ?? title,
+      previousWidgets: aiProposal?.previousWidgets ?? staged,
+      ...changes,
+      conversationId: draft.conversationId,
+    });
+    setTitle(draft.title);
+    setStaged(
+      draft.widgets.map((widget, index) => ({
+        ...widget,
+        id: `ai-${Date.now()}-${index}`,
+      })),
+    );
+    setEditMode(true);
+  }
+
   async function handleSave() {
     const dto: SaveDashboardInput = {
       title,
@@ -144,12 +194,25 @@ export default function DashboardDetailPage() {
     try {
       if (isNew) {
         const created = await createDashboard.mutateAsync(dto);
+        if (aiProposal?.conversationId) {
+          try {
+            await apiClient.put(
+              `/dashboards/ai-conversations/${aiProposal.conversationId}/dashboard`,
+              {
+                dashboardId: created.id,
+              },
+            );
+          } catch (error) {
+            toastError('El dashboard se guardó, pero no se pudo asociar el historial de IA', error);
+          }
+        }
         toastSuccess('Dashboard created');
         router.replace(`/dashboard/${created.id}`);
       } else {
         await saveDashboard.mutateAsync({ id: params.id, dto });
         toastSuccess('Dashboard saved');
         setEditMode(false);
+        setAiProposal(null);
       }
     } catch (err) {
       toastError('Could not save dashboard', err);
@@ -245,6 +308,13 @@ export default function DashboardDetailPage() {
                 >
                   <Layers size={15} /> Bulk add
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setAiPanelOpen(true)}
+                  className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 t-field hover:bg-tint"
+                >
+                  <Sparkles size={15} /> Crear con IA
+                </button>
               </>
             )}
             {editMode ? (
@@ -267,6 +337,27 @@ export default function DashboardDetailPage() {
           </div>
         )}
       </div>
+
+      {aiProposal && (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-accent px-3 py-2 text-sm text-muted">
+          <span>
+            Propuesta de IA sin guardar · {aiProposal.added} agregados · {aiProposal.changed}{' '}
+            cambiados · {aiProposal.moved} movidos · {aiProposal.removed} quitados. Revisá los
+            widgets antes de guardar.
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              setTitle(aiProposal.previousTitle);
+              setStaged(aiProposal.previousWidgets);
+              setAiProposal(null);
+            }}
+            className="text-heading underline"
+          >
+            Descartar propuesta
+          </button>
+        </div>
+      )}
 
       <div
         className={`min-h-0 flex-1 ${layoutMode === 'FIT' ? 'overflow-hidden' : 'overflow-auto'}`}
@@ -297,6 +388,15 @@ export default function DashboardDetailPage() {
         onClose={() => setBulkPanelOpen(false)}
         existingLayouts={staged.map((w) => w.layout)}
         onAdd={handleBulkAdd}
+      />
+      <AiDashboardPanel
+        key={params.id}
+        isOpen={canWrite && aiPanelOpen}
+        onClose={() => setAiPanelOpen(false)}
+        onDraft={handleAiDraft}
+        dashboardId={isNew ? undefined : params.id}
+        currentTitle={title}
+        currentWidgets={staged}
       />
     </div>
   );

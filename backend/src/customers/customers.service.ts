@@ -1,6 +1,8 @@
 import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { EntitiesService } from '../entities/entities.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { ConfigService } from '../config/config.service';
+import { currentInstance, currentInstanceWhere } from '../thingsboard/instance-scope';
 import { EntityRef } from '../types';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 
@@ -11,6 +13,7 @@ export class CustomersService {
   constructor(
     private readonly entitiesService: EntitiesService,
     private readonly prisma: PrismaService,
+    private readonly config: ConfigService,
   ) {}
 
   /**
@@ -28,6 +31,7 @@ export class CustomersService {
       await this.prisma.customerHierarchyLevels.createMany({
         data: dto.hierarchyLevels.map((level) => ({
           customerId: customer.id,
+          instanceUrl: currentInstance(this.config),
           levelIndex: level.levelIndex,
           name: level.name,
         })),
@@ -41,7 +45,7 @@ export class CustomersService {
     }
 
     const hierarchyLevels = await this.prisma.customerHierarchyLevels.findMany({
-      where: { customerId: customer.id },
+      where: { customerId: customer.id, ...currentInstanceWhere(this.config) },
       orderBy: { levelIndex: 'asc' },
       select: { levelIndex: true, name: true },
     });
@@ -58,7 +62,7 @@ export class CustomersService {
     await this.entitiesService.getById(customerId, 'CUSTOMER');
 
     return this.prisma.customerHierarchyLevels.findMany({
-      where: { customerId },
+      where: { customerId, ...currentInstanceWhere(this.config) },
       orderBy: { levelIndex: 'asc' },
     });
   }
@@ -70,7 +74,9 @@ export class CustomersService {
    * customerId that no longer has a hierarchy definition.
    */
   async delete(customerId: string): Promise<void> {
-    const assetCount = await this.prisma.assetHierarchyAssignment.count({ where: { customerId } });
+    const assetCount = await this.prisma.assetHierarchyAssignment.count({
+      where: { customerId, ...currentInstanceWhere(this.config) },
+    });
     if (assetCount > 0) {
       throw new BadRequestException(
         `Cannot delete this Client — ${assetCount} Asset(s) still belong to its hierarchy. Delete them first.`,
@@ -82,6 +88,8 @@ export class CustomersService {
     } catch (err) {
       if (!(err instanceof HttpException) || err.getStatus() !== 404) throw err;
     }
-    await this.prisma.customerHierarchyLevels.deleteMany({ where: { customerId } });
+    await this.prisma.customerHierarchyLevels.deleteMany({
+      where: { customerId, ...currentInstanceWhere(this.config) },
+    });
   }
 }

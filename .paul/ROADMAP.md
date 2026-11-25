@@ -48,6 +48,7 @@ Phase 8 (Admin hierarchy management panel) complete 2026-08-04, first V2 phase s
 | 11    | Editorial rebrand (frontend visual system)                                                                              | 2 commits, applied outside PAUL       | Applied 2026-08-22/24 by Ulises-I-M, documented retroactively 2026-08-28, browser verification pending                                                               | 2026-08-22 |
 | 12    | Telemetry unit system + new widget types                                                                                | 5 applied + unified (12-01..05)       | **Closed 2026-09-02** — all 5 unified retroactively, AC confirmed against current code, browser verification pending                                                 | 2026-08-12 |
 | 13    | Testing harness — backend + frontend (whole app)                                                                        | Batch 1 (chat-driven)                 | In progress — Jest+Vitest foundation applied 2026-09-02, not yet planned via `/paul:plan`; Playwright/e2e pending                                                    | 2026-09-02 |
+| 14    | Instance-aware ThingsBoard login + AI dashboard assistant                                                               | 14-01..03 planned                     | Planning — allowed-instance isolation, private provider settings, multi-turn dashboard drafts, IoTArg chat UI                                                        | —          |
 
 ## Phase Details
 

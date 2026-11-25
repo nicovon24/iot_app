@@ -2,6 +2,10 @@ import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AppSession, AuthService } from '../../auth/auth.service';
 import { SessionAuthGuard } from './session-auth.guard';
+import {
+  currentThingsboardSession,
+  runWithThingsboardRequestContext,
+} from '../../thingsboard/thingsboard-context';
 
 function makeContext(headers: Record<string, string | string[] | undefined>): {
   context: ExecutionContext;
@@ -56,7 +60,12 @@ describe('SessionAuthGuard', () => {
     authService.getSession.mockResolvedValue(null);
     const { context } = makeContext({ 'x-session-token': 'bad-token' });
 
-    await expect(guard.canActivate(context)).rejects.toThrow(UnauthorizedException);
+    await expect(guard.canActivate(context)).rejects.toMatchObject({
+      response: {
+        code: 'APP_SESSION_INVALID',
+        message: 'Missing or invalid session token',
+      },
+    });
   });
 
   it('attaches the resolved session to the request and passes for a valid token', async () => {
@@ -64,9 +73,12 @@ describe('SessionAuthGuard', () => {
     authService.getSession.mockResolvedValue(SESSION);
     const { context, request } = makeContext({ 'x-session-token': 'good-token' });
 
-    await expect(guard.canActivate(context)).resolves.toBe(true);
-    expect(authService.getSession).toHaveBeenCalledWith('good-token');
-    expect(request.session).toBe(SESSION);
+    await runWithThingsboardRequestContext(async () => {
+      await expect(guard.canActivate(context)).resolves.toBe(true);
+      expect(authService.getSession).toHaveBeenCalledWith('good-token');
+      expect(request.session).toBe(SESSION);
+      expect(currentThingsboardSession()).toBe(SESSION);
+    });
   });
 
   it('uses the first value when the header arrives as an array', async () => {
@@ -74,7 +86,7 @@ describe('SessionAuthGuard', () => {
     authService.getSession.mockResolvedValue(SESSION);
     const { context } = makeContext({ 'x-session-token': ['first-token', 'second-token'] });
 
-    await guard.canActivate(context);
+    await runWithThingsboardRequestContext(() => guard.canActivate(context));
     expect(authService.getSession).toHaveBeenCalledWith('first-token');
   });
 });

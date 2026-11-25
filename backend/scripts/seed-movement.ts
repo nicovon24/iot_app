@@ -154,12 +154,14 @@ export function buildTrail(startTs: number, endTs: number, intervalMs: number) {
 async function main() {
   const env = loadEnv();
   const url = env.THINGSBOARD_URL;
-  if (!url || !env.THINGSBOARD_USERNAME || !env.THINGSBOARD_PASSWORD) {
-    throw new Error('THINGSBOARD_URL / _USERNAME / _PASSWORD must be set in backend/.env');
+  if (!url || !env.SEED_THINGSBOARD_USERNAME || !env.SEED_THINGSBOARD_PASSWORD) {
+    throw new Error(
+      'THINGSBOARD_URL, SEED_THINGSBOARD_USERNAME and SEED_THINGSBOARD_PASSWORD must be set',
+    );
   }
 
   const { deviceName, days, intervalSec } = parseArgs();
-  const token = await login(url, env.THINGSBOARD_USERNAME, env.THINGSBOARD_PASSWORD);
+  const token = await login(url, env.SEED_THINGSBOARD_USERNAME, env.SEED_THINGSBOARD_PASSWORD);
   const device = await findDevice(url, token, deviceName);
 
   const endTs = Date.now();

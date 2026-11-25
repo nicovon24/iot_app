@@ -26,6 +26,7 @@ export interface MovementHeatmapWidgetProps {
   /** Why there is nothing to draw, when the cell can tell them apart — "no data at all" and
    * "data that couldn't be paired" need different fixes. */
   emptyReason?: string;
+  streetOnly?: boolean;
 }
 
 const DEFAULT_CENTER: [number, number] = [20, 0];
@@ -86,6 +87,7 @@ export function MovementHeatmapWidget({
   title,
   heightClassName = 'h-full',
   emptyReason,
+  streetOnly = false,
 }: MovementHeatmapWidgetProps) {
   const [tileStyle, setTileStyle] = useState<MapTileStyle>('color');
 
@@ -102,7 +104,7 @@ export function MovementHeatmapWidget({
         <h3 className="shrink-0 truncate border-b border-border px-4 py-3 t-heading">{title}</h3>
       )}
       <div className={`relative min-h-0 flex-1 ${heightClassName}`}>
-        <MapStyleToggle value={tileStyle} onChange={setTileStyle} />
+        <MapStyleToggle value={tileStyle} onChange={setTileStyle} streetOnly={streetOnly} />
         <MapContainer center={DEFAULT_CENTER} zoom={DEFAULT_ZOOM} className="h-full w-full">
           <TileLayer attribution={tile.attribution} url={tile.url} />
           <MapAutoResize />

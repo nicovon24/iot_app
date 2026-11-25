@@ -19,4 +19,4 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/backend ./backend
 
 EXPOSE 3001
-CMD sh -c "npx prisma migrate deploy --schema=backend/prisma/schema.prisma && node backend/dist/main.js"
+CMD ["npm", "run", "start:prod", "--workspace=backend"]

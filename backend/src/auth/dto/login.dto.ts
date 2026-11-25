@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, MinLength } from 'class-validator';
+import { IsString, IsUrl, MinLength } from 'class-validator';
 
 export class LoginDto {
   @ApiProperty({ example: 'operator@example.com' })
@@ -11,6 +11,11 @@ export class LoginDto {
   @IsString()
   @MinLength(1)
   password!: string;
+
+  @ApiProperty({ example: 'https://thingsboard.cloud' })
+  @IsString()
+  @IsUrl({ require_tld: false, require_protocol: true })
+  thingsboardUrl!: string;
 }
 
 export class LoginResponseDto {

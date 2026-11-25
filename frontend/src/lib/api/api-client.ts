@@ -31,18 +31,21 @@ async function request<T>(
   });
 
   if (!response.ok) {
-    // A 401 means the server-side session is gone while sessionStorage still holds
-    // a token. AuthGate only checks that a token is present, so without this the
-    // user sits on a fully rendered shell where every request silently fails.
-    if (response.status === 401) {
-      endSession();
-    }
-
     let errorBody: unknown = null;
     try {
       errorBody = await response.json();
     } catch {
       // response had no JSON body
+    }
+    const appSessionInvalid =
+      errorBody &&
+      typeof errorBody === 'object' &&
+      (('code' in errorBody && errorBody.code === 'APP_SESSION_INVALID') ||
+        ('message' in errorBody && errorBody.message === 'Missing or invalid session token'));
+    // ThingsBoard can also return 401. Only the app guard can invalidate the app
+    // session, and an old in-flight response must not clear a newer login.
+    if (response.status === 401 && appSessionInvalid && token && token === getSessionToken()) {
+      endSession();
     }
     const detailMessage =
       errorBody &&
