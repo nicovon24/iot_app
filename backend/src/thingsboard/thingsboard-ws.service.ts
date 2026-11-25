@@ -47,18 +47,26 @@ export class ThingsboardWsService implements OnModuleDestroy {
         const next = new WebSocket(url);
         socket = next;
         next.once('open', () => {
-          if (closed) { next.close(); resolve(); return; }
+          if (closed) {
+            next.close();
+            resolve();
+            return;
+          }
           attempts = 0;
-          next.send(JSON.stringify({
-            tsSubCmds: [{ entityType, entityId, scope: 'LATEST_TELEMETRY', cmdId: 1 }],
-            historyCmds: [], attrSubCmds: [],
-          }));
+          next.send(
+            JSON.stringify({
+              tsSubCmds: [{ entityType, entityId, scope: 'LATEST_TELEMETRY', cmdId: 1 }],
+              historyCmds: [],
+              attrSubCmds: [],
+            }),
+          );
           resolve();
         });
         next.on('message', (raw) => {
           try {
             const parsed = JSON.parse(raw.toString()) as {
-              subscriptionId?: number; data?: Record<string, unknown>;
+              subscriptionId?: number;
+              data?: Record<string, unknown>;
             };
             if (!closed && parsed.subscriptionId === 1 && parsed.data) onUpdate(parsed.data);
           } catch {

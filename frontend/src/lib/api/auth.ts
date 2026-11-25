@@ -1,7 +1,11 @@
 import { apiClient } from './api-client';
 import { setSessionToken } from '../session';
 
-export async function login(username: string, password: string, thingsboardUrl: string): Promise<void> {
+export async function login(
+  username: string,
+  password: string,
+  thingsboardUrl: string,
+): Promise<void> {
   const result = await apiClient.post<{ sessionToken: string }>('/auth/login', {
     username,
     password,

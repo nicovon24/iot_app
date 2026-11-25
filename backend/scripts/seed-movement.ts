@@ -155,7 +155,9 @@ async function main() {
   const env = loadEnv();
   const url = env.THINGSBOARD_URL;
   if (!url || !env.SEED_THINGSBOARD_USERNAME || !env.SEED_THINGSBOARD_PASSWORD) {
-    throw new Error('THINGSBOARD_URL, SEED_THINGSBOARD_USERNAME and SEED_THINGSBOARD_PASSWORD must be set');
+    throw new Error(
+      'THINGSBOARD_URL, SEED_THINGSBOARD_USERNAME and SEED_THINGSBOARD_PASSWORD must be set',
+    );
   }
 
   const { deviceName, days, intervalSec } = parseArgs();

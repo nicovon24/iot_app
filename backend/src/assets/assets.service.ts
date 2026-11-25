@@ -39,7 +39,11 @@ export class AssetsService {
     }
 
     const level = await this.prisma.customerHierarchyLevels.findFirst({
-      where: { customerId: dto.customerId, levelIndex: dto.levelIndex, ...currentInstanceWhere(this.config) },
+      where: {
+        customerId: dto.customerId,
+        levelIndex: dto.levelIndex,
+        ...currentInstanceWhere(this.config),
+      },
     });
     if (!level) {
       throw new BadRequestException(
@@ -85,7 +89,12 @@ export class AssetsService {
 
     try {
       await this.prisma.assetHierarchyAssignment.create({
-        data: { customerId: dto.customerId, assetId: created.id, levelIndex: dto.levelIndex, instanceUrl: currentInstance(this.config) },
+        data: {
+          customerId: dto.customerId,
+          assetId: created.id,
+          levelIndex: dto.levelIndex,
+          instanceUrl: currentInstance(this.config),
+        },
       });
     } catch (err) {
       this.logger.error(
@@ -101,7 +110,9 @@ export class AssetsService {
       this.logger.error(
         `Rolling back Asset ${created.id} — Contains relation creation failed: ${(err as Error).message}`,
       );
-      await this.prisma.assetHierarchyAssignment.deleteMany({ where: { assetId: created.id, ...currentInstanceWhere(this.config) } });
+      await this.prisma.assetHierarchyAssignment.deleteMany({
+        where: { assetId: created.id, ...currentInstanceWhere(this.config) },
+      });
       await this.entitiesService.deleteAsset(created.id);
       throw err;
     }
@@ -129,7 +140,9 @@ export class AssetsService {
     } catch (err) {
       if (!(err instanceof HttpException) || err.getStatus() !== 404) throw err;
     }
-    await this.prisma.assetHierarchyAssignment.deleteMany({ where: { assetId: id, ...currentInstanceWhere(this.config) } });
+    await this.prisma.assetHierarchyAssignment.deleteMany({
+      where: { assetId: id, ...currentInstanceWhere(this.config) },
+    });
   }
 
   async update(

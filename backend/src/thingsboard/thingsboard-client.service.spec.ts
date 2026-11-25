@@ -13,8 +13,12 @@ describe('ThingsboardClientService instance selection', () => {
   it('accepts only configured origins', () => {
     expect(service.validateUrl('https://second.example.com/')).toBe('https://second.example.com');
     expect(() => service.validateUrl('https://other.example.com')).toThrow(BadRequestException);
-    expect(() => service.validateUrl('https://first.example.com/path')).toThrow(BadRequestException);
-    expect(() => service.validateUrl('https://user:pass@first.example.com')).toThrow(BadRequestException);
+    expect(() => service.validateUrl('https://first.example.com/path')).toThrow(
+      BadRequestException,
+    );
+    expect(() => service.validateUrl('https://user:pass@first.example.com')).toThrow(
+      BadRequestException,
+    );
   });
 
   it('rejects unlisted origins before sending credentials', async () => {
@@ -25,9 +29,12 @@ describe('ThingsboardClientService instance selection', () => {
   });
 
   it('does not follow redirects with user credentials', async () => {
-    const fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue({ ok: false, status: 302 } as Response);
-    await expect(service.loginWithCredentials('operator', 'secret', 'https://first.example.com'))
-      .rejects.toThrow();
+    const fetchSpy = jest
+      .spyOn(global, 'fetch')
+      .mockResolvedValue({ ok: false, status: 302 } as Response);
+    await expect(
+      service.loginWithCredentials('operator', 'secret', 'https://first.example.com'),
+    ).rejects.toThrow();
     expect(fetchSpy).toHaveBeenCalledWith(
       'https://first.example.com/api/auth/login',
       expect.objectContaining({ redirect: 'manual' }),

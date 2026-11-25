@@ -74,7 +74,9 @@ export class CustomersService {
    * customerId that no longer has a hierarchy definition.
    */
   async delete(customerId: string): Promise<void> {
-    const assetCount = await this.prisma.assetHierarchyAssignment.count({ where: { customerId, ...currentInstanceWhere(this.config) } });
+    const assetCount = await this.prisma.assetHierarchyAssignment.count({
+      where: { customerId, ...currentInstanceWhere(this.config) },
+    });
     if (assetCount > 0) {
       throw new BadRequestException(
         `Cannot delete this Client — ${assetCount} Asset(s) still belong to its hierarchy. Delete them first.`,
@@ -86,6 +88,8 @@ export class CustomersService {
     } catch (err) {
       if (!(err instanceof HttpException) || err.getStatus() !== 404) throw err;
     }
-    await this.prisma.customerHierarchyLevels.deleteMany({ where: { customerId, ...currentInstanceWhere(this.config) } });
+    await this.prisma.customerHierarchyLevels.deleteMany({
+      where: { customerId, ...currentInstanceWhere(this.config) },
+    });
   }
 }

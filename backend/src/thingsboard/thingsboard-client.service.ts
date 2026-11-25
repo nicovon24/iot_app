@@ -1,9 +1,13 @@
-import { BadRequestException, HttpException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '../config/config.service';
 import { RedisService } from './redis.service';
 import { TbLoginResponse, TbUserProfile } from '../types';
 import { currentThingsboardSession } from './thingsboard-context';
-
 
 function decodeJwtExpiry(token: string): number | null {
   const [, payload] = token.split('.');
@@ -50,7 +54,11 @@ export class ThingsboardClientService {
     try {
       const url = new URL(input);
       if (
-        url.username || url.password || url.search || url.hash || url.pathname !== '/' ||
+        url.username ||
+        url.password ||
+        url.search ||
+        url.hash ||
+        url.pathname !== '/' ||
         !['http:', 'https:'].includes(url.protocol) ||
         (process.env.NODE_ENV === 'production' && url.protocol !== 'https:')
       ) {
@@ -85,7 +93,11 @@ export class ThingsboardClientService {
     session.tbRefreshToken = fresh.refreshToken;
     if (session.appSessionToken) {
       const { appSessionToken, ...persisted } = session;
-      await this.redis.set(`app:session:${appSessionToken}`, JSON.stringify(persisted), 60 * 60 * 8);
+      await this.redis.set(
+        `app:session:${appSessionToken}`,
+        JSON.stringify(persisted),
+        60 * 60 * 8,
+      );
     }
     return fresh.token;
   }
@@ -104,7 +116,11 @@ export class ThingsboardClientService {
    * Authenticates the given end-user credentials directly against ThingsBoard.
    * Resolves the caller's ThingsBoard identity before creating an app session.
    */
-  async loginWithCredentials(username: string, password: string, url = this.defaultUrl): Promise<TbLoginResponse> {
+  async loginWithCredentials(
+    username: string,
+    password: string,
+    url = this.defaultUrl,
+  ): Promise<TbLoginResponse> {
     const response = await fetch(`${url}/api/auth/login`, {
       method: 'POST',
       redirect: 'manual',
