@@ -3,9 +3,8 @@ const { spawnSync } = require('node:child_process');
 require('dotenv').config();
 
 const runtimeUrl = process.env.DATABASE_URL;
-const directUrl = process.env.DIRECT_URL || runtimeUrl;
 
-if (!runtimeUrl || !directUrl) {
+if (!runtimeUrl) {
   console.error('DATABASE_URL is required to deploy Prisma migrations');
   process.exit(1);
 }
@@ -14,7 +13,10 @@ let runtime;
 let direct;
 try {
   runtime = new URL(runtimeUrl);
-  direct = new URL(directUrl);
+  direct = new URL(process.env.DIRECT_URL || runtimeUrl);
+  if (!process.env.DIRECT_URL && runtime.hostname.endsWith('.neon.tech')) {
+    direct.hostname = runtime.hostname.replace('-pooler.', '.');
+  }
 } catch {
   console.error('DATABASE_URL and DIRECT_URL must be valid PostgreSQL URLs');
   process.exit(1);
@@ -24,7 +26,6 @@ if (
   !['postgres:', 'postgresql:'].includes(direct.protocol) ||
   !['postgres:', 'postgresql:'].includes(runtime.protocol) ||
   direct.hostname.includes('-pooler') ||
-  (runtime.hostname.includes('-pooler') && !process.env.DIRECT_URL) ||
   runtime.hostname.replace('-pooler.', '.') !== direct.hostname ||
   runtime.port !== direct.port ||
   runtime.pathname !== direct.pathname ||
@@ -39,7 +40,7 @@ const result = spawnSync(
   [require.resolve('prisma/build/index.js'), 'migrate', 'deploy'],
   {
     cwd: require('node:path').resolve(__dirname, '..'),
-    env: { ...process.env, DATABASE_URL: directUrl },
+    env: { ...process.env, DATABASE_URL: direct.toString() },
     stdio: 'inherit',
   },
 );
