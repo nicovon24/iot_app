@@ -8,7 +8,7 @@
     "start:dev": "nest start --watch",
     "start:prod": "npm run migrate:deploy && node dist/main.js",
     "postinstall": "prisma generate",
-    "migrate:deploy": "prisma migrate deploy",
+    "migrate:deploy": "node scripts/migrate-deploy.cjs",
     "lint": "eslint \"{src,test}/**/*.ts\"",
     "typecheck": "tsc --noEmit",
     "test": "jest"

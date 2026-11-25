@@ -3,7 +3,7 @@ import { Reflector } from '@nestjs/core';
 import { FastifyRequest } from 'fastify';
 import { AuthService } from '../../auth/auth.service';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
-import { thingsboardContext } from '../../thingsboard/thingsboard-context';
+import { setRequestThingsboardSession } from '../../thingsboard/thingsboard-context';
 
 @Injectable()
 export class SessionAuthGuard implements CanActivate {
@@ -32,7 +32,7 @@ export class SessionAuthGuard implements CanActivate {
     }
 
     (request as FastifyRequest & { session: typeof session }).session = session;
-    thingsboardContext.enterWith(session);
+    setRequestThingsboardSession(session);
     return true;
   }
 }

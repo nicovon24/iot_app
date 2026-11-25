@@ -125,12 +125,14 @@ export interface FleetMapWidgetProps {
   entityType?: FleetEntityType;
   /** Poll interval for the entity list, so entities registered later appear on their own. */
   refetchInterval?: number;
+  streetOnly?: boolean;
 }
 
 export function FleetMapWidget({
   heightClassName = 'h-[32rem]',
   entityType = 'DEVICE',
   refetchInterval,
+  streetOnly = false,
 }: FleetMapWidgetProps = {}) {
   const [tileStyle, setTileStyle] = useState<MapTileStyle>('color');
   const { data, isLoading, isError, error } = useEntities(entityType, undefined, {
@@ -188,7 +190,7 @@ export function FleetMapWidget({
     <div
       className={`relative ${heightClassName} overflow-hidden rounded-xl border border-border shadow-sm`}
     >
-      <MapStyleToggle value={tileStyle} onChange={setTileStyle} />
+      <MapStyleToggle value={tileStyle} onChange={setTileStyle} streetOnly={streetOnly} />
       <MapContainer center={initialView.center} zoom={initialView.zoom} className="h-full w-full">
         <TileLayer attribution={tile.attribution} url={tile.url} />
         <MapAutoResize />

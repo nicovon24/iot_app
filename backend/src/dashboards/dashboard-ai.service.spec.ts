@@ -285,6 +285,151 @@ describe('DashboardAiService generation', () => {
     expect(result.widgets[2].config).toMatchObject({ telemetryKeys: ['temperature'] });
   });
 
+  it('turns an all-sensors table request into one fleet table even when the model returns cards', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      text: async () =>
+        JSON.stringify({
+          output: [
+            {
+              content: [
+                {
+                  type: 'output_text',
+                  text: JSON.stringify({
+                    title: 'Sensors',
+                    widgets: [
+                      { widgetType: 'value-cards', entityIndex: 0, telemetryKeys: ['temperature'] },
+                      { widgetType: 'value-tile', entityIndex: 0, telemetryKey: 'temperature' },
+                    ],
+                  }),
+                },
+              ],
+            },
+          ],
+        }),
+    });
+
+    const result = await service.generate({ prompt: 'Una tabla con todos los sensores' }, session);
+    expect(result.widgets).toEqual([
+      {
+        widgetType: 'attributes-table',
+        config: {
+          entityScope: 'ALL',
+          entityType: 'DEVICE',
+          dataKeys: [{ source: 'TELEMETRY', key: '*' }],
+        },
+        layout: { x: 0, y: 0, w: 12, h: 6 },
+      },
+    ]);
+    expect(result.message).toContain('Una tabla');
+    expect(dashboards.create).not.toHaveBeenCalled();
+  });
+
+  it('keeps existing dashboard widgets when adding an all-device table', async () => {
+    const baseDraft = {
+      title: 'Existing dashboard',
+      widgets: [
+        {
+          widgetType: 'value-tile',
+          config: {
+            entityId: '11111111-1111-4111-8111-111111111111',
+            entityType: 'DEVICE',
+            telemetryKey: 'temperature',
+          },
+          layout: { x: 0, y: 0, w: 6, h: 4 },
+        },
+      ],
+    };
+
+    const result = await service.generate(
+      { prompt: 'Agregá una tabla con todos los sensores', baseDraft },
+      session,
+    );
+
+    expect(result.widgets).toHaveLength(2);
+    expect(result.widgets[0]).toEqual(baseDraft.widgets[0]);
+    expect(result.widgets[1]).toMatchObject({
+      widgetType: 'attributes-table',
+      config: { entityScope: 'ALL', entityType: 'DEVICE' },
+      layout: { x: 0, y: 4, w: 12, h: 6 },
+    });
+  });
+
+  it('uses a telemetry wildcard when an all-sensors table has no valid columns', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      text: async () =>
+        JSON.stringify({
+          output: [
+            {
+              content: [
+                {
+                  type: 'output_text',
+                  text: JSON.stringify({
+                    title: 'Sensors',
+                    widgets: [{ widgetType: 'label', text: 'Hello' }],
+                  }),
+                },
+              ],
+            },
+          ],
+        }),
+    });
+
+    const result = await service.generate(
+      { prompt: 'Una tabla de todos los dispositivos' },
+      session,
+    );
+    expect(result.widgets[0].config).toMatchObject({
+      entityScope: 'ALL',
+      dataKeys: [{ source: 'TELEMETRY', key: '*' }],
+    });
+  });
+
+  it('keeps a telemetry column named explicitly in an all-sensors table request', async () => {
+    const result = await service.generate(
+      { prompt: 'Una tabla con todos los sensores y temperature' },
+      session,
+    );
+    expect(result.widgets[0].config).toMatchObject({
+      entityScope: 'ALL',
+      dataKeys: [{ source: 'TELEMETRY', key: 'temperature' }],
+    });
+  });
+
+  it('builds the requested temperature table when Groq returns malformed JSON', async () => {
+    prisma.aiProviderConnection.findFirst.mockResolvedValue({
+      id: 'connection-1',
+      provider: 'GROQ',
+      model: 'openai/gpt-oss-20b',
+      endpointUrl: null,
+      encryptedKey: service['encrypt']('test-api-key'),
+    });
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      text: async () => JSON.stringify({ choices: [{ message: { content: '{ invalid' } }] }),
+    });
+
+    const result = await service.generate(
+      { prompt: 'Quiero una tabla con todos mis devices mostrandome la temperatura' },
+      session,
+    );
+
+    expect(result.widgets).toEqual([
+      {
+        widgetType: 'attributes-table',
+        config: {
+          entityScope: 'ALL',
+          entityType: 'DEVICE',
+          dataKeys: [{ source: 'TELEMETRY', key: 'temperature' }],
+        },
+        layout: { x: 0, y: 0, w: 12, h: 6 },
+      },
+    ]);
+    expect(result.message).toContain('Una tabla');
+    expect(prisma.aiConversation.create).toHaveBeenCalledTimes(1);
+  });
+
   it('rejects malformed model output without saving a conversation or dashboard', async () => {
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,

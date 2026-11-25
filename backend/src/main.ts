@@ -8,9 +8,19 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { ConfigService } from './config/config.service';
+import { runWithThingsboardRequestContext } from './thingsboard/thingsboard-context';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
+
+  // Keep one mutable context for the full request. The auth guard resolves Redis
+  // asynchronously, so enterWith() inside the guard does not reach the controller.
+  app
+    .getHttpAdapter()
+    .getInstance()
+    .addHook('onRequest', (_request, _reply, done) => {
+      runWithThingsboardRequestContext(done);
+    });
 
   // Lets @WebSocketGateway() decorators (TelemetryGateway, Phase 3) run over the same
   // HTTP server via the `ws` library, instead of Fastify's own websocket plugin — keeps

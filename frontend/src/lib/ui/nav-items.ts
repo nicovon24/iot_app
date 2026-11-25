@@ -10,6 +10,7 @@ import {
   Palette,
   Settings,
   ShieldCheck,
+  MessageCircleMore,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -24,6 +25,8 @@ export interface NavItem {
   icon: LucideIcon;
   group: NavGroup;
   comingSoon?: boolean;
+  featured?: boolean;
+  requiresWrite?: boolean;
 }
 
 /**
@@ -40,6 +43,14 @@ export const NAV_ITEMS: NavItem[] = [
   // user-built ones. They were the same route until the gallery needed a home.
   { label: 'Overview', href: '/', icon: Home, group: 'MONITORING' },
   { label: 'Dashboards', href: '/dashboard', icon: LayoutDashboard, group: 'MONITORING' },
+  {
+    label: 'Asistente IA',
+    href: '/dashboard/new?ai=1',
+    icon: MessageCircleMore,
+    group: 'MONITORING',
+    featured: true,
+    requiresWrite: true,
+  },
   { label: 'Maps', href: '/map', icon: Map, group: 'MONITORING' },
   { label: 'Alarms', href: '/alarms', icon: Bell, group: 'MONITORING' },
 

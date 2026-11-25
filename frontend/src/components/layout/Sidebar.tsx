@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { LogOut, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
 import { NAV_GROUPS, NAV_ITEMS, logout } from '@/lib';
@@ -22,12 +22,15 @@ export function Sidebar({
   onClose?: () => void;
 }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
-  const { isSysadmin } = usePermissions();
+  const { canWrite, isSysadmin } = usePermissions();
   const { data: currentUser } = useCurrentUser();
   // Users management is sysadmin-only on the backend (RolesGuard) — hidden from the nav for
   // everyone else rather than shown and then 403ing on every action.
-  const visibleNavItems = NAV_ITEMS.filter((item) => item.href !== '/users' || isSysadmin);
+  const visibleNavItems = NAV_ITEMS.filter(
+    (item) => (!item.requiresWrite || canWrite) && (item.href !== '/users' || isSysadmin),
+  );
   const [expanded, setExpanded] = useState(true);
   const isExpanded = mobile ? true : expanded;
 
@@ -116,21 +119,29 @@ export function Sidebar({
 
               {items.map((item) => {
                 const Icon = item.icon;
-                const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                const aiRouteActive =
+                  pathname === '/dashboard/new' && searchParams.get('ai') === '1';
+                const isActive = item.featured
+                  ? aiRouteActive
+                  : item.href === '/dashboard' && aiRouteActive
+                    ? false
+                    : pathname === item.href || pathname.startsWith(`${item.href}/`);
 
                 const row = (
                   <div
-                    className={`flex h-10 items-center gap-[11px] px-[10px] transition-colors duration-fast ease-out ${
-                      isExpanded ? '' : 'justify-center'
-                    } ${
+                    className={`flex items-center gap-[11px] px-[10px] transition-colors duration-fast ease-out ${
+                      item.featured ? 'my-1 h-12 border border-accent-strong/60' : 'h-10'
+                    } ${isExpanded ? '' : 'justify-center'} ${
                       item.comingSoon
                         ? 'cursor-not-allowed text-disabled'
                         : isActive
                           ? 'bg-accent-strong font-bold text-on-accent'
-                          : 'text-nav hover:bg-tint-strong hover:text-heading'
+                          : item.featured
+                            ? 'bg-tint-strong font-semibold text-accent hover:bg-accent-strong hover:text-on-accent'
+                            : 'text-nav hover:bg-tint-strong hover:text-heading'
                     }`}
                   >
-                    <Icon size={16} strokeWidth={1.75} className="shrink-0" />
+                    <Icon size={item.featured ? 21 : 16} strokeWidth={1.75} className="shrink-0" />
                     {isExpanded && (
                       <span className="flex-1 truncate text-[13.5px] leading-none">
                         {item.label}

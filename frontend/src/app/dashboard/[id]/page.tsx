@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Layers, Maximize2, Pencil, Plus, Save, ScrollText, Sparkles } from 'lucide-react';
 import type { Layout } from 'react-grid-layout';
 import { ApiError, apiClient } from '@/lib';
@@ -41,8 +41,10 @@ function toStaged(widgets: DashboardWidget[]): StagedWidget[] {
 
 export default function DashboardDetailPage() {
   const params = useParams<{ id: string }>();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const isNew = params.id === 'new';
+  const aiEntryRequested = isNew && searchParams.get('ai') === '1';
   const { canWrite } = usePermissions();
 
   const dashboardQuery = useDashboard(isNew ? undefined : params.id);
@@ -54,7 +56,7 @@ export default function DashboardDetailPage() {
   const [staged, setStaged] = useState<StagedWidget[]>([]);
   const [panelOpen, setPanelOpen] = useState(false);
   const [bulkPanelOpen, setBulkPanelOpen] = useState(false);
-  const [aiPanelOpen, setAiPanelOpen] = useState(false);
+  const [aiPanelOpen, setAiPanelOpen] = useState(aiEntryRequested);
   const [aiProposal, setAiProposal] = useState<{
     previousTitle: string;
     previousWidgets: StagedWidget[];
@@ -68,6 +70,12 @@ export default function DashboardDetailPage() {
   const [timeWindow, setTimeWindow] = useState<DashboardTimeWindow | null>(null);
   const [layoutMode, setLayoutMode] = useState<DashboardLayoutMode>('SCROLL');
   const [loadedFrom, setLoadedFrom] = useState<Dashboard | null>(null);
+
+  useEffect(() => {
+    // A sidebar visit can reuse this route component when coming from another dashboard.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setAiPanelOpen(aiEntryRequested);
+  }, [aiEntryRequested, params.id]);
 
   useEffect(() => {
     if (!dashboardQuery.data) return;
@@ -87,12 +95,20 @@ export default function DashboardDetailPage() {
   }, [dashboardQuery.data]);
 
   function handleLayoutChange(layout: Layout[]) {
-    setStaged((prev) =>
-      prev.map((w) => {
+    setStaged((prev) => {
+      const changed = prev.some((w) => {
+        const l = layout.find((li) => li.i === w.id);
+        return (
+          l &&
+          (w.layout.x !== l.x || w.layout.y !== l.y || w.layout.w !== l.w || w.layout.h !== l.h)
+        );
+      });
+      if (!changed) return prev;
+      return prev.map((w) => {
         const l = layout.find((li) => li.i === w.id);
         return l ? { ...w, layout: { x: l.x, y: l.y, w: l.w, h: l.h } } : w;
-      }),
-    );
+      });
+    });
   }
 
   function handleAddWidget(newWidget: NewWidgetInput) {
@@ -375,7 +391,7 @@ export default function DashboardDetailPage() {
       />
       <AiDashboardPanel
         key={params.id}
-        isOpen={aiPanelOpen}
+        isOpen={canWrite && aiPanelOpen}
         onClose={() => setAiPanelOpen(false)}
         onDraft={handleAiDraft}
         dashboardId={isNew ? undefined : params.id}

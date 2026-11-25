@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { EntityDataTableWidget } from '@/widgets';
 import { TimeseriesTableWidget } from '@/widgets';
 import { useWidgetAction } from '../widget-config/widget-actions';
@@ -50,10 +50,14 @@ export function TimeseriesTableCell({ config }: { config: EntityWidgetConfig }) 
 export function AttributesCell({ config }: { config: EntityWidgetConfig }) {
   const all = isAllScope(config);
   const entityType = config.entityType ?? 'DEVICE';
-  const { entities, isLoading, notFound } = useDatasourceEntities(config);
+  const [page, setPage] = useState(0);
+  const { entities, isLoading, notFound, totalElements } = useDatasourceEntities(
+    config,
+    all ? { page, pageSize: MAX_ROWS } : undefined,
+  );
 
   const onEntityClick = useWidgetAction(config);
-  const shown = all ? entities.slice(0, MAX_ROWS) : entities;
+  const shown = entities;
   const table = useEntityTableData(shown, entityType, config.dataKeys);
 
   if (notFound) return <WidgetUnavailable />;
@@ -67,7 +71,10 @@ export function AttributesCell({ config }: { config: EntityWidgetConfig }) {
       values={table.valuesByEntity}
       // One entity has room to list its keys down the page; many entities need them as columns.
       mode={all ? 'MATRIX' : 'LIST'}
-      omittedCount={entities.length - shown.length}
+      page={all ? page : undefined}
+      pageSize={MAX_ROWS}
+      totalElements={all ? totalElements : undefined}
+      onPageChange={setPage}
       isLoading={table.isLoading}
       onEntityClick={onEntityClick}
     />

@@ -19,6 +19,10 @@ export interface EntityDataTableWidgetProps {
    */
   mode: 'LIST' | 'MATRIX';
   omittedCount?: number;
+  page?: number;
+  pageSize?: number;
+  totalElements?: number;
+  onPageChange?: (page: number) => void;
   isLoading?: boolean;
   title?: string;
   /** When set, MATRIX rows become clickable. Absent = inert rows, exactly as before. */
@@ -38,10 +42,12 @@ const SCOPE_SHORT: Record<string, string> = {
 
 function Shell({
   children,
+  footer,
   note,
   title,
 }: {
   children: React.ReactNode;
+  footer?: React.ReactNode;
   note?: string;
   title?: string;
 }) {
@@ -52,6 +58,11 @@ function Shell({
       )}
       {note && <p className="shrink-0 border-b border-border px-4 py-2 t-meta">{note}</p>}
       <div className="table-scroll min-h-0 flex-1 overflow-auto">{children}</div>
+      {footer && (
+        <div className="pointer-events-auto flex shrink-0 items-center justify-end gap-2 border-t border-border px-4 py-2">
+          {footer}
+        </div>
+      )}
     </div>
   );
 }
@@ -83,20 +94,43 @@ export function EntityDataTableWidget({
   values,
   mode,
   omittedCount = 0,
+  page,
+  pageSize = 20,
+  totalElements,
+  onPageChange,
   isLoading,
   title,
   onEntityClick,
 }: EntityDataTableWidgetProps) {
   if (isLoading && rows.length === 0) return <Centered text="Loading…" />;
-  if (rows.length === 0) return <Centered text="No entities to show" />;
+  if (rows.length === 0) {
+    if (page !== undefined && page > 0 && onPageChange) {
+      return (
+        <div className="glass-card flex h-full flex-col items-center justify-center gap-3">
+          <p className="text-sm text-muted">No entities on this page</p>
+          <button
+            type="button"
+            className="rounded border border-border px-3 py-1 text-sm"
+            onClick={() => onPageChange(page - 1)}
+          >
+            Anterior
+          </button>
+        </div>
+      );
+    }
+    return <Centered text="No entities to show" />;
+  }
+  if (isLoading && columns.length === 0) return <Centered text="Loading…" />;
   // Kept audience-neutral rather than "pick columns in the Columns tab": this renders for
   // read-only dashboard viewers too, who have no edit panel to act on that instruction.
   if (columns.length === 0) return <Centered text="No columns configured for this table" />;
 
   const note =
-    omittedCount > 0
-      ? `Showing ${rows.length} of ${rows.length + omittedCount} entities`
-      : undefined;
+    page !== undefined && totalElements !== undefined
+      ? `Showing ${totalElements === 0 ? 0 : page * pageSize + 1}-${Math.min((page + 1) * pageSize, totalElements)} of ${totalElements} entities`
+      : omittedCount > 0
+        ? `Showing ${rows.length} of ${rows.length + omittedCount} entities`
+        : undefined;
 
   if (mode === 'LIST') {
     const entityId = rows[0].id;
@@ -138,7 +172,38 @@ export function EntityDataTableWidget({
   }
 
   return (
-    <Shell note={note} title={title}>
+    <Shell
+      note={note}
+      title={title}
+      footer={
+        page !== undefined &&
+        totalElements !== undefined &&
+        onPageChange &&
+        totalElements > pageSize ? (
+          <>
+            <button
+              type="button"
+              className="rounded border border-border px-2 py-1 text-sm disabled:opacity-40"
+              disabled={page === 0}
+              onClick={() => onPageChange(page - 1)}
+            >
+              Anterior
+            </button>
+            <span className="text-sm text-muted">
+              {page + 1} / {Math.ceil(totalElements / pageSize)}
+            </span>
+            <button
+              type="button"
+              className="rounded border border-border px-2 py-1 text-sm disabled:opacity-40"
+              disabled={(page + 1) * pageSize >= totalElements}
+              onClick={() => onPageChange(page + 1)}
+            >
+              Siguiente
+            </button>
+          </>
+        ) : undefined
+      }
+    >
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr>

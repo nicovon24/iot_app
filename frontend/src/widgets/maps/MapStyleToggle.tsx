@@ -5,9 +5,11 @@ import type { MapTileStyle } from '@/lib';
 export interface MapStyleToggleProps {
   value: MapTileStyle;
   onChange: (style: MapTileStyle) => void;
+  streetOnly?: boolean;
 }
 
-export function MapStyleToggle({ value, onChange }: MapStyleToggleProps) {
+export function MapStyleToggle({ value, onChange, streetOnly = false }: MapStyleToggleProps) {
+  if (streetOnly) return null;
   return (
     /* .map-style-toggle is hidden by globals.css while a dashboard is in edit mode — it sits in
      * the same corner as the widget toolbar, and it's not usable there anyway.

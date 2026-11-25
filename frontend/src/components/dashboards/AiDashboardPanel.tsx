@@ -66,6 +66,23 @@ export function draftChanges(current: Draft['widgets'], proposed: Draft['widgets
   return { added, changed, moved, removed: current.length - matched.size };
 }
 
+function describeDraftWidget(widget: Draft['widgets'][number]): string {
+  if (widget.widgetType !== 'attributes-table' || widget.config.entityScope !== 'ALL') {
+    return `${widget.widgetType} · ${String(widget.config.title ?? widget.config.telemetryKey ?? 'widget')}`;
+  }
+  const columns = Array.isArray(widget.config.dataKeys)
+    ? widget.config.dataKeys
+        .map((entry) => {
+          if (!entry || typeof entry !== 'object' || !('key' in entry)) return '';
+          return entry.key === '*' ? 'claves detectadas en cada página' : String(entry.key);
+        })
+        .filter(Boolean)
+        .join(', ')
+    : 'sin columnas';
+  const entityLabel = widget.config.entityType === 'ASSET' ? 'activos' : 'dispositivos';
+  return `Tabla de últimas lecturas · filas: todos los ${entityLabel} · columnas: ${columns}`;
+}
+
 export function AiDashboardPanel({
   isOpen,
   onClose,
@@ -99,7 +116,7 @@ export function AiDashboardPanel({
   const [maxOutputTokens, setMaxOutputTokens] = useState(2000);
   const [remainingRequests, setRemainingRequests] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
-  const [view, setView] = useState<'chat' | 'settings'>('chat');
+  const [view, setView] = useState<'chat' | 'settings' | 'help'>('chat');
   const [error, setError] = useState('');
   const [editorDraftApplied, setEditorDraftApplied] = useState(false);
   const changes = draft ? draftChanges(currentWidgets, draft.widgets) : null;
@@ -385,11 +402,52 @@ export function AiDashboardPanel({
           >
             Configuración
           </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={view === 'help'}
+            onClick={() => setView('help')}
+            className={`rounded-md px-3 py-2 text-sm ${view === 'help' ? 'bg-tint font-semibold text-heading' : 'text-muted'}`}
+          >
+            Cómo funciona
+          </button>
         </div>
         <p className="text-sm text-muted">
           La IA recibe el catálogo de widgets, dispositivos y claves de telemetría. Revisá el
           borrador antes de aplicarlo al editor.
         </p>
+        {view === 'help' && (
+          <section className="space-y-4 rounded-md border border-border p-4 text-sm text-muted">
+            <div>
+              <h3 className="font-semibold text-heading">Crear o editar un dashboard</h3>
+              <ol className="mt-2 list-inside list-decimal space-y-1">
+                <li>Configurá una conexión con tu proveedor, modelo y API key.</li>
+                <li>Describí los widgets, dispositivos y claves de telemetría que querés ver.</li>
+                <li>Revisá la propuesta y pedí ajustes en la conversación.</li>
+                <li>Aplicá el borrador al editor y guardá el dashboard cuando esté correcto.</li>
+              </ol>
+            </div>
+            <div>
+              <h3 className="font-semibold text-heading">Modelo y uso</h3>
+              <p className="mt-1">
+                Podés escribir el ID del modelo que prefieras dentro de un proveedor compatible o
+                consultar los modelos disponibles. También hay conexiones con URL autorizada por el
+                administrador. La API key queda cifrada en el servidor y podés definir límites de
+                solicitudes por día y tokens de salida.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-heading">Alcance y limitaciones</h3>
+              <p className="mt-1">
+                El asistente usa el catálogo de widgets, dispositivos y claves de telemetría de esta
+                instancia. No recibe los valores actuales ni el historial de mediciones. Puede
+                proponer un widget equivocado o una configuración incompleta: esta función está en
+                prueba y sigue en desarrollo. La vista previa permite revisar los cambios; nada se
+                guarda sin que apliques el borrador y guardes el dashboard.
+              </p>
+            </div>
+          </section>
+        )}
         {view === 'settings' && (
           <section className="space-y-3 rounded-md border border-border p-3">
             <h3 className="text-sm font-semibold text-heading">Conexiones de IA</h3>
@@ -664,12 +722,16 @@ export function AiDashboardPanel({
             </p>
             <ul className="list-inside list-disc text-sm text-muted">
               {draft.widgets.map((item, index) => (
-                <li key={index}>
-                  {item.widgetType} ·{' '}
-                  {String(item.config.title ?? item.config.telemetryKey ?? 'widget')}
-                </li>
+                <li key={index}>{describeDraftWidget(item)}</li>
               ))}
             </ul>
+            {draft.widgets.some(
+              (item) => item.widgetType === 'attributes-table' && item.config.entityScope === 'ALL',
+            ) && (
+              <p className="text-xs text-muted">
+                La tabla muestra 20 dispositivos por página y permite recorrer el resto.
+              </p>
+            )}
             <p className="text-xs text-muted">
               La propuesta todavía no está guardada. Podés seguir conversando o aplicarla al editor.
             </p>

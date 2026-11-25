@@ -25,6 +25,7 @@ export interface ValueMapWidgetProps {
   telemetryKey?: string;
   unit?: string;
   onEntityClick?: (entityId: string) => void;
+  streetOnly?: boolean;
 }
 
 const DEFAULT_CENTER: [number, number] = [20, 0];
@@ -71,6 +72,7 @@ export function ValueMapWidget({
   telemetryKey,
   unit,
   onEntityClick,
+  streetOnly = false,
 }: ValueMapWidgetProps) {
   const [tileStyle, setTileStyle] = useState<MapTileStyle>('color');
 
@@ -91,7 +93,7 @@ export function ValueMapWidget({
       )}
 
       <div className="relative min-h-0 flex-1">
-        <MapStyleToggle value={tileStyle} onChange={setTileStyle} />
+        <MapStyleToggle value={tileStyle} onChange={setTileStyle} streetOnly={streetOnly} />
         <MapContainer center={DEFAULT_CENTER} zoom={DEFAULT_ZOOM} className="h-full w-full">
           <TileLayer attribution={tile.attribution} url={tile.url} />
           <MapAutoResize />
