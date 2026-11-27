@@ -39,5 +39,5 @@ export function formatMaybeTimestamp(raw: string | undefined): string | undefine
   if (raw === undefined) return undefined;
   const num = Number(raw);
   if (!Number.isInteger(num) || num < EPOCH_MS_MIN || num > EPOCH_MS_MAX) return undefined;
-  return new Date(num).toLocaleString();
+  return new Date(num).toLocaleString('en-US');
 }

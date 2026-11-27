@@ -203,7 +203,7 @@ export default function DashboardDetailPage() {
               },
             );
           } catch (error) {
-            toastError('El dashboard se guardó, pero no se pudo asociar el historial de IA', error);
+            toastError('Dashboard saved, but AI history could not be linked', error);
           }
         }
         toastSuccess('Dashboard created');
@@ -313,7 +313,7 @@ export default function DashboardDetailPage() {
                   onClick={() => setAiPanelOpen(true)}
                   className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 t-field hover:bg-tint"
                 >
-                  <Sparkles size={15} /> Crear con IA
+                  <Sparkles size={15} /> Create with AI
                 </button>
               </>
             )}
@@ -341,9 +341,9 @@ export default function DashboardDetailPage() {
       {aiProposal && (
         <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-accent px-3 py-2 text-sm text-muted">
           <span>
-            Propuesta de IA sin guardar · {aiProposal.added} agregados · {aiProposal.changed}{' '}
-            cambiados · {aiProposal.moved} movidos · {aiProposal.removed} quitados. Revisá los
-            widgets antes de guardar.
+            Unsaved AI proposal · {aiProposal.added} added · {aiProposal.changed} changed ·{' '}
+            {aiProposal.moved} moved · {aiProposal.removed} removed. Review the widgets before
+            saving.
           </span>
           <button
             type="button"
@@ -354,7 +354,7 @@ export default function DashboardDetailPage() {
             }}
             className="text-heading underline"
           >
-            Descartar propuesta
+            Discard proposal
           </button>
         </div>
       )}

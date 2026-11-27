@@ -91,7 +91,7 @@ export function MultiValueTileWidget({
                   {display ?? '—'}
                 </motion.span>
                 <span className="text-[10px] text-faint">
-                  {entry.ts ? new Date(entry.ts).toLocaleTimeString() : 'No data'}
+                  {entry.ts ? new Date(entry.ts).toLocaleTimeString('en-US') : 'No data'}
                 </span>
               </div>
             );

@@ -48,7 +48,7 @@ export function ValueTileWidget({ label, value, unit, ts, sparklineData }: Value
         </div>
       )}
       <span className="t-meta">
-        {ts ? `Updated ${new Date(ts).toLocaleTimeString()}` : 'Waiting for data…'}
+        {ts ? `Updated ${new Date(ts).toLocaleTimeString('en-US')}` : 'Waiting for data…'}
       </span>
     </div>
   );

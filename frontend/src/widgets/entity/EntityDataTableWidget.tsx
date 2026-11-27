@@ -160,7 +160,7 @@ export function EntityDataTableWidget({
                     {display ?? <span className="text-faint">—</span>}
                   </td>
                   <td className="px-3 py-2 text-faint">
-                    {cell?.ts ? new Date(cell.ts).toLocaleString() : '—'}
+                    {cell?.ts ? new Date(cell.ts).toLocaleString('en-US') : '—'}
                   </td>
                 </tr>
               );

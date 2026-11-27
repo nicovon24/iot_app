@@ -68,7 +68,7 @@ export function TimeseriesTableWidget({
             {rows.map((row) => (
               <tr key={row.ts} className="border-b border-border last:border-b-0">
                 <td className="sticky left-0 z-10 whitespace-nowrap bg-surface px-3 py-2 font-medium text-heading">
-                  {new Date(row.ts).toLocaleString()}
+                  {new Date(row.ts).toLocaleString('en-US')}
                 </td>
                 {keys.map((key) => {
                   const display = formatTelemetryValue(row.values[key]);

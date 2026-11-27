@@ -19,7 +19,7 @@ import {
   Zap,
   type LucideIcon,
 } from 'lucide-react';
-import { login } from '@/lib';
+import { login, startDemoSession } from '@/lib';
 import { ApiError } from '@/lib';
 
 /**
@@ -71,6 +71,11 @@ export default function LoginPage() {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  function handleDemo() {
+    startDemoSession();
+    window.location.assign('/');
   }
 
   // One border colour drives both fields, so a rejected credential marks the pair rather than
@@ -136,12 +141,12 @@ export default function LoginPage() {
             <form className="flex flex-1 flex-col" onSubmit={handleSubmit} noValidate>
               <div className="mb-5 flex flex-col gap-[9px]">
                 <label htmlFor="thingsboardUrl" className="t-field">
-                  Instancia de ThingsBoard
+                  ThingsBoard instance
                 </label>
                 <input
                   id="thingsboardUrl"
                   type="url"
-                  placeholder="https://tu-instancia.example.com"
+                  placeholder="https://your-instance.example.com"
                   value={thingsboardUrl}
                   onChange={(e) => setThingsboardUrl(e.target.value)}
                   required
@@ -236,6 +241,18 @@ export default function LoginPage() {
                   {submitting ? 'Logging in…' : 'Log in'}
                   <ArrowRight size={17} strokeWidth={1.75} className="ml-auto" />
                 </button>
+                <button
+                  type="button"
+                  onClick={handleDemo}
+                  className="mt-3 flex h-[52px] w-full items-center border border-accent-strong/60 px-[18px] text-xs font-extrabold uppercase tracking-[0.12em] text-accent transition-colors hover:bg-tint-strong"
+                >
+                  Enter demo mode
+                  <ArrowRight size={17} strokeWidth={1.75} className="ml-auto" />
+                </button>
+                <p className="mt-3 text-xs leading-relaxed text-muted">
+                  Explore the console and assistant with simulated data. No account or API key
+                  needed.
+                </p>
               </div>
             </form>
           </div>
@@ -250,7 +267,7 @@ export default function LoginPage() {
              * box aligns while the letters sit low. Pulling the block up by that much is what
              * makes the claim and the form's own heading read as sitting on one line. */}
             <p className="-mt-[2px] w-[324px] text-[30px] font-extrabold leading-[1.15] tracking-[-0.03em] text-muted text-pretty">
-              Todos tus dispositivos, en una sola consola.
+              All your devices in one console.
             </p>
 
             <div className="grid w-max grid-cols-3">

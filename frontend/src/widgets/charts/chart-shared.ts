@@ -9,7 +9,7 @@ export interface ChartSeries {
 }
 
 export function formatTime(ts: number) {
-  return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return new Date(ts).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 }
 
 /** Axis ticks stay unit-less — repeating a unit down every Y-axis tick is chartjunk and wastes

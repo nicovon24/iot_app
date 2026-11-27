@@ -1,4 +1,5 @@
 import { endSession, getSessionToken } from '../session';
+import { demoRequest, isDemoSession } from '@/lib/demo';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001';
 
@@ -19,6 +20,7 @@ async function request<T>(
   path: string,
   body?: unknown,
 ): Promise<T> {
+  if (isDemoSession()) return (await demoRequest(method, path, body)) as T;
   const headers: Record<string, string> = {};
   const token = getSessionToken();
   if (token) headers['x-session-token'] = token;

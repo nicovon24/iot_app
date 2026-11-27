@@ -539,7 +539,7 @@ export class DashboardAiService {
       throw new BadRequestException('No room to add a fleet table below existing widgets');
     const instructions = [
       'Return only a JSON dashboard draft with title, explanation and widgets array.',
-      'Explanation is a short Spanish summary of your choices, with no invented measurements.',
+      'Write the dashboard title, widget titles and explanation in English. Keep the explanation short and do not invent measurements.',
       'For new widgets use entityIndex, widgetType and optional title/layout.',
       'Supported widget types: ' + WIDGET_TYPES.join(', ') + '.',
       'Single-key types: value-tile, line-chart, bar-chart, gauge, battery, rssi, calendar-heatmap, value-map; include telemetryKey and entityIndex.',
@@ -601,7 +601,7 @@ export class DashboardAiService {
       if (!allDevicesTable) throw new BadGatewayException('AI returned an invalid dashboard draft');
       // The requested fleet table is assembled from the authorized catalog below.
       // A malformed model response must not block that deterministic draft.
-      parsed = { title: 'Tabla de dispositivos', widgets: [] };
+      parsed = { title: 'Device table', widgets: [] };
     }
     if (allDevicesTable) {
       const deviceKeys = [
@@ -642,7 +642,7 @@ export class DashboardAiService {
           layout: { x: 0, y: tableY, w: 12, h: 6 },
         },
       ];
-      parsed.explanation = `Una tabla de últimas lecturas para todos los dispositivos visibles, con ${keys.length ? 'las columnas seleccionadas' : 'las claves de telemetría detectadas en cada página'}.`;
+      parsed.explanation = `A latest readings table for all visible devices, with ${keys.length ? 'the selected columns' : 'telemetry keys detected on each page'}.`;
     }
     const reused = parsed.widgets.flatMap((item) =>
       item.existingWidgetIndex === undefined ? [] : [item.existingWidgetIndex],

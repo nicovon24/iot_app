@@ -267,7 +267,7 @@ export function CalendarHeatmapWidget({
 /** A cell is a small square with no label of its own, so the tooltip spells the day out in
  * full — weekday included, since "was that a Sunday?" is exactly what the grid invites. */
 function formatCellDate(ts: number) {
-  return new Date(ts).toLocaleDateString(undefined, {
+  return new Date(ts).toLocaleDateString('en-US', {
     weekday: 'short',
     year: 'numeric',
     month: 'short',

@@ -73,7 +73,9 @@ export function AttributesTableWidget({
                     <TableRow key={attribute.key}>
                       <TableCell className="font-medium text-heading">{attribute.key}</TableCell>
                       <TableCell>{String(attribute.value)}</TableCell>
-                      <TableCell>{new Date(attribute.lastUpdateTs).toLocaleString()}</TableCell>
+                      <TableCell>
+                        {new Date(attribute.lastUpdateTs).toLocaleString('en-US')}
+                      </TableCell>
                     </TableRow>
                   )}
                 </TableBody>

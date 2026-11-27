@@ -44,7 +44,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Overview', href: '/', icon: Home, group: 'MONITORING' },
   { label: 'Dashboards', href: '/dashboard', icon: LayoutDashboard, group: 'MONITORING' },
   {
-    label: 'Asistente IA',
+    label: 'AI assistant',
     href: '/dashboard/new?ai=1',
     icon: MessageCircleMore,
     group: 'MONITORING',

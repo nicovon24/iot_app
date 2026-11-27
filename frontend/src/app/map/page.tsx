@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { PageHeader, StatusPill } from '@/components';
+import { useCurrentUser } from '@/hooks';
 import type { FleetEntityType } from '@/widgets/maps/fleet-positions';
 
 // Leaflet touches `window` at module scope, so none of these may load during SSR.
@@ -28,13 +29,18 @@ const MapStatusOverlay = dynamic(() => import('@/widgets/maps').then((m) => m.Ma
  */
 export default function MapPage() {
   const [scope, setScope] = useState<FleetEntityType>('DEVICE');
+  const { data: currentUser } = useCurrentUser();
 
   return (
     <div className="flex h-full w-full flex-col">
       <PageHeader
         title="Maps"
         description="Every device and asset reporting a position, clustered by proximity."
-        actions={<StatusPill label="Fleet · live" />}
+        actions={
+          <StatusPill
+            label={currentUser?.email === 'demo@iotarg.app' ? 'Fleet · simulated' : 'Fleet · live'}
+          />
+        }
       />
 
       <div className="rule-2 -mx-10 mt-[30px] flex min-h-0 flex-1">
