@@ -34,7 +34,7 @@ export function GaugeShell({ label, value, unit, ts, children }: GaugeShellProps
           ) : null}
         </span>
         <span className="t-meta">
-          {ts ? new Date(ts).toLocaleTimeString() : 'Waiting for data…'}
+          {ts ? new Date(ts).toLocaleTimeString('en-US') : 'Waiting for data…'}
         </span>
       </div>
     </div>

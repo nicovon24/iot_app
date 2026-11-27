@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { apiClient, toastError, toastSuccess } from '@/lib';
+import { useEffect, useState, useSyncExternalStore } from 'react';
+import { apiClient, isDemoSession, toastError, toastSuccess } from '@/lib';
 import type { DashboardWidgetLayout } from '@/types';
 import {
   Dialog,
@@ -38,9 +38,10 @@ const providers: { value: Provider; label: string }[] = [
   { value: 'GEMINI', label: 'Gemini' },
   { value: 'GROQ', label: 'Groq' },
   { value: 'OPENROUTER', label: 'OpenRouter' },
-  { value: 'CUSTOM', label: 'URL autorizada' },
+  { value: 'CUSTOM', label: 'Approved URL' },
 ];
 const fieldClass = 'mt-1 w-full rounded-md border border-border bg-surface px-3 py-2 text-heading';
+const subscribeToDemoMode = () => () => {};
 
 export function draftChanges(current: Draft['widgets'], proposed: Draft['widgets']) {
   const matched = new Set<number>();
@@ -74,13 +75,13 @@ function describeDraftWidget(widget: Draft['widgets'][number]): string {
     ? widget.config.dataKeys
         .map((entry) => {
           if (!entry || typeof entry !== 'object' || !('key' in entry)) return '';
-          return entry.key === '*' ? 'claves detectadas en cada página' : String(entry.key);
+          return entry.key === '*' ? 'keys detected on each page' : String(entry.key);
         })
         .filter(Boolean)
         .join(', ')
-    : 'sin columnas';
-  const entityLabel = widget.config.entityType === 'ASSET' ? 'activos' : 'dispositivos';
-  return `Tabla de últimas lecturas · filas: todos los ${entityLabel} · columnas: ${columns}`;
+    : 'no columns';
+  const entityLabel = widget.config.entityType === 'ASSET' ? 'assets' : 'devices';
+  return `Latest readings table · rows: all ${entityLabel} · columns: ${columns}`;
 }
 
 export function AiDashboardPanel({
@@ -98,6 +99,7 @@ export function AiDashboardPanel({
   currentTitle: string;
   currentWidgets: Draft['widgets'];
 }) {
+  const demo = useSyncExternalStore(subscribeToDemoMode, isDemoSession, () => false);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [history, setHistory] = useState<ConversationSummary[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -135,7 +137,7 @@ export function AiDashboardPanel({
         setDailyRequests(nextSettings.limits.dailyRequests);
         setMaxOutputTokens(nextSettings.limits.maxOutputTokens);
       })
-      .catch((error) => toastError('No se pudo cargar el asistente', error));
+      .catch((error) => toastError('Could not load the assistant', error));
   }, [isOpen, dashboardId]);
 
   function close() {
@@ -156,9 +158,9 @@ export function AiDashboardPanel({
         ...(current.endpointUrl ? { endpointUrl: current.endpointUrl } : {}),
       });
       setReplacementKey('');
-      toastSuccess('Clave reemplazada');
+      toastSuccess('API key replaced');
     } catch (error) {
-      toastError('No se pudo reemplazar la clave', error);
+      toastError('Could not replace the API key', error);
     } finally {
       setBusy(false);
     }
@@ -179,9 +181,9 @@ export function AiDashboardPanel({
       setSelectedConnection(connection.id);
       setSelectedModel(connection.model);
       setApiKey('');
-      toastSuccess('Conexión guardada');
+      toastSuccess('Connection saved');
     } catch (error) {
-      toastError('No se pudo guardar la conexión', error);
+      toastError('Could not save the connection', error);
     } finally {
       setBusy(false);
     }
@@ -202,9 +204,9 @@ export function AiDashboardPanel({
       );
       setSelectedConnection(remaining[0]?.id ?? '');
       setSelectedModel(remaining[0]?.model ?? '');
-      toastSuccess('Conexión eliminada');
+      toastSuccess('Connection deleted');
     } catch (error) {
-      toastError('No se pudo eliminar la conexión', error);
+      toastError('Could not delete the connection', error);
     } finally {
       setBusy(false);
     }
@@ -218,9 +220,9 @@ export function AiDashboardPanel({
         maxOutputTokens,
       });
       setSettings((current) => (current ? { ...current, limits } : current));
-      toastSuccess('Límites guardados');
+      toastSuccess('Limits saved');
     } catch (error) {
-      toastError('No se pudieron guardar los límites', error);
+      toastError('Could not save the limits', error);
     } finally {
       setBusy(false);
     }
@@ -234,7 +236,7 @@ export function AiDashboardPanel({
         await apiClient.get<string[]>(`/dashboards/ai-settings/${selectedConnection}/models`),
       );
     } catch (error) {
-      toastError('No se pudo consultar modelos; podés escribir el ID', error);
+      toastError('Could not load models; you can enter the model ID', error);
     } finally {
       setBusy(false);
     }
@@ -260,9 +262,9 @@ export function AiDashboardPanel({
             }
           : value,
       );
-      toastSuccess('Modelo actualizado');
+      toastSuccess('Model updated');
     } catch (error) {
-      toastError('No se pudo actualizar el modelo', error);
+      toastError('Could not update the model', error);
     } finally {
       setBusy(false);
     }
@@ -296,7 +298,7 @@ export function AiDashboardPanel({
       );
       setEditorDraftApplied(false);
     } catch (error) {
-      toastError('No se pudo abrir la conversación', error);
+      toastError('Could not open the conversation', error);
     } finally {
       setBusy(false);
     }
@@ -311,9 +313,9 @@ export function AiDashboardPanel({
       setConversationId('');
       setMessages([]);
       setDraft(null);
-      toastSuccess('Conversación eliminada');
+      toastSuccess('Conversation deleted');
     } catch (error) {
-      toastError('No se pudo eliminar la conversación', error);
+      toastError('Could not delete the conversation', error);
     } finally {
       setBusy(false);
     }
@@ -347,7 +349,7 @@ export function AiDashboardPanel({
           id: `assistant-${Date.now()}`,
           role: 'ASSISTANT',
           content:
-            result.message ?? `Borrador listo: ${result.title} (${result.widgets.length} widgets).`,
+            result.message ?? `Draft ready: ${result.title} (${result.widgets.length} widgets).`,
         },
       ]);
       setDraft(result);
@@ -365,8 +367,8 @@ export function AiDashboardPanel({
         ...current.filter((item) => item.id !== result.conversationId),
       ]);
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'No se pudo generar el borrador');
-      toastError('No se pudo generar el borrador', error);
+      setError(error instanceof Error ? error.message : 'Could not generate the draft');
+      toastError('Could not generate the draft', error);
     } finally {
       setBusy(false);
     }
@@ -375,14 +377,14 @@ export function AiDashboardPanel({
   return (
     <Dialog isOpen={isOpen} onClose={close} widthClassName="max-w-3xl">
       <DialogHeader>
-        <DialogTitle>Asistente de dashboards</DialogTitle>
+        <DialogTitle>Dashboard assistant</DialogTitle>
         <DialogCloseButton />
       </DialogHeader>
       <DialogBody className="max-h-[75vh] space-y-5 overflow-y-auto">
         <div
           className="flex gap-2 border-b border-border pb-2"
           role="tablist"
-          aria-label="Vista del asistente"
+          aria-label="Assistant view"
         >
           <button
             type="button"
@@ -391,7 +393,7 @@ export function AiDashboardPanel({
             onClick={() => setView('chat')}
             className={`rounded-md px-3 py-2 text-sm ${view === 'chat' ? 'bg-tint font-semibold text-heading' : 'text-muted'}`}
           >
-            Conversación
+            Conversation
           </button>
           <button
             type="button"
@@ -400,7 +402,7 @@ export function AiDashboardPanel({
             onClick={() => setView('settings')}
             className={`rounded-md px-3 py-2 text-sm ${view === 'settings' ? 'bg-tint font-semibold text-heading' : 'text-muted'}`}
           >
-            Configuración
+            Settings
           </button>
           <button
             type="button"
@@ -409,48 +411,57 @@ export function AiDashboardPanel({
             onClick={() => setView('help')}
             className={`rounded-md px-3 py-2 text-sm ${view === 'help' ? 'bg-tint font-semibold text-heading' : 'text-muted'}`}
           >
-            Cómo funciona
+            How it works
           </button>
         </div>
         <p className="text-sm text-muted">
-          La IA recibe el catálogo de widgets, dispositivos y claves de telemetría. Revisá el
-          borrador antes de aplicarlo al editor.
+          {demo
+            ? 'Demo: the assistant uses local rules and simulated data. It does not call an AI model or require an API key. Review the draft before applying it.'
+            : 'The AI receives the widget, device, and telemetry key catalogs. Review the draft before applying it to the editor.'}
         </p>
         {view === 'help' && (
           <section className="space-y-4 rounded-md border border-border p-4 text-sm text-muted">
             <div>
-              <h3 className="font-semibold text-heading">Crear o editar un dashboard</h3>
+              <h3 className="font-semibold text-heading">Create or edit a dashboard</h3>
               <ol className="mt-2 list-inside list-decimal space-y-1">
-                <li>Configurá una conexión con tu proveedor, modelo y API key.</li>
-                <li>Describí los widgets, dispositivos y claves de telemetría que querés ver.</li>
-                <li>Revisá la propuesta y pedí ajustes en la conversación.</li>
-                <li>Aplicá el borrador al editor y guardá el dashboard cuando esté correcto.</li>
+                <li>
+                  {demo
+                    ? 'The demo uses a local simulator without an API key.'
+                    : 'Set up a connection with your provider, model, and API key.'}
+                </li>
+                <li>Describe the widgets, devices, and telemetry keys you want to see.</li>
+                <li>Review the proposal and request changes in the conversation.</li>
+                <li>Apply the draft to the editor and save the dashboard when it is ready.</li>
               </ol>
             </div>
             <div>
-              <h3 className="font-semibold text-heading">Modelo y uso</h3>
+              <h3 className="font-semibold text-heading">Models and usage</h3>
               <p className="mt-1">
-                Podés escribir el ID del modelo que prefieras dentro de un proveedor compatible o
-                consultar los modelos disponibles. También hay conexiones con URL autorizada por el
-                administrador. La API key queda cifrada en el servidor y podés definir límites de
-                solicitudes por día y tokens de salida.
+                You can enter a model ID for a compatible provider or browse available models.
+                Administrators can also approve custom endpoint URLs. The API key is encrypted on
+                the server, and you can set daily request and output token limits.
               </p>
             </div>
             <div>
-              <h3 className="font-semibold text-heading">Alcance y limitaciones</h3>
+              <h3 className="font-semibold text-heading">Scope and limitations</h3>
               <p className="mt-1">
-                El asistente usa el catálogo de widgets, dispositivos y claves de telemetría de esta
-                instancia. No recibe los valores actuales ni el historial de mediciones. Puede
-                proponer un widget equivocado o una configuración incompleta: esta función está en
-                prueba y sigue en desarrollo. La vista previa permite revisar los cambios; nada se
-                guarda sin que apliques el borrador y guardes el dashboard.
+                The assistant uses this instance&apos;s widget, device, and telemetry key catalogs.
+                It does not receive current readings or measurement history. It may propose the
+                wrong widget or an incomplete configuration while this feature is in development.
+                Preview the changes before applying the draft and saving the dashboard.
               </p>
             </div>
           </section>
         )}
-        {view === 'settings' && (
+        {view === 'settings' && demo && (
+          <p className="rounded-md border border-accent-strong/40 bg-tint p-4 text-sm text-heading">
+            Demo mode uses a local simulator. To connect a model and save your API key, exit the
+            demo and sign in.
+          </p>
+        )}
+        {view === 'settings' && !demo && (
           <section className="space-y-3 rounded-md border border-border p-3">
-            <h3 className="text-sm font-semibold text-heading">Conexiones de IA</h3>
+            <h3 className="text-sm font-semibold text-heading">AI connections</h3>
             <div className="flex flex-wrap gap-2">
               <select
                 className={fieldClass}
@@ -467,9 +478,9 @@ export function AiDashboardPanel({
                   );
                   setModelOptions([]);
                 }}
-                aria-label="Conexión de IA"
+                aria-label="AI connection"
               >
-                <option value="">Elegí una conexión</option>
+                <option value="">Choose a connection</option>
                 {settings?.connections.map((item) => (
                   <option key={item.id} value={item.id}>
                     {item.provider} · {item.model}
@@ -482,13 +493,13 @@ export function AiDashboardPanel({
                 onClick={removeConnection}
                 className="text-sm text-muted disabled:opacity-50"
               >
-                Eliminar elegida
+                Delete selected
               </button>
             </div>
             {selectedConnection && (
               <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto] sm:items-end">
                 <label className="text-sm text-muted">
-                  Modelo de la conexión elegida
+                  Selected connection model
                   <input
                     className={fieldClass}
                     value={selectedModel}
@@ -507,7 +518,7 @@ export function AiDashboardPanel({
                   onClick={loadModels}
                   className="rounded-md border border-border px-3 py-2 text-sm disabled:opacity-50"
                 >
-                  Consultar modelos
+                  Browse models
                 </button>
                 <button
                   type="button"
@@ -515,14 +526,14 @@ export function AiDashboardPanel({
                   onClick={updateSelectedModel}
                   className="rounded-md border border-border px-3 py-2 text-sm disabled:opacity-50"
                 >
-                  Guardar modelo
+                  Save model
                 </button>
               </div>
             )}
             {selectedConnection && (
               <div className="flex flex-wrap items-end gap-2">
                 <label className="min-w-56 flex-1 text-sm text-muted">
-                  Reemplazar API key
+                  Replace API key
                   <input
                     type="password"
                     autoComplete="off"
@@ -537,13 +548,13 @@ export function AiDashboardPanel({
                   onClick={replaceKey}
                   className="rounded-md border border-border px-3 py-2 text-sm disabled:opacity-50"
                 >
-                  Guardar clave
+                  Save key
                 </button>
               </div>
             )}
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="text-sm text-muted">
-                Proveedor
+                Provider
                 <select
                   className={fieldClass}
                   value={provider}
@@ -557,23 +568,23 @@ export function AiDashboardPanel({
                 </select>
               </label>
               <label className="text-sm text-muted">
-                Modelo
+                Model
                 <input
                   className={fieldClass}
                   value={model}
                   onChange={(event) => setModel(event.target.value)}
                   maxLength={100}
-                  placeholder="ID del modelo"
+                  placeholder="Model ID"
                 />
               </label>
               {provider === 'CUSTOM' && (
                 <label className="text-sm text-muted sm:col-span-2">
-                  URL aprobada
+                  Approved URL
                   <input
                     className={fieldClass}
                     value={endpointUrl}
                     onChange={(event) => setEndpointUrl(event.target.value)}
-                    placeholder="https://proveedor.example/v1/chat/completions"
+                    placeholder="https://provider.example/v1/chat/completions"
                   />
                 </label>
               )}
@@ -585,7 +596,7 @@ export function AiDashboardPanel({
                   className={fieldClass}
                   value={apiKey}
                   onChange={(event) => setApiKey(event.target.value)}
-                  placeholder="La clave queda cifrada en el servidor"
+                  placeholder="The key is encrypted on the server"
                 />
               </label>
             </div>
@@ -595,16 +606,16 @@ export function AiDashboardPanel({
               onClick={saveConnection}
               className="rounded-md border border-border px-3 py-2 text-sm disabled:opacity-50"
             >
-              Agregar conexión
+              Add connection
             </button>
           </section>
         )}
-        {view === 'settings' && (
+        {view === 'settings' && !demo && (
           <section className="space-y-3 rounded-md border border-border p-3">
-            <h3 className="text-sm font-semibold text-heading">Límites de uso</h3>
+            <h3 className="text-sm font-semibold text-heading">Usage limits</h3>
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="text-sm text-muted">
-                Solicitudes por día
+                Requests per day
                 <input
                   type="number"
                   min={1}
@@ -615,7 +626,7 @@ export function AiDashboardPanel({
                 />
               </label>
               <label className="text-sm text-muted">
-                Tokens máximos por respuesta
+                Maximum output tokens per response
                 <input
                   type="number"
                   min={256}
@@ -632,22 +643,24 @@ export function AiDashboardPanel({
               onClick={saveLimits}
               className="rounded-md border border-border px-3 py-2 text-sm disabled:opacity-50"
             >
-              Guardar límites
+              Save limits
             </button>
             {remainingRequests !== null && (
-              <p className="text-xs text-muted">Quedan {remainingRequests} solicitudes hoy.</p>
+              <p className="text-xs text-muted">{remainingRequests} requests remaining today.</p>
             )}
           </section>
         )}
         {view === 'chat' && (
           <section className="space-y-3 rounded-md border border-border p-3">
-            <h3 className="text-sm font-semibold text-heading">Conversación</h3>
+            <h3 className="text-sm font-semibold text-heading">Conversation</h3>
             <p className="text-xs text-muted">
-              {settings?.connections.find((item) => item.id === selectedConnection)?.provider ??
-                'Sin proveedor'}{' '}
+              {demo
+                ? 'DEMO'
+                : (settings?.connections.find((item) => item.id === selectedConnection)?.provider ??
+                  'No provider')}{' '}
               ·{' '}
               {settings?.connections.find((item) => item.id === selectedConnection)?.model ??
-                'Configurá una conexión para empezar'}
+                'Set up a connection to get started'}
             </p>
             {!selectedConnection && (
               <button
@@ -655,16 +668,16 @@ export function AiDashboardPanel({
                 onClick={() => setView('settings')}
                 className="text-sm text-heading underline"
               >
-                Configurar IA
+                Set up AI
               </button>
             )}
             <select
               className={fieldClass}
               value={conversationId}
               onChange={(event) => void openConversation(event.target.value)}
-              aria-label="Historial de conversaciones"
+              aria-label="Conversation history"
             >
-              <option value="">Nueva conversación</option>
+              <option value="">New conversation</option>
               {history.map((item) => (
                 <option key={item.id} value={item.id}>
                   {item.title}
@@ -678,13 +691,13 @@ export function AiDashboardPanel({
                 onClick={deleteConversation}
                 className="text-sm text-muted disabled:opacity-50"
               >
-                Eliminar conversación
+                Delete conversation
               </button>
             )}
             <div className="max-h-40 space-y-2 overflow-y-auto text-sm text-muted">
               {messages.map((item) => (
                 <p key={item.id}>
-                  <strong>{item.role === 'USER' ? 'Vos' : 'IA'}:</strong> {item.content}
+                  <strong>{item.role === 'USER' ? 'You' : 'AI'}:</strong> {item.content}
                 </p>
               ))}
             </div>
@@ -693,7 +706,7 @@ export function AiDashboardPanel({
               value={prompt}
               onChange={(event) => setPrompt(event.target.value)}
               maxLength={1000}
-              placeholder="Describí qué widgets querés agregar, cambiar, mover o quitar"
+              placeholder="Describe which widgets to add, change, move, or remove"
             />
             {error && (
               <p
@@ -709,16 +722,16 @@ export function AiDashboardPanel({
               onClick={generate}
               className="btn-accent rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-50"
             >
-              {busy ? 'Generando…' : 'Enviar al asistente'}
+              {busy ? 'Generating…' : 'Send to assistant'}
             </button>
           </section>
         )}
         {view === 'chat' && draft && (
           <section className="space-y-2 rounded-md border border-accent p-3">
-            <h3 className="text-sm font-semibold text-heading">Vista previa: {draft.title}</h3>
+            <h3 className="text-sm font-semibold text-heading">Preview: {draft.title}</h3>
             <p className="text-sm text-muted">
-              {changes?.added} agregados · {changes?.changed} cambiados · {changes?.moved} movidos ·{' '}
-              {changes?.removed} quitados
+              {changes?.added} added · {changes?.changed} changed · {changes?.moved} moved ·{' '}
+              {changes?.removed} removed
             </p>
             <ul className="list-inside list-disc text-sm text-muted">
               {draft.widgets.map((item, index) => (
@@ -729,11 +742,11 @@ export function AiDashboardPanel({
               (item) => item.widgetType === 'attributes-table' && item.config.entityScope === 'ALL',
             ) && (
               <p className="text-xs text-muted">
-                La tabla muestra 20 dispositivos por página y permite recorrer el resto.
+                The table shows 20 devices per page and lets you browse the rest.
               </p>
             )}
             <p className="text-xs text-muted">
-              La propuesta todavía no está guardada. Podés seguir conversando o aplicarla al editor.
+              This proposal is not saved yet. You can keep chatting or apply it to the editor.
             </p>
             <button
               type="button"
@@ -745,7 +758,7 @@ export function AiDashboardPanel({
               }}
               className="btn-accent rounded-md px-4 py-2 text-sm font-semibold"
             >
-              Aplicar al editor
+              Apply to editor
             </button>
           </section>
         )}
@@ -756,7 +769,7 @@ export function AiDashboardPanel({
           onClick={close}
           className="rounded-md border border-border px-4 py-2 text-sm"
         >
-          Cerrar
+          Close
         </button>
       </DialogFooter>
     </Dialog>

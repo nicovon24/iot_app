@@ -8,7 +8,7 @@ about: 'iot-app'
 
 ## What This Is
 
-An industrial IoT platform that uses ThingsBoard as the data engine (tenants, customers, assets, devices, telemetry, alarms, rule chains) behind a purpose-built NestJS API and a Next.js frontend. Target users are industrial operators/administrators (UI in Spanish, docs/code in English). Initial data source is emulated devices/assets in ThingsBoard (reference case: a pump/station profile) — no physical hardware required.
+An industrial IoT platform that uses ThingsBoard as the data engine (tenants, customers, assets, devices, telemetry, alarms, rule chains) behind a purpose-built NestJS API and a Next.js frontend. Target users are industrial operators/administrators (UI, docs, and code in English). Initial data source is emulated devices/assets in ThingsBoard (reference case: a pump/station profile) — no physical hardware required.
 
 ## Core Value
 

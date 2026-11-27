@@ -6,6 +6,14 @@ about: 'iot-app'
 
 # Project State
 
+## Session update — 2026-11-27
+
+English UI consistency work (`15-demo-mode/15-02-PLAN.md`) is complete locally and verified in `15-02-SUMMARY.md`. It covers the demo entry, seeded data, dashboard assistant, editor messages, date formatting, and backend AI output instructions. Frontend and backend tests, lint, typechecks, production frontend build, and browser checks passed. No commit or push has been made.
+
+The HEAD-based code review found and corrected two untranslated login fields, accidental replacement of existing demo widgets on an add request, and telemetry responses for unknown demo entities. The new regression tests pass. Other demo entity mutation controls remain intentionally unavailable and fail locally, as specified in 15-01. The production PR is the next action; no database migration is needed.
+
+Phase 15 demo mode is implemented locally under `15-demo-mode/15-01-PLAN.md` and verified in `15-01-SUMMARY.md`. The login page offers an anonymous demo entry. Browser-only fixtures cover navigation, telemetry, alarms, maps, a seeded dashboard, and a simulated dashboard assistant with draft preview and save. Demo requests and WebSocket subscriptions are isolated from the backend; exiting clears the session. Frontend lint, typecheck, targeted tests, production build, and browser checks passed. No demo work is committed or pushed. The pre-existing `docker-compose.yml` edit and untracked tool files are unrelated and remain untouched.
+
 ## Project Reference
 
 See: .paul/PROJECT.md (updated 2026-07-30)

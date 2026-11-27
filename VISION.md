@@ -35,7 +35,7 @@ Emulated devices and assets via ThingsBoard device profiles — no physical hard
 
 ## Target Users
 
-Industrial operators and administrators (UI in Spanish). Platform documentation and code comments in English.
+Industrial operators and administrators (UI in English). Platform documentation and code comments in English.
 
 ## Out of Scope (PoC)
 

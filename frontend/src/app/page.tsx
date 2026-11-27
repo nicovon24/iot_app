@@ -101,7 +101,9 @@ export default function OverviewPage() {
             {assetCount === 1 ? 'asset' : 'assets'} registered.
           </>
         }
-        actions={<StatusPill label="Live" />}
+        actions={
+          <StatusPill label={currentUser?.email === 'demo@iotarg.app' ? 'Simulated' : 'Live'} />
+        }
       />
 
       {/* The summary row. A 2px rule opens it, 1px rules divide the figures — the

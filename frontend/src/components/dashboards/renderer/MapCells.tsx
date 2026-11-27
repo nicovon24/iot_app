@@ -88,7 +88,7 @@ export function ValueMapCell({ config }: { config: EntityWidgetConfig }) {
  * actually answers "which preset do I need".
  */
 function formatFix(ts: number) {
-  const absolute = new Date(ts).toLocaleString(undefined, {
+  const absolute = new Date(ts).toLocaleString('en-US', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',

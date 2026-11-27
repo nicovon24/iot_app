@@ -187,7 +187,7 @@ describe('DashboardAiService generation', () => {
                   type: 'output_text',
                   text: JSON.stringify({
                     title: 'Revised pump dashboard',
-                    explanation: 'Conservé la temperatura y moví el widget.',
+                    explanation: 'I kept the temperature and moved the widget.',
                     widgets: [{ existingWidgetIndex: 0, layout: { x: 6, y: 0, w: 6, h: 4 } }],
                   }),
                 },
@@ -215,7 +215,7 @@ describe('DashboardAiService generation', () => {
       session,
     );
     expect(result.widgets[0].layout.x).toBe(6);
-    expect(result.message).toContain('Conservé');
+    expect(result.message).toContain('I kept the temperature');
     expect(prisma.aiConversation.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
@@ -321,7 +321,7 @@ describe('DashboardAiService generation', () => {
         layout: { x: 0, y: 0, w: 12, h: 6 },
       },
     ]);
-    expect(result.message).toContain('Una tabla');
+    expect(result.message).toContain('A latest readings table');
     expect(dashboards.create).not.toHaveBeenCalled();
   });
 
@@ -426,7 +426,7 @@ describe('DashboardAiService generation', () => {
         layout: { x: 0, y: 0, w: 12, h: 6 },
       },
     ]);
-    expect(result.message).toContain('Una tabla');
+    expect(result.message).toContain('A latest readings table');
     expect(prisma.aiConversation.create).toHaveBeenCalledTimes(1);
   });
 

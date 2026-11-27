@@ -73,7 +73,7 @@ const ALARM_COLUMNS: RuledColumn<Alarm>[] = [
     // Locale-formatted rather than raw: this is the one column a person reads as a time,
     // not as an identifier, so it keeps the reader's own conventions.
     render: (alarm) => (
-      <span className="t-meta truncate">{new Date(alarm.startTs).toLocaleString()}</span>
+      <span className="t-meta truncate">{new Date(alarm.startTs).toLocaleString('en-US')}</span>
     ),
   },
 ];

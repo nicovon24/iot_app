@@ -158,7 +158,7 @@ export function EntityMapMarker({
           <div className="flex flex-col gap-2 border-t border-border pt-2.5">
             <p className="t-meta">
               {lastReportTs
-                ? `Last report ${new Date(lastReportTs).toLocaleString()}`
+                ? `Last report ${new Date(lastReportTs).toLocaleString('en-US')}`
                 : 'No data yet'}
             </p>
             <button

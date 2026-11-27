@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Menu } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { AuthGate } from './AuthGate';
-import { getImpersonationMeta, type ImpersonationMeta } from '@/lib';
+import { getImpersonationMeta, isDemoSession, logout, type ImpersonationMeta } from '@/lib';
 import { endImpersonation } from '@/hooks';
 
 // These pages render their own full-height/full-width widgets (tables, map), so they get
@@ -40,11 +40,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [impersonation, setImpersonation] = useState<ImpersonationMeta | null>(null);
+  const [demo, setDemo] = useState(false);
 
   useEffect(() => {
     // Reads localStorage, which isn't available during render (SSR + hydration).
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setImpersonation(getImpersonationMeta());
+    setDemo(isDemoSession());
   }, []);
 
   // Close the mobile drawer automatically on navigation.
@@ -82,6 +84,24 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         <div className="flex flex-1 flex-col overflow-hidden">
+          {demo && (
+            <div className="flex shrink-0 items-center justify-between gap-3 border-b border-accent-strong/40 bg-tint-strong px-5 py-2 text-xs text-accent">
+              <span className="font-semibold uppercase tracking-[0.1em]">
+                Demo mode · simulated data
+              </span>
+              <button
+                type="button"
+                className="underline underline-offset-4 hover:text-heading"
+                onClick={() => {
+                  void logout().then(() => {
+                    window.location.href = '/login';
+                  });
+                }}
+              >
+                Exit demo
+              </button>
+            </div>
+          )}
           {impersonation && (
             <div className="flex shrink-0 items-center justify-between gap-3 bg-warning px-4 py-1.5 text-sm font-medium text-on-warning">
               <span>Viewing as {impersonation.label}</span>

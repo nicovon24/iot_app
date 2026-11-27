@@ -69,11 +69,11 @@ DISCUSS ──▶ PLAN ──▶ APPLY ──▶ UNIFY
 - **Never duplicate ThingsBoard entities:** Tenants, Customers (Clients), Assets, Devices, Users, Telemetry, and Attributes live in ThingsBoard and are queried via its API. Do not create local database tables for them.
 - **Flexible Hierarchy Rule:** Intermediate levels (Locations, Areas, Sections) are modeled as ThingsBoard Assets with a `hierarchyLevelId` attribute, connected via a single generic relation type (`"Contains"`).
 - **Users/roles are TB-native**, not an app-owned table — see `.paul/PROJECT.md` Key Decisions.
-- **Code comments language:** strictly English throughout, even though the UI is in Spanish for end users.
+- **Code comments language:** strictly English throughout, matching the UI language.
 
 ## Language
 
-All project documentation, code comments, and commit messages are in **English**. The app UI itself remains in Spanish (targeting end users).
+All project documentation, code comments, commit messages, and app UI text are in **English**.
 
 ## Imports & Exports (frontend)
 

@@ -1,4 +1,5 @@
 import { getSessionToken } from '../session';
+import { isDemoSession } from '@/lib/demo';
 import type { SubscribeTarget, WsFrame, WsChannel } from '@/types';
 
 const WS_BASE_URL = process.env.NEXT_PUBLIC_WS_BASE_URL ?? 'ws://localhost:3001';
@@ -6,6 +7,20 @@ const WS_BASE_URL = process.env.NEXT_PUBLIC_WS_BASE_URL ?? 'ws://localhost:3001'
 export type { SubscribeTarget, WsTimeseriesUpdate, WsFrame, WsChannel } from '@/types';
 
 export function createWsClient(channel: WsChannel) {
+  if (isDemoSession()) {
+    return {
+      socket: null as unknown as WebSocket,
+      subscribe: (_target: SubscribeTarget, _onMessage: (frame: WsFrame) => void) => {
+        void _target;
+        void _onMessage;
+        return () => {};
+      },
+      close: () => {},
+      onClosed: (_handler: (info: { sessionEnded: boolean }) => void) => {
+        void _handler;
+      },
+    };
+  }
   const token = getSessionToken();
   const socket = new WebSocket(`${WS_BASE_URL}/ws/${channel}?token=${token ?? ''}`);
 
